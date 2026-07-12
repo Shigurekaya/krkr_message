@@ -1,0 +1,77 @@
+// Plugin.tjs - KAG 插件相关
+// Copyright (C)2001-2009, W.Dee and contributors  可自由修改与再分发
+
+class KAGPlugin
+{
+	// KAG 用插件的基础类
+	// 以 onXXXX 开头的各处理器，即使重载
+	// 也不需要调用本类的处理器（因为它们什么都不做）
+
+	function KAGPlugin()
+	{
+	}
+
+	function finalize()
+	{
+	}
+
+
+	function onStore(f, elm)
+	{
+		// 在保存书签时调用
+		// f = 保存目标的书签数据（Dictionary 类对象）
+		// elm = tempsave 时的选项（目前始终为 void）
+	}
+
+	function onRestore(f, clear, elm)
+	{
+		// 在读取书签时调用
+		// f = 要读取的书签数据（Dictionary 类对象）
+		// clear = 是否清空消息层（仅在 tempload 时为 false）
+		// elm = tempload 时的选项（非 tempload 时始终为 void，
+		//                                 tempload 时为 Dictionary 类对象）
+	}
+
+	function onStableStateChanged(stable)
+	{
+		// 在稳定（通过 s l p 标签停止中）或运行中（其他情况）
+		// 的状态发生变化时调用
+		// stable = 处于稳定状态时为 true，否则为 false
+	}
+
+	function onMessageHiddenStateChanged(hidden)
+	{
+		// 在右键等导致消息层被隐藏，或
+		// 从该状态退出时调用
+		// hidden = 消息被隐藏时为 true，显示时为 false
+	}
+
+	function onCopyLayer(toback)
+	{
+		// 在 backlay 标签 / forelay 标签对所有层执行时，
+		// 或在 layer=base chidlren=true exchange=false 的过渡结束时，
+		// 需要把背面内容复制到正面时调用
+		// toback = 将正面内容复制到背面时为 true，
+		//          将背面内容复制到正面时为 false
+		// layer=base children=true 的过渡结束时会以 toback = false 调用。
+	}
+
+	function onExchangeForeBack()
+	{
+		// 在 layer=base children=true 的过渡结束时调用，
+		// 目的在于交换正面层与背面层的信息
+		// 此时层的树结构已经交换，因此通常需要把
+		// 在树结构交换后会产生矛盾的信息
+		// （例如层名、对层的引用等）在背面与正面之间互换
+		// 过渡结束时的 onCopyLayer 会在这个事件之前调用，
+		// 请注意
+	}
+
+	function onSaveSystemVariables()
+	{
+		// 在信息保存到系统变量时调用
+		// 如果在此时向 kag.scflags 写入信息，
+		// 就能确实把信息写入系统变量
+	}
+}
+

@@ -1,0 +1,11 @@
+{
+  "file": "facezoom.csv",
+  "size": 1179,
+  "kind": "yuzuex_packed",
+  "extracted_strings": [
+    "L000",
+    "Q000",
+    "eV00"
+  ],
+  "string_count": 3
+}

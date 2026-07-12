@@ -1,0 +1,32 @@
+{
+  "source": "E:\\GAL\\lllJ",
+  "method": "static (no game launch)",
+  "xp3_encryption": "file bodies encrypted with exe-bound filter; only startup.tjs plaintext",
+  "filename_table": "obfuscated single-char names; no eliF path table",
+  "save_decode": "datasu/datasc use simple_crypt mode 2 — decoded successfully",
+  "asset_catalog_counts": {
+    "cg_ids": 2664,
+    "sd_ids": 569,
+    "ev_cg_ids": 2028,
+    "bgv_gallery": 27,
+    "autotrail_ui": 26,
+    "autotrail_trans": 1,
+    "autotrail_flow": 3,
+    "face_parts": 7,
+    "mtn_refs": 2,
+    "config_keys": 92
+  },
+  "xp3_index_counts": {
+    "uipsd.xp3": 175,
+    "image.xp3": 99,
+    "fgimage.xp3": 1232,
+    "data.xp3": 1835,
+    "scn.xp3": 139
+  },
+  "system_design": {
+    "path": "system-design/",
+    "report": "system-design/系统性设计提取报告.md",
+    "generated_at": "2026-07-12T13:37:29.507146+00:00",
+    "dump_files_analyzed": 474
+  }
+}

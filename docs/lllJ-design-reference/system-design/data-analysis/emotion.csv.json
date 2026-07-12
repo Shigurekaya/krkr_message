@@ -1,0 +1,14 @@
+{
+  "file": "emotion.csv",
+  "size": 215,
+  "kind": "yuzuex_packed",
+  "extracted_strings": [
+    "L000",
+    "Q000",
+    "T000",
+    "T000{000",
+    "T000{000b",
+    "eV00"
+  ],
+  "string_count": 6
+}

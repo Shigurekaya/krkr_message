@@ -1,0 +1,433 @@
+// KAGLayer.tjs - KAG 的层的基础类
+// Copyright (C)2001-2009, W.Dee and contributors  可自由修改与再分发
+
+/*
+ 层相关的类层次
+
+ Layer（吉里吉里原生类）
+  |
+  +-- KAGLayer（本文件）
+       |
+       +-- AnimationLayer ( AnimationLayer.tjs )
+       |    |
+       |    +-- ClickGlyphLayer ( AnimationLayer.tjs )
+       |    |
+       |    +-- GraphicLayer ( GraphicLayer.tjs )
+       |         |
+       |         +-- BaseLayer ( GraphicLayer.tjs )
+       |         |
+       |         +-- CharacterLayer ( GraphicLayer.tjs )
+       |
+       +-- MessageLayer ( MessageLayer.tjs )
+       |
+       +-- ButtonLayer ( ButtonLayer.tjs )
+       |    |
+       |    +-- LinkButtonLayer ( MessageLayer.tjs )
+       |    |
+       |    +-- LButtonLayer ( HistoryLayer.tjs )
+       |
+       +-- EditLayer ( EditLayer.tjs )
+       |    |
+       |    +-- LinkEditLayer ( MessageLayer.tjs )
+       |
+       +-- CheckBoxLayer ( CheckBoxLayer.tjs )
+            |
+            +-- LinkCheckBoxLayer ( MessageLayer.tjs )
+*/
+
+/*
+　过渡结束时的行为备忘（略难理解）
+
+　吉里吉里在过渡结束时，若存在过渡源（src=对方）：
+　children=true 时，将与对方连同子层树整体交换自身层；
+　children=false 时，子层在树上的绝对位置不变，仅与对方互换。
+
+　不含子层的过渡仅背景层可用。
+
+执行过渡时，上述「交换」由吉里吉里本体完成，但会连同 name 等重要信息
+一并交换，因此需通过 GraphicLayer.exchangeInfo 交换内容。
+
+此外，trans 属性指定 exchange=true 时，双方层互换；
+exchange=false（默认）时，须将过渡源（src）的信息复制到过渡目标。
+
+无 src 时为单层过渡，无需上述考虑，但结束时全部子层会隐藏。
+
+· 消息层、前景层，无 src 过渡（children=true）
+　无需操作，但结束后其子层会自动隐藏。
+
+· 消息层、前景层，有 src 过渡（children=true）
+　与过渡源交换重要信息；exchange=false 时还需将过渡源信息复制到过渡目标。
+　复制时不复制窗口可见/不可见信息。
+
+· 背景层，无 src 过渡（children=true）
+　无需操作，但结束时子层会隐藏。
+
+· 背景层，无 src 过渡（children=false）
+　确实什么也不做。
+
+· 背景层，有 src 过渡（children=true）
+　与过渡源交换重要信息，并对子层也发出「与对象交换重要信息」指示。
+　exchange=false 时还需复制过渡源信息到过渡目标，子层亦同。
+
+· 背景层，有 src 过渡（children=false）
+　与过渡源交换重要信息；对子层不发出「与对象交换重要信息」指示。
+　exchange=false 时复制过渡源信息到过渡目标，子层亦不发指示。
+
+*/
+
+class KAGLayer extends Layer
+{
+	// KAG 背景/前景层、消息层、按钮层等使用的基本类
+	var inTransition = false; // 是否过渡中
+	var transExchange = false; // 过渡结束时是否交换
+	var transWithChildren = false; // 过渡是否包含子层
+
+	var moveObject; // 当前进行中的自动移动对象（未进行时为 void）
+
+	function KAGLayer(win, par)
+	{
+		super.Layer(win, par);
+	}
+
+	function finalize()
+	{
+		invalidate moveObject if moveObject !== void;
+		super.finalize(...);
+	}
+
+	function setOptions(elm)
+	{
+		// 按 elm 设置层选项
+		visible = +elm.visible if elm.visible !== void;
+		left = +elm.left if elm.left !== void;
+		top = +elm.top if elm.top !== void;
+		opacity = +elm.opacity if elm.opacity !== void;
+
+		if(elm.modal !== void)
+		{
+			// this would not work well
+			var modal = elm.modal;
+			if(modal) setMode(), focus(); else removeMode();
+		}
+
+		absolute = +elm.index if elm.index !== void;
+	}
+
+	function loadImages(storage, key)
+	{
+		// loadImages 重写
+		key = adjustColorKey(key);
+		return super.loadImages(storage, key);
+	}
+
+	function adjustColorKey(key)
+	{
+		// 转换字符串形式的色键
+		if(key === void)
+			key = clNone;
+		else if(typeof key == "String")
+		{
+			if(key == "adapt")
+				key = clAdapt; // adaptive color key
+			else
+			{
+				if(key.length >= 7)
+					key = +key;
+				else
+					key = +key + 0x3000000; // 0x3000000 = 调色板索引指定
+			}
+		}
+		return key;
+	}
+
+	function assignImages(src, copyvisiblestate = false)
+	{
+		// assignImages 重写
+		// 将 src 的「可见」信息复制到此层
+		// 复制内容包括：
+		// · 透明度
+		// · 位置
+		// · 显示尺寸
+		// · 层内图像显示位置（imageLeft, imageTop）
+		//  （以上 3 项在 copyvisiblestate = true 时）
+		// · 图像尺寸
+		// · 层图像、区域图像
+		super.assignImages(src);
+		if(copyvisiblestate)
+		{
+			var su = super;
+			su.visible = src.visible;
+			su.opacity = src.opacity;
+			su.absolute = src.absolute if !src.isPrimary && src.parent.absoluteOrderMode;
+			su.type = src.type;
+			su.setPos(src.left, src.top, src.width, src.height);
+			su.setImagePos(src.imageLeft, src.imageTop);
+		}
+	}
+
+	function assignVisibleState(src)
+	{
+		// 从 src 复制 assignImages 中 copyvisiblestate = true 时
+		// 才复制的那部分信息
+		visible = src.visible;
+		opacity = src.opacity;
+		absolute = src.absolute if !src.isPrimary && src.parent.absoluteOrderMode;
+		type = src.type;
+		setPos(src.left, src.top, src.width, src.height);
+		setImagePos(src.imageLeft, src.imageTop);
+	}
+
+	function beginTransition(elm, src)
+	{
+		// beginTransition 重写
+		// 按 elm 开始过渡
+		// src 指定过渡对象
+//		stopTransition(); // 停止当前过渡
+
+		if(elm.exchange !== void) transExchange = +elm.exchange; else transExchange = false;
+		var method = elm.method;
+		if(elm.time !== void)
+		{
+			elm.time = 1 if +elm.time == 0; // 时间不能指定为 0
+		}
+		if(method === void)
+		{
+			method = 'universal'; // 默认 universal
+		}
+		else if(method == 'scroll')
+		{
+			// 参数转换
+			switch(elm.from)
+			{
+			case 'left': elm.from = sttLeft; break;
+			case 'top': elm.from = sttTop; break;
+			case 'right': elm.from = sttRight; break;
+			case 'bottom': elm.from = sttBottom; break;
+			}
+			switch(elm.stay)
+			{
+			case 'nostay': elm.stay = ststNoStay; break;
+			case 'stayback': elm.stay = ststStaySrc; break;
+			case 'stayfore': elm.stay = ststStayDest; break;
+			default: elm.stay = ststNoStay; break;
+			}
+		}
+		var withchildren = elm.children;
+		if(withchildren === void)
+			withchildren = true;
+		else
+			withchildren = +withchildren;
+		transWithChildren = withchildren;
+		inTransition = true;
+		window.transCount++; // 进行中的过渡数 +1
+		super.beginTransition(method, withchildren, src, elm);
+	}
+
+	function onTransitionCompleted(dest, src)
+	{
+		super.onTransitionCompleted(...);
+		if(window != null)
+		{
+			inTransition = false;
+			window.transCount--; // 进行中的过渡数 -1
+			atEndOfTransition(src, transWithChildren, transExchange);
+			window.onLayerTransitionCompleted(this, dest, src);
+		}
+	}
+
+	function atEndOfTransition(src, withchildren, exchange)
+	{
+		// 必要时重写
+		// 过渡结束时被调用。
+		// 单层过渡时 src 为 null。
+		// 否则 exchange 为 true 时与 src 交换内容，
+		// 否则将自身内容复制到 src。
+		// 含子层过渡时 withchildren 为 true。
+		// root 在对过渡根调用时为 true。
+	}
+
+	function beginMove(elm)
+	{
+		// 按 elm 开始自动移动
+		stopMove();
+
+		// 分解 path
+		var array = [].split("(), ", elm.path, , true);
+		for(var i = array.count-1; i>=0; i--) array[i+3] = +array[i];
+		array[0] = left;
+		array[1] = top;
+		array[2] = opacity;
+
+		// 创建移动对象
+		if(elm.spline !== void && +elm.spline)
+		{
+			// 样条插值
+			moveObject = new SplineMover(this, array, +elm.time,
+				elm.accel === void ? 0 : +elm.accel, moveFinalFunction);
+		}
+		else
+		{
+			// 直线插值
+			moveObject = new LinearMover(this, array, +elm.time,
+				elm.accel === void ? 0 : +elm.accel, moveFinalFunction);
+		}
+		window.moveCount++;
+		moveObject.startMove(+elm.delay);
+	}
+
+	function moveFinalFunction()
+	{
+		// 自动移动结束时调用的函数
+		window.moveCount--;
+		window.onLayerMoveStop();
+	}
+
+	function stopMove()
+	{
+		if(moveObject !== void) invalidate moveObject, moveObject = void;
+	}
+
+	// 指定帧号的 move
+	function beginFrameMove(elm)
+	{
+		// 按 elm 开始自动移动
+		stopMove();
+
+		var ox = elm.ox === void ? 0 : +elm.ox;
+		var oy = elm.oy === void ? 0 : +elm.oy;
+		var fps = elm.fps === void ? 30 : +elm.fps;
+
+		// 分解 path
+		var array = [].split("(), ", elm.path, , true);
+		for(var i = array.count-1; i>=0; i--) array[i+4] = +array[i];
+		array[0] = 0;
+		array[1] = left - ox;
+		array[2] = top - oy;
+		array[3] = opacity;
+
+		// 创建移动对象
+		moveObject = new LinearFrameMover(this, array, fps, moveFinalFunction, ox, oy );
+
+		window.moveCount++;
+		moveObject.startMove();
+	}
+
+	function store()
+	{
+		// 将当前状态保存到字典数组
+		var dic = %[];
+		dic.left = left;
+		dic.top = top;
+		dic.width = width;
+		dic.height = height;
+		dic.imageWidth = imageWidth;
+		dic.imageHeight = imageHeight;
+		dic.opacity = opacity;
+		dic.visible = visible;
+		dic.imageLeft = imageLeft;
+		dic.imageTop = imageTop;
+		dic.absolute = absolute;
+		dic.type = type;
+		return dic;
+	}
+
+	function restore(dic)
+	{
+		// 从字典数组 dic 读取信息并设置到此层
+		setImageSize(dic.imageWidth, dic.imageHeight);
+		setPos(dic.left, dic.top, dic.width, dic.height);
+		setImagePos(dic.imageLeft, dic.imageTop);
+		opacity = dic.opacity;
+		visible = dic.visible;
+		absolute = dic.absolute if !isPrimary && dic.absolute !== void;
+		type = dic.type if !isPrimary && dic.type !== void;
+	}
+
+	/**
+	 * 层上色/合成处理
+	 * @param left
+	 * @param top
+	 * @param width
+	 * @param height
+	 * @param color 填充色（含遮罩值）
+	 * @param mode 合成模式
+	 */
+	function fillOperateRect(left, top, width, height, color, mode)
+	{
+		var tw = 128;
+		var th = 64;
+		var fillLayer = new global.Layer(window, this);
+		// 原版吉里吉里：不透明单色层按指定不透明度绘制。
+		// Photoshop 兼容模式：半透明单色层不指定透明度（opacity=255）绘制。
+		var orgmodes	= %[ltOpaque=>1,ltAlpha=>1,ltAddAlpha=>1,ltAdditive=>1,ltSubtractive=>1,ltMultiplicative=>1,ltDodge=>1,ltLighten=>1,ltDarken=>1,ltScreen=>1];
+		fillLayer.setSize(tw, th);
+		var opacity	= 255;
+		var lastface = face, lastha = holdAlpha;
+		if(orgmodes[mode])
+		{
+			fillLayer.fillRect(0, 0, tw, th, color | 0xFF000000);
+			opacity = (color >> 24) & 0xFF;
+			face	= dfOpaque;
+		}
+		else
+			fillLayer.fillRect(0, 0, tw, th, color);
+		holdAlpha	= true if !isPrimary;
+		var x = 0;
+		var y = 0;
+		while (y < height) {
+			var x2 = x;
+			while (x2 < width) {
+				//Debug.message("pos:" + x2 + "," + y);
+				global.Layer.operateRect(x2, y, fillLayer, 0, 0, tw, th, mode, opacity);
+				x2 += tw;
+			}
+			y += th;
+		}
+		face = lastface, holdAlpha = lastha;
+		// 清理
+		invalidate fillLayer;
+	}
+
+	/**
+	 * 添加投影
+	 * @param dx 阴影 X 偏移（向右为正）
+	 * @param dy 阴影 Y 偏移（向下为正）
+	 * @param blur 模糊量
+	 * @param shadowColor 阴影颜色
+	 * @param shadoAlpha 阴影不透明度
+	 */
+	function doDropShadow(dx=10, dy=10, blur=3, shadowColor=0x000000, shadowOpacity=200)
+	{
+		var THIS = global.Layer;
+		
+		// 工作层
+		var work = new THIS(window, parent);
+		work.setImagePos(THIS.imageLeft, THIS.imageTop);
+		work.setImageSize(THIS.imageWidth, THIS.imageHeight);
+		
+		// 生成阴影
+		var shadow = new THIS(window, parent);
+		shadow.assignImages(this);
+		// 填充
+		shadow.face = dfMain;
+		shadow.holdAlpha = true;
+		shadow.fillRect(THIS.imageLeft, THIS.imageTop, THIS.imageWidth, THIS.imageHeight, shadowColor);
+		shadow.face = dfBoth;
+		shadow.holdAlpha = false;
+		// 模糊
+		shadow.doBoxBlur(blur, blur);
+		
+		// 复制阴影
+		work.operateRect(THIS.imageLeft + dx, THIS.imageTop + dy, shadow, THIS.imageLeft, THIS.imageTop, THIS.imageWidth, THIS.imageHeight, ltPsNormal, shadowOpacity);
+		// 复制自身
+		work.operateRect(THIS.imageLeft, THIS.imageTop, this, THIS.imageLeft, THIS.imageTop, THIS.imageWidth, THIS.imageHeight, ltPsNormal, 255);
+		
+		// 替换图像
+		THIS.assignImages(work);
+		
+		// 清理
+		invalidate work;
+		invalidate shadow;
+	};
+}
+

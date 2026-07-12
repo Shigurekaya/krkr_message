@@ -1,0 +1,5 @@
+# source=data__currev_patch.ini
+# detected=cp932
+# score=0.8333
+
+ｦL>ｲ&矇4ﾒ`;.･ｫ･･

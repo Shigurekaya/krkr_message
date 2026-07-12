@@ -1,0 +1,8 @@
+﻿.\.venv\Scripts\python.exe : C:\Users\22050\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\python.exe: can'
+t open file 'D:\\gamedev\\GAL框架\\tools\\lllj-extract\\check_settings_labels.py': [Errno 2] No such file or directory
+所在位置 C:\Users\22050\AppData\Local\Temp\ps-script-6452a25b-9720-423d-870b-90e5600206ee.ps1:90 字符: 53
++ ... j-extract"; .\.venv\Scripts\python.exe check_settings_labels.py 2>&1  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (C:\Users\22050\...le or directory:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

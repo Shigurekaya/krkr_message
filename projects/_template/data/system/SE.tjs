@@ -1,0 +1,295 @@
+// SE.tjs - 音效管理
+// Copyright (C)2001-2009, W.Dee and contributors  可自由修改与再分发
+
+class SESoundBuffer extends WaveSoundBuffer
+{
+	// 音效类（继承 WaveSoundBuffer）
+
+	var owner; // 所有者
+	var id; // 音效缓冲区 ID
+	var inFading; // 是否处于淡入淡出中
+	var prevstatus = "unload"; // 上一次状态
+	var currentStorage = ""; // 表面上的播放中资源
+	var currentVolume = 100; // 表面音量
+	var inFadeAndStop = false; // 淡出结束时是否停止
+    
+	function SESoundBuffer(owner, id)
+	{
+		// 构造函数
+		super.WaveSoundBuffer(owner);
+
+		this.owner = owner;
+		this.id = id;
+	}
+
+	function finalize()
+	{
+		// finalize()
+		super.finalize(...);
+	}
+
+	function play(elm, resetvolume = true)
+	{
+		// play 重写
+		super.stop();
+		stopFade();
+		var storage = elm.storage;
+        var start = elm.start;
+        var found = true;
+		if(!Storages.isExistentStorage(storage))
+		{
+			var test;
+			if(test = storage + ".wav", Storages.isExistentStorage(test))
+				storage = test;
+			else if(test = storage + ".ogg", Storages.isExistentStorage(test))
+				storage = test;
+			else if(test = storage + ".opus", Storages.isExistentStorage(test))
+				storage = test;
+			else if(test = storage + ".tcw", Storages.isExistentStorage(test))
+				storage = test;
+			else
+				found = false;
+		}
+		if(!found)
+			throw new Exception("音效 " + storage + " 未找到");
+		var loop = elm.loop === void ? false : +elm.loop;
+		looping = loop;
+		if(loop)
+			currentStorage = storage;
+		else
+			currentStorage = "";
+		try
+		{
+            super.open(storage);
+            if(resetvolume) super.volume = currentVolume * 1000;
+            // 指定播放位置
+            if (start !== void &&
+                super.labels !== void &&
+                (start = super.labels[start]) !== void &&
+                (start = start.samplePosition) !== void) {
+                super.samplePosition = start;
+            }
+            super.play();
+		}
+		catch(e)
+		{
+			dm("音效播放失败（将继续运行）：" + e.message);
+		}
+	}
+
+	function stop()
+	{
+		// stop 重写
+		currentStorage = "";
+		try
+		{
+			super.stop(...);
+		}
+		catch(e)
+		{
+			dm("音效停止失败（将继续运行）：" + e.message);
+		}
+		inFadeAndStop = false;
+	}
+
+	function stopFade()
+	{
+		// stopFade 重写
+		try
+		{
+			super.stopFade();
+		}
+		catch(e)
+		{
+			dm("音效淡入淡出失败（将继续运行）：" + e.message);
+		}
+		inFadeAndStop = false;
+	}
+
+	function fade(elm)
+	{
+		// fade 重写
+		inFading = true;
+		var time = elm.time === void ? 5000 : +elm.time;
+		var vol = +elm.volume * 1000;
+		currentVolume = +elm.volume;
+		try
+		{
+			super.fade(vol, time);
+		}
+		catch(e)
+		{
+			dm("音效淡入淡出失败（将继续运行）：" + e.message);
+		}
+	}
+
+	function fadeIn(elm)
+	{
+		// 边淡入边播放
+		super.volume = 0;
+		play(elm, false);
+		inFading = true;
+		var time = elm.time === void ? 5000 : +elm.time;
+		var vol = currentVolume * 1000;
+		try
+		{
+			super.fade(vol, time);
+		}
+		catch(e)
+		{
+			dm("音效淡入淡出失败（将继续运行）：" + e.message);
+		}
+	}
+
+	function fadeOut(elm)
+	{
+		// 淡出后停止
+		currentStorage = ""; // 状态上视为停止
+        inFading = true;
+		inFadeAndStop = true;
+		var time = elm.time === void ? 5000 : +elm.time;
+		try
+		{
+			super.fade(0, time);
+		}
+		catch(e)
+		{
+			dm("音效淡入淡出失败（将继续运行）：" + e.message);
+		}
+	}
+
+	function onFadeCompleted()
+	{
+		// onFadeCompleted 重写
+		inFading = false;
+		if(inFadeAndStop)
+		{
+			try
+			{
+				super.stop(); // 停止播放
+			}
+			catch(e)
+			{
+				dm("音效停止失败（将继续运行）：" + e.message);
+			}
+			inFadeAndStop = false;
+		}
+        super.onFadeCompleted(...);
+		owner.onSESoundBufferFadeCompleted(id); // 淡出结束
+	}
+
+	function onStatusChanged()
+	{
+		// onStatusChanged 重写
+		// 状态已变更
+		super.onStatusChanged(...);
+		var ps = prevstatus;
+		var cs = status;
+		prevstatus = cs;
+		if(ps == "play" && cs == "stop")
+		{
+			currentStorage = "";
+			owner.onSESoundBufferStop(id); // play => stop：播放已停止
+		}
+	}
+
+	function canWaitStop()
+	{
+		// 是否可等待结束
+		return status == "play" && !looping;
+	}
+
+	property volume
+	{
+		setter(x)
+		{
+			currentVolume = x;
+			super.volume = x * 1000;
+		}
+		getter
+		{
+			return super.volume \ 1000;
+		}
+	}
+
+	property pan
+	{
+		setter(x)
+		{
+			super.pan = x * 1000;
+		}
+		getter
+		{
+			return super.pan \ 1000;
+		}
+	}
+
+	function setOptions(elm)
+	{
+		if(elm.volume !== void) volume = +elm.volume;
+		if(elm.gvolume !== void)
+		{
+			// 全局音量
+			var sysvar = owner.scflags; // 系统（核心）变量
+			if(sysvar.se === void) sysvar.se = [];
+			sysvar = sysvar.se;
+			if(sysvar[id] === void) sysvar[id] = %[];
+			sysvar = sysvar[id];
+			var v2 = +elm.gvolume;
+			v2 = int(v2 * 1000);
+			sysvar.globalVolume = v2;
+            if (sysvar.enable === void || sysvar.enable) {
+                volume2 = v2;
+            } else {
+                volume2 = 0;
+            }
+		}
+		if(elm.pan !== void)
+		{
+			pan = +elm.pan;
+		}
+	}
+
+	function store()
+	{
+		// 将当前状态记录到字典数组中
+		var dic = %[];
+		dic.currentStorage = currentStorage;
+		dic.volume = currentVolume;
+		dic.pan = pan;
+		return dic;
+	}
+
+	function restore(dic)
+	{
+		// 从字典数组读取状态并恢复
+		currentVolume = dic.volume;
+		pan = dic.pan;
+		if(dic.currentStorage != "")
+			play(%[storage : dic.currentStorage, loop : true]);
+		else
+			stop();
+	}
+
+	function restoreSystemState(dic)
+	{
+		// 从系统变量 dic 设置信息
+		// 获取全局音量信息
+		var sysvar = dic.se;
+		if(sysvar !== void)
+		{
+			sysvar = sysvar[id];
+			if(sysvar !== void)
+			{
+                if (sysvar.enable === void || sysvar.enable) {
+                    var v2 = sysvar.globalVolume;
+                    if(v2 !== void) {
+                        volume2 = +v2;
+                    }
+                } else {
+                    volume2 = 0;
+                }
+            }
+		}
+	}
+}

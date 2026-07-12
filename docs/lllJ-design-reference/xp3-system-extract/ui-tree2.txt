@@ -1,0 +1,34 @@
+﻿.\.venv\Scripts\python.exe : D:\gamedev\GAL框架\tools\lllj-extract\.venv\Lib\site-packages\pywinauto\application.py:1085:
+ UserWarning: 32-bit application should be automated using 32-bit Python (you use 64-bit Python)
+所在位置 C:\Users\22050\AppData\Local\Temp\ps-script-b5d406c2-b9c2-4fae-b58b-ba906e2bab1e.ps1:90 字符: 53
++ ... j-extract"; .\.venv\Scripts\python.exe probe_krkrz_ui.py 2>&1 | Out-F ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (D:\gamedev\GAL框... 64-bit Python):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  warnings.warn(
+Control Identifiers:
+
+Dialog - '[X'moe] KrkrzExtract(Version : 1.0.0.0, Built on : Apr 18 2018 03:05:35)'    (L932, T647, R1629, B882)
+["[X'moe] KrkrzExtract(Version : 1.0.0.0, Built on : Apr 18 2018 03:05:35)Dialog", 'Dialog', "[X'moe] KrkrzExtract(Version : 1.0.0.0, Built on : Apr 18 2018 03:05:35)"]
+child_window(title="[X'moe] KrkrzExtract(Version : 1.0.0.0, Built on : Apr 18 2018 03:05:35)", class_name="#32770")
+   | 
+   | Button - 'Begin Extraction'    (L969, T770, R1158, B803)
+   | ['Button', 'Begin Extraction', 'Begin ExtractionButton', 'Button0', 'Button1']
+   | child_window(title="Begin Extraction", class_name="Button")
+   | 
+   | Button - 'Stop Extraction'    (L1183, T770, R1372, B803)
+   | ['Button2', 'Stop Extraction', 'Stop ExtractionButton']
+   | child_window(title="Stop Extraction", class_name="Button")
+   | 
+   | Button - 'Exit Process'    (L1403, T770, R1592, B803)
+   | ['Exit Process', 'Button3', 'Exit ProcessButton']
+   | child_window(title="Exit Process", class_name="Button")
+   | 
+   | Progress - ''    (L971, T727, R1594, B760)
+   | ['StaticProgress', 'Progress']
+   | child_window(class_name="msctls_progress32")
+   | 
+   | GroupBox - 'Static'    (L951, T701, R1610, B815)
+   | ['Static', 'StaticGroupBox', 'GroupBox']
+   | child_window(title="Static", class_name="Button")

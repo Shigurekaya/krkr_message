@@ -1,0 +1,10 @@
+﻿skip 8 len 990
+.\.venv\Scripts\python.exe : Traceback (most recent call last):
+所在位置 C:\Users\22050\AppData\Local\Temp\ps-script-1b89cb9f-3254-47c0-b915-03a448a998d3.ps1:90 字符: 53
++ ... D:\gamedev\GAL框架\tools\lllj-extract"; .\.venv\Scripts\python.exe -c "
++                                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "<string>", line 8, in <module>
+UnicodeEncodeError: 'gbk' codec can't encode character '\uff7a' in position 8: illegal multibyte sequence

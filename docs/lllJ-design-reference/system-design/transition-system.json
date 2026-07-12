@@ -1,0 +1,81 @@
+{
+  "scripts": {
+    "kagenvtrans.tjs": [
+      "Array",
+      "AutoTrans",
+      "Charoff",
+      "Command",
+      "DefaultSync",
+      "Dictionary",
+      "DiffCommand",
+      "ExistModify",
+      "Function",
+      "Ignorecommands",
+      "KAGEnvBase",
+      "KAGEnvTrans",
+      "LinkMode",
+      "Modify",
+      "ModifyObject",
+      "ModifyRedrawProp",
+      "Msgoff",
+      "NameMap",
+      "Names",
+      "Object",
+      "ObjectCount",
+      "ObjectKeys",
+      "Param",
+      "Redraw",
+      "RedrawProp",
+      "RedrawProps",
+      "Restore",
+      "Scripts",
+      "SetRedrawProp",
+      "Store",
+      "TJS2100",
+      "TJS2D",
+      "TJS2H",
+      "TJS2L",
+      "TJS2T",
+      "TJS2h",
+      "TJS2p",
+      "TJS2t",
+      "TJS2x",
+      "Trans"
+    ],
+    "translayer.tjs": [
+      "Color",
+      "Count",
+      "DATAl",
+      "Dictionary",
+      "Height",
+      "Layer",
+      "R0fH0000",
+      "SystemBaseLayer",
+      "TJS2100",
+      "TJS2D",
+      "TJS2H",
+      "TJS2d",
+      "Threshold",
+      "TransLayer",
+      "Transition",
+      "Width",
+      "WipeLR"
+    ]
+  },
+  "systrans_ini": [
+    "D000",
+    "H00X000W00000A0",
+    "R0X00",
+    "_0H00X000W00000A0",
+    "v000000t0{000"
+  ],
+  "mask_assets": [
+    "systrans_mask.png",
+    "systrans_page.png",
+    "systrans_rev.png",
+    "systrans_rule.png"
+  ],
+  "autotrail": [
+    "autotrail_custom_trans_glitch"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "file": "translayer.tjs",
+  "size": 6444,
+  "kind": "tjs_bytecode",
+  "class_count": 17,
+  "classes": [
+    "Color",
+    "Count",
+    "DATAl",
+    "Dictionary",
+    "Height",
+    "Layer",
+    "R0fH0000",
+    "SystemBaseLayer",
+    "TJS2100",
+    "TJS2D",
+    "TJS2H",
+    "TJS2d",
+    "Threshold",
+    "TransLayer",
+    "Transition",
+    "Width",
+    "WipeLR"
+  ],
+  "modules": [],
+  "autotrails": [],
+  "commands": [],
+  "strings_total": 75
+}

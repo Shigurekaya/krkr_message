@@ -1,0 +1,21 @@
+{
+  "generated_at": "2026-07-12T12:41:14.784803+00:00",
+  "hook": null,
+  "dump_files": 474,
+  "copied_from_dump": 333,
+  "hash_mapped": {
+    "uipsd.xp3": 81,
+    "image.xp3": 18,
+    "data.xp3": 254
+  },
+  "tamago_ok": 353,
+  "tamago_fail": 0,
+  "decode_encoding_stats": {
+    "utf-16-le/yuzuex@8": 11,
+    "utf-16-le/yuzuex@6": 18,
+    "utf-16-le/yuzuex@10": 8,
+    "utf-16-le/yuzuex@12": 15,
+    "binary": 26,
+    "cp932": 1
+  }
+}

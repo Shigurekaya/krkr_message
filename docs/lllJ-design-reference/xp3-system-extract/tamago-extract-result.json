@@ -1,0 +1,2473 @@
+[
+  {
+    "archive": "uipsd.xp3",
+    "name": "autoskipmark_img.pbd",
+    "ok": true,
+    "size": 17076,
+    "path": "uipsd\\autoskipmark_img.pbd"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "autoskipmark_img__pack.tlg",
+    "ok": true,
+    "size": 90175,
+    "path": "uipsd\\autoskipmark_img__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "autoskipmark_pos.pbd",
+    "ok": true,
+    "size": 664,
+    "path": "uipsd\\autoskipmark_pos.pbd"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "bgmtitle.pbd",
+    "ok": true,
+    "size": 728,
+    "path": "uipsd\\bgmtitle.pbd"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "chapter.pbd",
+    "ok": true,
+    "size": 1130,
+    "path": "uipsd\\chapter.pbd"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "chapter__bg0.tlg",
+    "ok": true,
+    "size": 14878,
+    "path": "uipsd\\chapter__bg0.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "dialog_jp.pbd",
+    "ok": true,
+    "size": 17784,
+    "path": "uipsd\\dialog_jp.pbd"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "dialog_jp__pack.tlg",
+    "ok": true,
+    "size": 24291,
+    "path": "uipsd\\dialog_jp__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "dialog__bg0.tlg",
+    "ok": true,
+    "size": 258346,
+    "path": "uipsd\\dialog__bg0.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "dialog__pack.tlg",
+    "ok": true,
+    "size": 317464,
+    "path": "uipsd\\dialog__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "extra_cgscene_jp__pack.tlg",
+    "ok": true,
+    "size": 6669,
+    "path": "uipsd\\extra_cgscene_jp__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "extra_cgscene__bg0.tlg",
+    "ok": true,
+    "size": 438146,
+    "path": "uipsd\\extra_cgscene__bg0.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "extra_cgscene__pack.tlg",
+    "ok": true,
+    "size": 144170,
+    "path": "uipsd\\extra_cgscene__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "extra_cgview.pbd",
+    "ok": true,
+    "size": 23016,
+    "path": "uipsd\\extra_cgview.pbd"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "extra_cgview__bg0.tlg",
+    "ok": true,
+    "size": 105942,
+    "path": "uipsd\\extra_cgview__bg0.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "extra_cgview__pack.tlg",
+    "ok": true,
+    "size": 112749,
+    "path": "uipsd\\extra_cgview__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "extra_cg_jp.pbd",
+    "ok": true,
+    "size": 89082,
+    "path": "uipsd\\extra_cg_jp.pbd"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "extra_cg__pack.tlg",
+    "ok": true,
+    "size": 81341,
+    "path": "uipsd\\extra_cg__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "extra_jp__pack.tlg",
+    "ok": true,
+    "size": 14261,
+    "path": "uipsd\\extra_jp__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "animkaglayer.tjs",
+    "ok": true,
+    "size": 4300,
+    "path": "uipsd\\animkaglayer.tjs"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "extra__bg0.tlg",
+    "ok": true,
+    "size": 865753,
+    "path": "uipsd\\extra__bg0.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "extra__pack.tlg",
+    "ok": true,
+    "size": 36306,
+    "path": "uipsd\\extra__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "title_nolang.func",
+    "ok": true,
+    "size": 51,
+    "path": "uipsd\\title_nolang.func"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "autoskipmark_img.pbd",
+    "ok": true,
+    "size": 17076,
+    "path": "uipsd\\autoskipmark_img.pbd"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_01_jp.pbd",
+    "ok": true,
+    "size": 138770,
+    "path": "uipsd\\option_01_jp.pbd"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_01_jp__pack.tlg",
+    "ok": true,
+    "size": 13901,
+    "path": "uipsd\\option_01_jp__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_01__pack.tlg",
+    "ok": true,
+    "size": 346521,
+    "path": "uipsd\\option_01__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_02_jp.pbd",
+    "ok": true,
+    "size": 122288,
+    "path": "uipsd\\option_02_jp.pbd"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_02_jp__pack.tlg",
+    "ok": true,
+    "size": 29152,
+    "path": "uipsd\\option_02_jp__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_02__pack.tlg",
+    "ok": true,
+    "size": 313099,
+    "path": "uipsd\\option_02__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_03_jp.pbd",
+    "ok": true,
+    "size": 117672,
+    "path": "uipsd\\option_03_jp.pbd"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_03_jp__pack.tlg",
+    "ok": true,
+    "size": 41601,
+    "path": "uipsd\\option_03_jp__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_03__pack.tlg",
+    "ok": true,
+    "size": 329744,
+    "path": "uipsd\\option_03__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_04_jp.pbd",
+    "ok": true,
+    "size": 115170,
+    "path": "uipsd\\option_04_jp.pbd"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_04_jp__pack.tlg",
+    "ok": true,
+    "size": 41611,
+    "path": "uipsd\\option_04_jp__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_04__pack.tlg",
+    "ok": true,
+    "size": 394773,
+    "path": "uipsd\\option_04__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_05_jp.pbd",
+    "ok": true,
+    "size": 116402,
+    "path": "uipsd\\option_05_jp.pbd"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_05_jp__pack.tlg",
+    "ok": true,
+    "size": 28253,
+    "path": "uipsd\\option_05_jp__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_05__pack.tlg",
+    "ok": true,
+    "size": 688117,
+    "path": "uipsd\\option_05__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_06_jp.pbd",
+    "ok": true,
+    "size": 212968,
+    "path": "uipsd\\option_06_jp.pbd"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_06_jp__pack.tlg",
+    "ok": true,
+    "size": 30649,
+    "path": "uipsd\\option_06_jp__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_06__pack.tlg",
+    "ok": true,
+    "size": 766442,
+    "path": "uipsd\\option_06__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_07_jp.pbd",
+    "ok": true,
+    "size": 131408,
+    "path": "uipsd\\option_07_jp.pbd"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_07_jp__pack.tlg",
+    "ok": true,
+    "size": 87465,
+    "path": "uipsd\\option_07_jp__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_07__pack.tlg",
+    "ok": true,
+    "size": 322816,
+    "path": "uipsd\\option_07__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_08_jp.pbd",
+    "ok": true,
+    "size": 97178,
+    "path": "uipsd\\option_08_jp.pbd"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_08_jp__pack.tlg",
+    "ok": true,
+    "size": 19588,
+    "path": "uipsd\\option_08_jp__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_08__pack.tlg",
+    "ok": true,
+    "size": 547472,
+    "path": "uipsd\\option_08__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_09_jp.pbd",
+    "ok": true,
+    "size": 112268,
+    "path": "uipsd\\option_09_jp.pbd"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_09_jp__pack.tlg",
+    "ok": true,
+    "size": 74766,
+    "path": "uipsd\\option_09_jp__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_09__pack.tlg",
+    "ok": true,
+    "size": 534810,
+    "path": "uipsd\\option_09__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_10_jp.pbd",
+    "ok": true,
+    "size": 111978,
+    "path": "uipsd\\option_10_jp.pbd"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_10_jp__pack.tlg",
+    "ok": true,
+    "size": 3437,
+    "path": "uipsd\\option_10_jp__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_10__pack.tlg",
+    "ok": true,
+    "size": 638033,
+    "path": "uipsd\\option_10__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_cmds__pack.tlg",
+    "ok": true,
+    "size": 80798,
+    "path": "uipsd\\option_cmds__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option_jp__pack.tlg",
+    "ok": true,
+    "size": 21826,
+    "path": "uipsd\\option_jp__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option__bg0.tlg",
+    "ok": true,
+    "size": 887572,
+    "path": "uipsd\\option__bg0.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "option__pack.tlg",
+    "ok": true,
+    "size": 176899,
+    "path": "uipsd\\option__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "phonechat.pbd",
+    "ok": true,
+    "size": 10952,
+    "path": "uipsd\\phonechat.pbd"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "phonechat__bg0.tlg",
+    "ok": true,
+    "size": 106005,
+    "path": "uipsd\\phonechat__bg0.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "phonechat__pack.tlg",
+    "ok": true,
+    "size": 47130,
+    "path": "uipsd\\phonechat__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "quickmenu.pbd",
+    "ok": true,
+    "size": 56960,
+    "path": "uipsd\\quickmenu.pbd"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "quickmenu__bg0.tlg",
+    "ok": true,
+    "size": 6253,
+    "path": "uipsd\\quickmenu__bg0.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "quickmenu__pack.tlg",
+    "ok": true,
+    "size": 211411,
+    "path": "uipsd\\quickmenu__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "scnchart_jp.pbd",
+    "ok": true,
+    "size": 48922,
+    "path": "uipsd\\scnchart_jp.pbd"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "scnchart_jp__pack.tlg",
+    "ok": true,
+    "size": 8199,
+    "path": "uipsd\\scnchart_jp__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "scnchart__bg0.tlg",
+    "ok": true,
+    "size": 545952,
+    "path": "uipsd\\scnchart__bg0.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "scnchart__pack.tlg",
+    "ok": true,
+    "size": 574410,
+    "path": "uipsd\\scnchart__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "select.pbd",
+    "ok": true,
+    "size": 12568,
+    "path": "uipsd\\select.pbd"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "title_jp.pbd",
+    "ok": true,
+    "size": 25990,
+    "path": "uipsd\\title_jp.pbd"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "title_jp__pack.tlg",
+    "ok": true,
+    "size": 221208,
+    "path": "uipsd\\title_jp__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "title__bg0.tlg",
+    "ok": true,
+    "size": 11800,
+    "path": "uipsd\\title__bg0.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "title__pack.tlg",
+    "ok": true,
+    "size": 34011,
+    "path": "uipsd\\title__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "touchuibar.pbd",
+    "ok": true,
+    "size": 35124,
+    "path": "uipsd\\touchuibar.pbd"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "touchuibar__bg0.tlg",
+    "ok": true,
+    "size": 10101,
+    "path": "uipsd\\touchuibar__bg0.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "touchuibar__pack.tlg",
+    "ok": true,
+    "size": 48944,
+    "path": "uipsd\\touchuibar__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "voicebar.pbd",
+    "ok": true,
+    "size": 5664,
+    "path": "uipsd\\voicebar.pbd"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "voicebar__pack.tlg",
+    "ok": true,
+    "size": 14197,
+    "path": "uipsd\\voicebar__pack.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "window.pbd",
+    "ok": true,
+    "size": 3094,
+    "path": "uipsd\\window.pbd"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "window__bg0.tlg",
+    "ok": true,
+    "size": 202,
+    "path": "uipsd\\window__bg0.tlg"
+  },
+  {
+    "archive": "uipsd.xp3",
+    "name": "window__pack.tlg",
+    "ok": true,
+    "size": 72780,
+    "path": "uipsd\\window__pack.tlg"
+  },
+  {
+    "archive": "image.xp3",
+    "name": "attention.png",
+    "ok": true,
+    "size": 2505116,
+    "path": "image\\attention.png"
+  },
+  {
+    "archive": "image.xp3",
+    "name": "autoskipmark.asd",
+    "ok": true,
+    "size": 3033,
+    "path": "image\\autoskipmark.asd"
+  },
+  {
+    "archive": "image.xp3",
+    "name": "autoskipmark.png",
+    "ok": true,
+    "size": 1562,
+    "path": "image\\autoskipmark.png"
+  },
+  {
+    "archive": "image.xp3",
+    "name": "sqscrmask.png",
+    "ok": true,
+    "size": 226474,
+    "path": "image\\sqscrmask.png"
+  },
+  {
+    "archive": "image.xp3",
+    "name": "systrans_mask.png",
+    "ok": true,
+    "size": 132,
+    "path": "image\\systrans_mask.png"
+  },
+  {
+    "archive": "image.xp3",
+    "name": "systrans_page.png",
+    "ok": true,
+    "size": 104,
+    "path": "image\\systrans_page.png"
+  },
+  {
+    "archive": "image.xp3",
+    "name": "systrans_rev.png",
+    "ok": true,
+    "size": 744,
+    "path": "image\\systrans_rev.png"
+  },
+  {
+    "archive": "image.xp3",
+    "name": "systrans_rule.png",
+    "ok": true,
+    "size": 984,
+    "path": "image\\systrans_rule.png"
+  },
+  {
+    "archive": "image.xp3",
+    "name": "title_bg0.png",
+    "ok": true,
+    "size": 2568799,
+    "path": "image\\title_bg0.png"
+  },
+  {
+    "archive": "image.xp3",
+    "name": "title_bg1.png",
+    "ok": true,
+    "size": 1912894,
+    "path": "image\\title_bg1.png"
+  },
+  {
+    "archive": "image.xp3",
+    "name": "title_bg2.png",
+    "ok": true,
+    "size": 1795104,
+    "path": "image\\title_bg2.png"
+  },
+  {
+    "archive": "image.xp3",
+    "name": "title_bg3.png",
+    "ok": true,
+    "size": 1587092,
+    "path": "image\\title_bg3.png"
+  },
+  {
+    "archive": "image.xp3",
+    "name": "title_bg4.png",
+    "ok": true,
+    "size": 1765025,
+    "path": "image\\title_bg4.png"
+  },
+  {
+    "archive": "image.xp3",
+    "name": "title_bg5.png",
+    "ok": true,
+    "size": 1871851,
+    "path": "image\\title_bg5.png"
+  },
+  {
+    "archive": "image.xp3",
+    "name": "title_bg6.png",
+    "ok": true,
+    "size": 1803762,
+    "path": "image\\title_bg6.png"
+  },
+  {
+    "archive": "image.xp3",
+    "name": "title_bg7.png",
+    "ok": true,
+    "size": 2719310,
+    "path": "image\\title_bg7.png"
+  },
+  {
+    "archive": "image.xp3",
+    "name": "title_bg_trial.png",
+    "ok": true,
+    "size": 2126534,
+    "path": "image\\title_bg_trial.png"
+  },
+  {
+    "archive": "image.xp3",
+    "name": "title_logo.png",
+    "ok": true,
+    "size": 93820,
+    "path": "image\\title_logo.png"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "appconfig.tjs",
+    "ok": true,
+    "size": 1087,
+    "path": "data\\appconfig.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "datefont_18.tft",
+    "ok": true,
+    "size": 10668,
+    "path": "data\\datefont_18.tft"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "deffontmap.tjs",
+    "ok": true,
+    "size": 3519,
+    "path": "data\\deffontmap.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "embfontlist.tjs",
+    "ok": true,
+    "size": 8621,
+    "path": "data\\embfontlist.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "font1_39.tft",
+    "ok": true,
+    "size": 1658404,
+    "path": "data\\font1_39.tft"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "headfont_22.tft",
+    "ok": true,
+    "size": 619056,
+    "path": "data\\headfont_22.tft"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "headfont_24.tft",
+    "ok": true,
+    "size": 678536,
+    "path": "data\\headfont_24.tft"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "headfont_36.tft",
+    "ok": true,
+    "size": 1071344,
+    "path": "data\\headfont_36.tft"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "headfont_atlas.png",
+    "ok": true,
+    "size": 3632653,
+    "path": "data\\headfont_atlas.png"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "headfont_atlas.tjs",
+    "ok": true,
+    "size": 135952,
+    "path": "data\\headfont_atlas.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "keyfont_14.tft",
+    "ok": true,
+    "size": 328960,
+    "path": "data\\keyfont_14.tft"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "keyfont_atlas.png",
+    "ok": true,
+    "size": 719603,
+    "path": "data\\keyfont_atlas.png"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "keyfont_atlas.tjs",
+    "ok": true,
+    "size": 29092,
+    "path": "data\\keyfont_atlas.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "Kosugi-LICENSE.txt",
+    "ok": true,
+    "size": 20711,
+    "path": "data\\Kosugi-LICENSE.txt"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "Kosugi-NOTICE.txt",
+    "ok": true,
+    "size": 1435,
+    "path": "data\\Kosugi-NOTICE.txt"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "kosugi-regular.ttf",
+    "ok": true,
+    "size": 1918536,
+    "path": "data\\kosugi-regular.ttf"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "kosugimaru-regular.ttf",
+    "ok": true,
+    "size": 2558264,
+    "path": "data\\kosugimaru-regular.ttf"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "numfont2_atlas.png",
+    "ok": true,
+    "size": 48815,
+    "path": "data\\numfont2_atlas.png"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "numfont2_atlas.tjs",
+    "ok": true,
+    "size": 5354,
+    "path": "data\\numfont2_atlas.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "numfont_atlas.png",
+    "ok": true,
+    "size": 50209,
+    "path": "data\\numfont_atlas.png"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "numfont_atlas.tjs",
+    "ok": true,
+    "size": 5353,
+    "path": "data\\numfont_atlas.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "otherfonts-LICENSE.txt",
+    "ok": true,
+    "size": 9607,
+    "path": "data\\otherfonts-LICENSE.txt"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "SourceHanSansAndSerif-LICENSE.txt",
+    "ok": true,
+    "size": 8791,
+    "path": "data\\SourceHanSansAndSerif-LICENSE.txt"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "SourceHanSansAndSerif-NOTICE.txt",
+    "ok": true,
+    "size": 359,
+    "path": "data\\SourceHanSansAndSerif-NOTICE.txt"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "sourcehansansjp-bold.otf",
+    "ok": true,
+    "size": 4631480,
+    "path": "data\\sourcehansansjp-bold.otf"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "sourcehansansjp-heavy.otf",
+    "ok": true,
+    "size": 4807164,
+    "path": "data\\sourcehansansjp-heavy.otf"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "sourcehansansjp-regular.otf",
+    "ok": true,
+    "size": 4480124,
+    "path": "data\\sourcehansansjp-regular.otf"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "sourcehanserifjp-bold.otf",
+    "ok": true,
+    "size": 6445704,
+    "path": "data\\sourcehanserifjp-bold.otf"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "sourcehanserifjp-heavy.otf",
+    "ok": true,
+    "size": 6348180,
+    "path": "data\\sourcehanserifjp-heavy.otf"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "sysfont_16.tft",
+    "ok": true,
+    "size": 409772,
+    "path": "data\\sysfont_16.tft"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "sysfont_18.tft",
+    "ok": true,
+    "size": 461768,
+    "path": "data\\sysfont_18.tft"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "sysfont_20.tft",
+    "ok": true,
+    "size": 529808,
+    "path": "data\\sysfont_20.tft"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "sysfont_22.tft",
+    "ok": true,
+    "size": 612532,
+    "path": "data\\sysfont_22.tft"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "k2compat.tjs",
+    "ok": true,
+    "size": 19124,
+    "path": "data\\k2compat.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "k2compat_modeless.tjs",
+    "ok": true,
+    "size": 13312,
+    "path": "data\\k2compat_modeless.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "k2compat_pad.tjs",
+    "ok": true,
+    "size": 1792,
+    "path": "data\\k2compat_pad.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "k2compat_padcommon.tjs",
+    "ok": true,
+    "size": 21524,
+    "path": "data\\k2compat_padcommon.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "imagepropmap.txt",
+    "ok": true,
+    "size": 271,
+    "path": "data\\imagepropmap.txt"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "help_flow.txt",
+    "ok": true,
+    "size": 2011,
+    "path": "data\\help_flow.txt"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "help_opt.txt",
+    "ok": true,
+    "size": 30715,
+    "path": "data\\help_opt.txt"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "anim_title.ini",
+    "ok": true,
+    "size": 1187,
+    "path": "data\\anim_title.ini"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "cginipos.txt",
+    "ok": true,
+    "size": 501,
+    "path": "data\\cginipos.txt"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "charvoice.csv",
+    "ok": true,
+    "size": 7015,
+    "path": "data\\charvoice.csv"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "config.tjs",
+    "ok": true,
+    "size": 52307,
+    "path": "data\\config.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "custom.ks",
+    "ok": true,
+    "size": 31489,
+    "path": "data\\custom.ks"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "custom.tjs",
+    "ok": true,
+    "size": 23221,
+    "path": "data\\custom.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "imageevalmap.csv",
+    "ok": true,
+    "size": 45785,
+    "path": "data\\imageevalmap.csv"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "imagemulti.txt",
+    "ok": true,
+    "size": 293,
+    "path": "data\\imagemulti.txt"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "imagenamemap.txt",
+    "ok": true,
+    "size": 1021,
+    "path": "data\\imagenamemap.txt"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "imagepropmap.txt",
+    "ok": true,
+    "size": 271,
+    "path": "data\\imagepropmap.txt"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "BGM40.mchx",
+    "ok": true,
+    "size": 77,
+    "path": "data\\BGM40.mchx"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "passivecomp.tjs",
+    "ok": true,
+    "size": 1555,
+    "path": "data\\passivecomp.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "simpleanim.tjs",
+    "ok": true,
+    "size": 64956,
+    "path": "data\\simpleanim.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "soundlist.csv",
+    "ok": true,
+    "size": 4749,
+    "path": "data\\soundlist.csv"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "storages.tjs",
+    "ok": true,
+    "size": 3419,
+    "path": "data\\storages.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "sysse.ini",
+    "ok": true,
+    "size": 18529,
+    "path": "data\\sysse.ini"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "systrans.ini",
+    "ok": true,
+    "size": 1503,
+    "path": "data\\systrans.ini"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "uichart.tjs",
+    "ok": true,
+    "size": 47836,
+    "path": "data\\uichart.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "uioption.tjs",
+    "ok": true,
+    "size": 74616,
+    "path": "data\\uioption.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "uiparts.tjs",
+    "ok": true,
+    "size": 34224,
+    "path": "data\\uiparts.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "uiqconfpop.tjs",
+    "ok": true,
+    "size": 57072,
+    "path": "data\\uiqconfpop.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "uisupport.tjs",
+    "ok": true,
+    "size": 16324,
+    "path": "data\\uisupport.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "uisystem.tjs",
+    "ok": true,
+    "size": 60628,
+    "path": "data\\uisystem.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "uitouch.tjs",
+    "ok": true,
+    "size": 33208,
+    "path": "data\\uitouch.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "used2d.tjs",
+    "ok": true,
+    "size": 4500,
+    "path": "data\\used2d.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "yuzu_default.tjs",
+    "ok": true,
+    "size": 31685,
+    "path": "data\\yuzu_default.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "yuzu_patchdetect.tjs",
+    "ok": true,
+    "size": 11531,
+    "path": "data\\yuzu_patchdetect.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "m2logo.mtn",
+    "ok": true,
+    "size": 102957,
+    "path": "data\\m2logo.mtn"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "title_bg.mtn",
+    "ok": true,
+    "size": 32404171,
+    "path": "data\\title_bg.mtn"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "title_bg7.mtn",
+    "ok": true,
+    "size": 9043942,
+    "path": "data\\title_bg7.mtn"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "title_bg_trial.mtn",
+    "ok": true,
+    "size": 10426997,
+    "path": "data\\title_bg_trial.mtn"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "yuzulogo.mtn",
+    "ok": true,
+    "size": 311719,
+    "path": "data\\yuzulogo.mtn"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "【システム】カーソル１.ogg",
+    "ok": true,
+    "size": 6020,
+    "path": "data\\【システム】カーソル１.ogg"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "affinesourceasd.tjs",
+    "ok": true,
+    "size": 13532,
+    "path": "data\\affinesourceasd.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "macro.ks",
+    "ok": true,
+    "size": 22471,
+    "path": "data\\macro.ks"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "BGM74.mchx",
+    "ok": true,
+    "size": 85,
+    "path": "data\\BGM74.mchx"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "Kosugi-LICENSE.txt",
+    "ok": true,
+    "size": 20711,
+    "path": "data\\Kosugi-LICENSE.txt"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "【システム】カーソル１.ogg",
+    "ok": true,
+    "size": 6020,
+    "path": "data\\【システム】カーソル１.ogg"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "【システム】キャンセル.ogg",
+    "ok": true,
+    "size": 9461,
+    "path": "data\\【システム】キャンセル.ogg"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "【システム】切替１.ogg",
+    "ok": true,
+    "size": 12088,
+    "path": "data\\【システム】切替１.ogg"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "【システム】切替２.ogg",
+    "ok": true,
+    "size": 11419,
+    "path": "data\\【システム】切替２.ogg"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "【システム】決定１.ogg",
+    "ok": true,
+    "size": 15680,
+    "path": "data\\【システム】決定１.ogg"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "【システム】決定３.ogg",
+    "ok": true,
+    "size": 18390,
+    "path": "data\\【システム】決定３.ogg"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "startup.tjs",
+    "ok": true,
+    "size": 316,
+    "path": "data\\startup.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "afterinit.tjs",
+    "ok": true,
+    "size": 3504,
+    "path": "data\\afterinit.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "append_init.tjs",
+    "ok": true,
+    "size": 26556,
+    "path": "data\\append_init.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "autoskipmark.tjs",
+    "ok": true,
+    "size": 7968,
+    "path": "data\\autoskipmark.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "backlog.tjs",
+    "ok": true,
+    "size": 92716,
+    "path": "data\\backlog.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "bgmtitleindicator.tjs",
+    "ok": true,
+    "size": 22900,
+    "path": "data\\bgmtitleindicator.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "cgmode.ks",
+    "ok": true,
+    "size": 4349,
+    "path": "data\\cgmode.ks"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "cgmode.tjs",
+    "ok": true,
+    "size": 54384,
+    "path": "data\\cgmode.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "cgview.tjs",
+    "ok": true,
+    "size": 33472,
+    "path": "data\\cgview.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "colorspace.tjs",
+    "ok": true,
+    "size": 24296,
+    "path": "data\\colorspace.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "dragutil.tjs",
+    "ok": true,
+    "size": 19068,
+    "path": "data\\dragutil.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "drawtextparam.tjs",
+    "ok": true,
+    "size": 14140,
+    "path": "data\\drawtextparam.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "embfontloader.tjs",
+    "ok": true,
+    "size": 8508,
+    "path": "data\\embfontloader.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "end.ks",
+    "ok": true,
+    "size": 2661,
+    "path": "data\\end.ks"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "exchview.tjs",
+    "ok": true,
+    "size": 98512,
+    "path": "data\\exchview.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "exgallery.tjs",
+    "ok": true,
+    "size": 99932,
+    "path": "data\\exgallery.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "exgamepad.tjs",
+    "ok": true,
+    "size": 34160,
+    "path": "data\\exgamepad.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "first.ks",
+    "ok": true,
+    "size": 3565,
+    "path": "data\\first.ks"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "fontalias.tjs",
+    "ok": true,
+    "size": 7236,
+    "path": "data\\fontalias.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "gamecont.tjs",
+    "ok": true,
+    "size": 10308,
+    "path": "data\\gamecont.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "gesture.tjs",
+    "ok": true,
+    "size": 52080,
+    "path": "data\\gesture.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "helptextman.tjs",
+    "ok": true,
+    "size": 37824,
+    "path": "data\\helptextman.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "kagenvminiplayer.tjs",
+    "ok": true,
+    "size": 9388,
+    "path": "data\\kagenvminiplayer.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "hsvcpick.tjs",
+    "ok": true,
+    "size": 37920,
+    "path": "data\\hsvcpick.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "keybinder.tjs",
+    "ok": true,
+    "size": 38740,
+    "path": "data\\keybinder.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "mixinclass.tjs",
+    "ok": true,
+    "size": 13764,
+    "path": "data\\mixinclass.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "movieaudiosample.tjs",
+    "ok": true,
+    "size": 20424,
+    "path": "data\\movieaudiosample.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "mscurautohide.tjs",
+    "ok": true,
+    "size": 5304,
+    "path": "data\\mscurautohide.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "msghack.tjs",
+    "ok": true,
+    "size": 70636,
+    "path": "data\\msghack.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "myhistorylayer.tjs",
+    "ok": true,
+    "size": 38280,
+    "path": "data\\myhistorylayer.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "mymapselectlayer.tjs",
+    "ok": true,
+    "size": 11004,
+    "path": "data\\mymapselectlayer.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "myyesnodialog.tjs",
+    "ok": true,
+    "size": 24432,
+    "path": "data\\myyesnodialog.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "name.tjs",
+    "ok": true,
+    "size": 11956,
+    "path": "data\\name.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "nocfchkdialog.tjs",
+    "ok": true,
+    "size": 14204,
+    "path": "data\\nocfchkdialog.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "option.ks",
+    "ok": true,
+    "size": 3233,
+    "path": "data\\option.ks"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "option.tjs",
+    "ok": true,
+    "size": 134996,
+    "path": "data\\option.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "override.tjs",
+    "ok": true,
+    "size": 139912,
+    "path": "data\\override.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "pagebase.tjs",
+    "ok": true,
+    "size": 19348,
+    "path": "data\\pagebase.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "prerenderfontex.tjs",
+    "ok": true,
+    "size": 35892,
+    "path": "data\\prerenderfontex.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "qlpopup.tjs",
+    "ok": true,
+    "size": 18192,
+    "path": "data\\qlpopup.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "quickmenu.tjs",
+    "ok": true,
+    "size": 35004,
+    "path": "data\\quickmenu.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "rendermsgwin.tjs",
+    "ok": true,
+    "size": 27512,
+    "path": "data\\rendermsgwin.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "rotatesave.tjs",
+    "ok": true,
+    "size": 6188,
+    "path": "data\\rotatesave.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "saveload.tjs",
+    "ok": true,
+    "size": 149128,
+    "path": "data\\saveload.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "scenemode.tjs",
+    "ok": true,
+    "size": 9412,
+    "path": "data\\scenemode.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "scnchart.ks",
+    "ok": true,
+    "size": 7345,
+    "path": "data\\scnchart.ks"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "scnchart.tjs",
+    "ok": true,
+    "size": 32800,
+    "path": "data\\scnchart.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "scnchart_ui.tjs",
+    "ok": true,
+    "size": 128384,
+    "path": "data\\scnchart_ui.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "scnchart_ui_sel.tjs",
+    "ok": true,
+    "size": 16480,
+    "path": "data\\scnchart_ui_sel.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "scnchart_ui_smp.tjs",
+    "ok": true,
+    "size": 20152,
+    "path": "data\\scnchart_ui_smp.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "scrollutil.tjs",
+    "ok": true,
+    "size": 127908,
+    "path": "data\\scrollutil.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "showdate.tjs",
+    "ok": true,
+    "size": 14724,
+    "path": "data\\showdate.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "soundmode.tjs",
+    "ok": true,
+    "size": 24060,
+    "path": "data\\soundmode.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "speech.tjs",
+    "ok": true,
+    "size": 26484,
+    "path": "data\\speech.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "sqscr.tjs",
+    "ok": true,
+    "size": 15292,
+    "path": "data\\sqscr.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "stayontop.tjs",
+    "ok": true,
+    "size": 2752,
+    "path": "data\\stayontop.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "stopdeactive.tjs",
+    "ok": true,
+    "size": 9764,
+    "path": "data\\stopdeactive.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "system.tjs",
+    "ok": true,
+    "size": 117724,
+    "path": "data\\system.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "sysvoice.tjs",
+    "ok": true,
+    "size": 23184,
+    "path": "data\\sysvoice.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "title.ks",
+    "ok": true,
+    "size": 2489,
+    "path": "data\\title.ks"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "touchui.tjs",
+    "ok": true,
+    "size": 56632,
+    "path": "data\\touchui.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "voiceeffect.tjs",
+    "ok": true,
+    "size": 49116,
+    "path": "data\\voiceeffect.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "voicemode.tjs",
+    "ok": true,
+    "size": 88716,
+    "path": "data\\voicemode.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "voiceprogress.tjs",
+    "ok": true,
+    "size": 12976,
+    "path": "data\\voiceprogress.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "win11depend.tjs",
+    "ok": true,
+    "size": 4376,
+    "path": "data\\win11depend.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "action.tjs",
+    "ok": true,
+    "size": 70536,
+    "path": "data\\action.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "affinelayer.tjs",
+    "ok": true,
+    "size": 42684,
+    "path": "data\\affinelayer.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "affinematrix.tjs",
+    "ok": true,
+    "size": 14616,
+    "path": "data\\affinematrix.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "affinesource.tjs",
+    "ok": true,
+    "size": 23196,
+    "path": "data\\affinesource.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "affinesourceasd.tjs",
+    "ok": true,
+    "size": 13532,
+    "path": "data\\affinesourceasd.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "affinesourcebitmap.tjs",
+    "ok": true,
+    "size": 18396,
+    "path": "data\\affinesourcebitmap.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "affinesourcebmpbase.tjs",
+    "ok": true,
+    "size": 14692,
+    "path": "data\\affinesourcebmpbase.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "affinesourceflip.tjs",
+    "ok": true,
+    "size": 9476,
+    "path": "data\\affinesourceflip.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "affinesourceimage.tjs",
+    "ok": true,
+    "size": 13336,
+    "path": "data\\affinesourceimage.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "affinesourcemotion.tjs",
+    "ok": true,
+    "size": 38412,
+    "path": "data\\affinesourcemotion.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "affinesourcemultitile.tjs",
+    "ok": true,
+    "size": 8184,
+    "path": "data\\affinesourcemultitile.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "affinesourcenoise.tjs",
+    "ok": true,
+    "size": 2384,
+    "path": "data\\affinesourcenoise.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "affinesourcepsd.tjs",
+    "ok": true,
+    "size": 6356,
+    "path": "data\\affinesourcepsd.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "affinesourcestand.tjs",
+    "ok": true,
+    "size": 22804,
+    "path": "data\\affinesourcestand.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "affinesourcetile.tjs",
+    "ok": true,
+    "size": 2772,
+    "path": "data\\affinesourcetile.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "animationlayer.tjs",
+    "ok": true,
+    "size": 25304,
+    "path": "data\\animationlayer.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "animkaglayer.tjs",
+    "ok": true,
+    "size": 4300,
+    "path": "data\\animkaglayer.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "autoface.tjs",
+    "ok": true,
+    "size": 13896,
+    "path": "data\\autoface.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "baselayer.tjs",
+    "ok": true,
+    "size": 16192,
+    "path": "data\\baselayer.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "bgm.tjs",
+    "ok": true,
+    "size": 17824,
+    "path": "data\\bgm.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "buttonlayer.tjs",
+    "ok": true,
+    "size": 36836,
+    "path": "data\\buttonlayer.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "conductor.tjs",
+    "ok": true,
+    "size": 20108,
+    "path": "data\\conductor.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "defaultmover.tjs",
+    "ok": true,
+    "size": 6592,
+    "path": "data\\defaultmover.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "dialoglayer.tjs",
+    "ok": true,
+    "size": 35116,
+    "path": "data\\dialoglayer.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "editlayer.tjs",
+    "ok": true,
+    "size": 26948,
+    "path": "data\\editlayer.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "emotion.tjs",
+    "ok": true,
+    "size": 9400,
+    "path": "data\\emotion.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "enginerev.ini",
+    "ok": true,
+    "size": 163,
+    "path": "data\\enginerev.ini"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "genericflip.tjs",
+    "ok": true,
+    "size": 5156,
+    "path": "data\\genericflip.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "gfx_amovie.tjs",
+    "ok": true,
+    "size": 5476,
+    "path": "data\\gfx_amovie.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "gfx_movie.tjs",
+    "ok": true,
+    "size": 10804,
+    "path": "data\\gfx_movie.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "gfx_moviese.tjs",
+    "ok": true,
+    "size": 2692,
+    "path": "data\\gfx_moviese.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "gfx_particle.tjs",
+    "ok": true,
+    "size": 12964,
+    "path": "data\\gfx_particle.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "kagenvsound.tjs",
+    "ok": true,
+    "size": 5276,
+    "path": "data\\kagenvsound.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "initialize.tjs",
+    "ok": true,
+    "size": 32736,
+    "path": "data\\initialize.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "kagenvbase.tjs",
+    "ok": true,
+    "size": 37864,
+    "path": "data\\kagenvbase.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "kagenvhistorydata.tjs",
+    "ok": true,
+    "size": 9940,
+    "path": "data\\kagenvhistorydata.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "kagenvimage.tjs",
+    "ok": true,
+    "size": 100820,
+    "path": "data\\kagenvimage.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "kagenvimagemapperstage.tjs",
+    "ok": true,
+    "size": 7220,
+    "path": "data\\kagenvimagemapperstage.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "kagenvimagemapperstand.tjs",
+    "ok": true,
+    "size": 16552,
+    "path": "data\\kagenvimagemapperstand.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "kagenvironment.tjs",
+    "ok": true,
+    "size": 89216,
+    "path": "data\\kagenvironment.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "kagenvminiplayer.tjs",
+    "ok": true,
+    "size": 9388,
+    "path": "data\\kagenvminiplayer.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "kagenvminiplayerlayer.tjs",
+    "ok": true,
+    "size": 10120,
+    "path": "data\\kagenvminiplayerlayer.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "kagenvmusic.tjs",
+    "ok": true,
+    "size": 11884,
+    "path": "data\\kagenvmusic.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "kagenvplayer.tjs",
+    "ok": true,
+    "size": 48720,
+    "path": "data\\kagenvplayer.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "kagenvsound.tjs",
+    "ok": true,
+    "size": 5276,
+    "path": "data\\kagenvsound.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "kagenvtrans.tjs",
+    "ok": true,
+    "size": 9644,
+    "path": "data\\kagenvtrans.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "kaglayer.tjs",
+    "ok": true,
+    "size": 5228,
+    "path": "data\\kaglayer.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "langrender.tjs",
+    "ok": true,
+    "size": 5012,
+    "path": "data\\langrender.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "layerex.tjs",
+    "ok": true,
+    "size": 7808,
+    "path": "data\\layerex.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "linemode.tjs",
+    "ok": true,
+    "size": 29760,
+    "path": "data\\linemode.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "linemodeex.tjs",
+    "ok": true,
+    "size": 29144,
+    "path": "data\\linemodeex.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "loopvoice.tjs",
+    "ok": true,
+    "size": 2612,
+    "path": "data\\loopvoice.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "mainwindow.tjs",
+    "ok": true,
+    "size": 474420,
+    "path": "data\\mainwindow.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "mapselectlayer.tjs",
+    "ok": true,
+    "size": 13160,
+    "path": "data\\mapselectlayer.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "menus.tjs",
+    "ok": true,
+    "size": 33752,
+    "path": "data\\menus.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "messagelayer.tjs",
+    "ok": true,
+    "size": 124624,
+    "path": "data\\messagelayer.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "motion.tjs",
+    "ok": true,
+    "size": 3116,
+    "path": "data\\motion.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "moviesecontroller.tjs",
+    "ok": true,
+    "size": 9640,
+    "path": "data\\moviesecontroller.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "multiresolution.tjs",
+    "ok": true,
+    "size": 2724,
+    "path": "data\\multiresolution.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "plugin.tjs",
+    "ok": true,
+    "size": 1428,
+    "path": "data\\plugin.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "psdlayer.tjs",
+    "ok": true,
+    "size": 40780,
+    "path": "data\\psdlayer.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "se.tjs",
+    "ok": true,
+    "size": 8012,
+    "path": "data\\se.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "selectlayer.tjs",
+    "ok": true,
+    "size": 30752,
+    "path": "data\\selectlayer.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "sliderlayer.tjs",
+    "ok": true,
+    "size": 28864,
+    "path": "data\\sliderlayer.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "standimage.tjs",
+    "ok": true,
+    "size": 24428,
+    "path": "data\\standimage.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "standinformation.tjs",
+    "ok": true,
+    "size": 22176,
+    "path": "data\\standinformation.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "standlayer.tjs",
+    "ok": true,
+    "size": 13136,
+    "path": "data\\standlayer.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "subtitlelayer.tjs",
+    "ok": true,
+    "size": 7268,
+    "path": "data\\subtitlelayer.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "tagtextconverter.tjs",
+    "ok": true,
+    "size": 19040,
+    "path": "data\\tagtextconverter.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "tagtextconverterex.tjs",
+    "ok": true,
+    "size": 7068,
+    "path": "data\\tagtextconverterex.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "textrender.tjs",
+    "ok": true,
+    "size": 15360,
+    "path": "data\\textrender.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "texttagconverter.tjs",
+    "ok": true,
+    "size": 10248,
+    "path": "data\\texttagconverter.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "translayer.tjs",
+    "ok": true,
+    "size": 6444,
+    "path": "data\\translayer.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "uiloader.tjs",
+    "ok": true,
+    "size": 88448,
+    "path": "data\\uiloader.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "showdate.tjs",
+    "ok": true,
+    "size": 14724,
+    "path": "data\\showdate.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "updateregion.tjs",
+    "ok": true,
+    "size": 3496,
+    "path": "data\\updateregion.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "utils.tjs",
+    "ok": true,
+    "size": 49672,
+    "path": "data\\utils.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "voice.tjs",
+    "ok": true,
+    "size": 12784,
+    "path": "data\\voice.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "win32dialog.tjs",
+    "ok": true,
+    "size": 65612,
+    "path": "data\\win32dialog.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "world.tjs",
+    "ok": true,
+    "size": 241748,
+    "path": "data\\world.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "yaml.tjs",
+    "ok": true,
+    "size": 12580,
+    "path": "data\\yaml.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "yesnodialog.tjs",
+    "ok": true,
+    "size": 5360,
+    "path": "data\\yesnodialog.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "affinesourcebmpbase.tjs",
+    "ok": true,
+    "size": 14692,
+    "path": "data\\affinesourcebmpbase.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "otherfonts-LICENSE.txt",
+    "ok": true,
+    "size": 9607,
+    "path": "data\\otherfonts-LICENSE.txt"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "myyesnodialog.tjs",
+    "ok": true,
+    "size": 24432,
+    "path": "data\\myyesnodialog.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "scnchart_ui_sel.tjs",
+    "ok": true,
+    "size": 16480,
+    "path": "data\\scnchart_ui_sel.tjs"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "thum_ev101.png",
+    "ok": true,
+    "size": 93784,
+    "path": "data\\thum_ev101.png"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "thum_ev102.png",
+    "ok": true,
+    "size": 87353,
+    "path": "data\\thum_ev102.png"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "thum_ev103.png",
+    "ok": true,
+    "size": 89384,
+    "path": "data\\thum_ev103.png"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "thum_ev104.png",
+    "ok": true,
+    "size": 90270,
+    "path": "data\\thum_ev104.png"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "thum_ev105.png",
+    "ok": true,
+    "size": 94282,
+    "path": "data\\thum_ev105.png"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "thum_ev106.png",
+    "ok": true,
+    "size": 80192,
+    "path": "data\\thum_ev106.png"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "thum_ev107.png",
+    "ok": true,
+    "size": 81776,
+    "path": "data\\thum_ev107.png"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "thum_ev108.png",
+    "ok": true,
+    "size": 79387,
+    "path": "data\\thum_ev108.png"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "thum_ev109.png",
+    "ok": true,
+    "size": 92619,
+    "path": "data\\thum_ev109.png"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "thum_ev110.png",
+    "ok": true,
+    "size": 97556,
+    "path": "data\\thum_ev110.png"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "thum_ev111.png",
+    "ok": true,
+    "size": 91077,
+    "path": "data\\thum_ev111.png"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "thum_ev151.png",
+    "ok": true,
+    "size": 69009,
+    "path": "data\\thum_ev151.png"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "thum_ev152.png",
+    "ok": true,
+    "size": 71211,
+    "path": "data\\thum_ev152.png"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "thum_ev153.png",
+    "ok": true,
+    "size": 77146,
+    "path": "data\\thum_ev153.png"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "thum_ev154.png",
+    "ok": true,
+    "size": 78082,
+    "path": "data\\thum_ev154.png"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "thum_ev155.png",
+    "ok": true,
+    "size": 85139,
+    "path": "data\\thum_ev155.png"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "thum_ev156.png",
+    "ok": true,
+    "size": 87299,
+    "path": "data\\thum_ev156.png"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "thum_ev158.png",
+    "ok": true,
+    "size": 69004,
+    "path": "data\\thum_ev158.png"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "thum_ev159.png",
+    "ok": true,
+    "size": 91701,
+    "path": "data\\thum_ev159.png"
+  },
+  {
+    "archive": "data.xp3",
+    "name": "currev_patch.ini",
+    "ok": true,
+    "size": 21,
+    "path": "data\\currev_patch.ini"
+  }
+]

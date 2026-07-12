@@ -1,0 +1,769 @@
+// EditLayer.tjs - 单行编辑控制层
+// Copyright (C)2001-2009, W.Dee and contributors  可自由修改与再分发
+
+/*
+作为单行编辑控件使用的层。
+
+格式  new EditLayer(<window>, <parent>)
+*/
+
+class EditLayer extends KAGLayer
+{
+	var Edit_text = ""; // 正在编辑的文本
+	var Edit_selStart = 0; // 光标位置
+	var Edit_selAnchor = 0; // 选区锚点位置
+	var Edit_scrollPos = 0; // 当前显示的最左侧字符位置
+	var Edit_caretLayer; // 插入光标用层
+	var Edit_color = clWindow; // 背景色
+	var Edit_antialiased = true; // 是否启用抗锯齿
+	var Edit_opacity = 192; // 不透明度
+	var Edit_maxChars = 0; // 最大字符数（0 = 不限）
+	var Edit_textColor = clWindowText;
+	var Edit_blinkTimer;
+	var Edit_vertical = false;
+	var Edit_mouseDown = false;
+
+	var Edit_selLength = 0; // 已废弃。
+							// 请不要使用。
+
+	function EditLayer(win, par, vert = false)
+	{
+		super.KAGLayer(win, par);
+
+		Edit_vertical = vert;
+
+		hitType = htMask;
+		hitThreshold = 0; // 全域鼠标事件不透明
+		focusable = true; // 可接收焦点
+		useAttention = true; // 使用注视点
+
+		Edit_caretLayer = new global.Layer(win, this);
+		Edit_caretLayer.hitType = htMask;
+		Edit_caretLayer.hitThreshold = 256; // 鼠标事件完全透明
+		resizeCaret();
+
+		imeMode = imDontCare; // 允许使用 IME
+
+		// 准备闪烁用定时器
+		Edit_blinkTimer = new Timer(onBlink, '');
+
+		cursor = vert ? crHBeam : crIBeam;
+
+		update();
+	}
+
+	function finalize()
+	{
+		invalidate Edit_caretLayer;
+		invalidate Edit_blinkTimer;
+		super.finalize(...);
+	}
+
+	function assign(src)
+	{
+		assignImages(src, true);
+		Edit_text = src.Edit_text;
+		Edit_selStart = src.Edit_selStart;
+		Edit_selAnchor = src.Edit_selAnchor;
+		Edit_scrollPos = src.Edit_scrollPos;
+		Edit_color = src.Edit_color;
+		Edit_textColor = src.Edit_textColor;
+		Edit_antialiased = src.Edit_antialiased;
+		Edit_opacity = src.Edit_opacity;
+		Edit_vertical = src.Edit_vertical;
+		Edit_maxChars = src.Edit_maxChars;
+		var f = font;
+		var sf = src.font;
+		f.face = sf.face;
+		f.angle = sf.angle;
+		f.bold = sf.bold;
+		f.italic = sf.italic;
+		f.height = sf.height;
+		cursor = src.cursor;
+		resizeCaret();
+		update();
+	}
+
+	function resizeCaret()
+	{
+		// 初始化插入光标尺寸
+		if(Edit_vertical)
+		{
+			var h = 2; // 固定为 2
+			var w = font.height;
+			w = -w if(w<0);
+			Edit_caretLayer.setImageSize(w, h);
+			Edit_caretLayer.setSizeToImageSize();
+			Edit_caretLayer.colorRect(0, 0, w, h, Edit_textColor);
+		}
+		else
+		{
+			var w = 2; // 固定为 2
+			var h = font.height;
+			h = -h if(h<0);
+			Edit_caretLayer.setImageSize(w, h);
+			Edit_caretLayer.setSizeToImageSize();
+			Edit_caretLayer.colorRect(0, 0, w, h, Edit_textColor);
+		}
+	}
+
+	function getCaretXPos()
+	{
+		// 获取插入光标位置
+		var bch = Edit_text.substring(0, Edit_selStart); // 光标之前的字符串
+		var bchw = font.getTextWidth(bch);
+		var sch = Edit_text.substring(0, Edit_scrollPos); // 显示区域之前的字符
+		var schw = font.getTextWidth(sch);
+		return bchw - schw + 3;
+	}
+
+	function ensureCaretVisible(step = 1)
+	{
+		// 滚动到确保插入光标可见的位置
+		var sp_save = Edit_scrollPos;
+		var txtlen = Edit_text.length;
+		if(Edit_selStart == txtlen)
+			while(Edit_scrollPos >= 0 && getCaretXPos() <= 3) Edit_scrollPos-=step;
+		else
+			while(Edit_scrollPos >= 0 && getCaretXPos() < 3) Edit_scrollPos-=step;
+		var lim = Edit_vertical ? imageHeight : imageWidth;
+		while(Edit_scrollPos < txtlen && getCaretXPos() >= lim -3) Edit_scrollPos+=step;
+		if(Edit_scrollPos < 0) Edit_scrollPos = 0;
+		if(Edit_scrollPos > txtlen) Edit_scrollPos = txtlen;
+		if(sp_save != Edit_scrollPos) update();
+	}
+
+	function setCaretLayerPos()
+	{
+		resizeCaret();
+		var xpos = getCaretXPos() -1;
+		if(Edit_vertical)
+		{
+			Edit_caretLayer.top = xpos;
+			Edit_caretLayer.left = imageWidth - 3 - Edit_caretLayer.imageWidth;
+			setAttentionPos(imageWidth - 3 , Edit_caretLayer.top);
+		}
+		else
+		{
+			Edit_caretLayer.top = 3;
+			Edit_caretLayer.left = xpos;
+			setAttentionPos(xpos, 3);
+		}
+	}
+
+	function showCaret()
+	{
+		setCaretLayerPos();
+		Edit_caretLayer.visible = true;
+		Edit_blinkTimer.interval = 500;
+		Edit_blinkTimer.enabled = true;
+	}
+
+	function hideCaret()
+	{
+		Edit_blinkTimer.enabled = false;
+		Edit_caretLayer.visible = false;
+	}
+
+	function onBlink()
+	{
+		Edit_caretLayer.visible = ! Edit_caretLayer.visible;
+	}
+
+	function stepLeft(keepAnchor = false)
+	{
+		var oldAnchor = Edit_selAnchor;
+
+		// 将插入光标向左移动
+		if(Edit_selStart > 0) Edit_selStart --, ensureCaretVisible(3);
+		if(!keepAnchor) Edit_selAnchor = Edit_selStart;
+		if(keepAnchor || oldAnchor != Edit_selAnchor)
+			update();
+		showCaret();
+	}
+
+	function stepRight(keepAnchor = false)
+	{
+		var oldAnchor = Edit_selAnchor;
+
+		// 将插入光标向右移动
+		if(Edit_selStart < Edit_text.length) Edit_selStart ++, ensureCaretVisible(3);
+		if(!keepAnchor) Edit_selAnchor = Edit_selStart;
+		if(keepAnchor || oldAnchor != Edit_selAnchor)
+			update();
+		showCaret();
+	}
+
+	function getCaretPosFromX(x)
+	{
+		// 计算被点击的位置
+		x -= 3;
+		var text = Edit_text.substring(Edit_scrollPos);
+		var i = 0;
+		for(;;)
+		{
+			var tx = text.substring(0, i);
+			var cw;
+			if((cw = font.getTextWidth(tx)) > x)
+			{
+				i --;
+				var cc = text.substring(i, 1);
+				var ccw = font.getTextWidth(cc);
+				cw -= ccw;
+				if(x > cw + (ccw>>1)) i++;
+				if(i < 0) i = 0;
+				if(i > text.length) i = text.length;
+				return i + Edit_scrollPos;
+			}
+			i++;
+			if(i > text.length) return text.length + Edit_scrollPos;
+		}
+	}
+
+	function onMouseDown(x, y, button, shift)
+	{
+		Edit_mouseDown = true;
+
+		// 被点击
+		if(x >= 3 && y >= 3 && x < imageWidth -3 && y < imageHeight - 3)
+		{
+			var oldStart = Edit_selStart;
+			var oldAnchor = Edit_selAnchor;
+
+			if(Edit_vertical)
+				Edit_selStart = getCaretPosFromX(y);
+			else
+				Edit_selStart = getCaretPosFromX(x);
+
+			// 若未按下 Shift 键，则也更新锚点
+			if((shift & ssShift) != ssShift)
+				Edit_selAnchor = Edit_selStart;
+
+			// 如果需要更新则执行更新
+			if(oldStart != Edit_selStart || oldAnchor != Edit_selAnchor)
+				update();
+
+			ensureCaretVisible();
+			showCaret();
+		}
+
+		focus();
+		super.onMouseDown(...);
+	}
+
+	function onMouseUp()
+	{
+		Edit_mouseDown = false;
+
+		super.onMouseUp(...);
+	}
+
+	function onMouseMove(x, y, button)
+	{
+		if(Edit_mouseDown)
+		{
+			// 这里的移动绝不会移动锚点
+
+			if(Edit_vertical)
+			{
+				if(y >= 3 && y < (imageHeight - 3))
+				{
+					var oldStart = Edit_selStart;
+
+					Edit_selStart = getCaretPosFromX(y);
+
+					// 如果需要更新则执行更新
+					if(oldStart != Edit_selStart)
+						update();
+
+					ensureCaretVisible();
+					showCaret();
+				}
+				else
+				{
+					if(y <= 3)
+						stepLeft(true);
+					else
+					if(y > (imageHeight - 3))
+						stepRight(true);
+				}
+			}
+			else
+			{
+				if(x >= 3 && x < (imageWidth - 3))
+				{
+					var oldStart = Edit_selStart;
+
+					Edit_selStart = getCaretPosFromX(x);
+
+					// 如果需要更新则执行更新
+					if(oldStart != Edit_selStart)
+						update();
+
+					ensureCaretVisible();
+					showCaret();
+				}
+				else
+				{
+					if(x <= 3)
+						stepLeft(true);
+					else
+					if(x > (imageWidth - 3))
+						stepRight(true);
+				}
+			}
+		}
+
+		super.onMouseMove(...);
+	}
+
+	/*
+	 删除选区内的全部字符
+	 若已删除则返回 true，否则返回 false
+	*/
+	function deleteSelectRange()
+	{
+		if(Edit_selStart == Edit_selAnchor)
+			return false;
+
+		var sp, ep;
+
+		if(Edit_selStart > Edit_selAnchor)
+		{
+			sp = Edit_selAnchor;
+			ep = Edit_selStart;
+			Edit_selStart = Edit_selAnchor;
+		}
+		else
+		{
+			sp = Edit_selStart;
+			ep = Edit_selAnchor;
+			Edit_selAnchor = Edit_selStart;
+		}
+
+		Edit_text = Edit_text.substring(0, sp) + Edit_text.substring(ep);
+
+		ensureCaretVisible();
+		showCaret();
+		update();
+
+		return true;
+	}
+
+	/*
+	 检查 pos 位置的字符是否在选区内
+	*/
+	function isSelected(pos)
+	{
+		if(Edit_selStart == Edit_selAnchor)
+			return false;
+
+		if(Edit_selStart > Edit_selAnchor)
+			return ((Edit_selAnchor <= pos && Edit_selStart > pos) ? true : false);
+		else
+			return ((Edit_selAnchor > pos && Edit_selStart <= pos) ? true : false);
+
+		return true;/* dead code */
+	}
+
+	/* 全选操作 */
+	function operationAllSelection()
+	{
+		Edit_selAnchor = 0;
+		Edit_selStart = Edit_text.length;
+		ensureCaretVisible();
+		showCaret();
+		update();
+	}
+
+	/* 复制操作 */
+	function operationCopy()
+	{
+		if(Edit_selAnchor == Edit_selStart)
+			return;
+
+		var start, len;
+		var text = "";
+
+		if(Edit_selStart > Edit_selAnchor)
+		{
+			start = Edit_selAnchor;
+			len = Edit_selStart - start;
+		}
+		else
+		{
+			start = Edit_selStart;
+			len = Edit_selAnchor - start;
+		}
+
+		Clipboard.asText = Edit_text.substring(start, len);
+	}
+
+	/* 粘贴操作 */
+	function operationPaste()
+	{
+		// 如果没有文本当然什么也不做
+		if(Clipboard.hasFormat(cbfText))
+		{
+			var text = Clipboard.asText;
+
+			// 放不进那么大的内容哦
+			if(Edit_maxChars)
+			{
+				var acceptLen = Edit_maxChars - Edit_text.length;
+				text = text.substring(0, acceptLen);
+
+				// 不行哦
+				if(text == "")
+					return;
+			}
+
+			insertCharacter(text);
+		}
+	}
+
+	/* 剪切操作 */
+	function operationCut()
+	{
+		operationCopy();
+		deleteSelectRange();
+	}
+
+	function insertCharacter(ch)
+	{
+		// 删除选区文本
+		deleteSelectRange();
+
+		// 在光标位置插入 ch
+		var bcr = Edit_text.substring(0, Edit_selStart);
+		var acr = Edit_text.substring(Edit_selStart);
+		Edit_text = bcr + ch + acr;
+		Edit_selStart += ch.length;
+		Edit_selAnchor = Edit_selStart;
+		ensureCaretVisible();
+		showCaret();
+		update();
+	}
+
+	function deleteBeforeCaret()
+	{
+		// 删除光标前一个字符
+		if(!deleteSelectRange() && Edit_selStart > 0)
+		{
+			var bcr = Edit_text.substring(0, Edit_selStart-1);
+			var acr = Edit_text.substring(Edit_selStart);
+			Edit_text = bcr + acr;
+			Edit_selStart --;
+			Edit_selAnchor = Edit_selStart;
+			ensureCaretVisible(5);
+			showCaret();
+			update();
+		}
+	}
+
+	function deleteAfterCaret()
+	{
+		// 删除光标后的一个字符
+		if(!deleteSelectRange() && Edit_selStart < Edit_text.length)
+		{
+			var bcr = Edit_text.substring(0, Edit_selStart);
+			var acr = Edit_text.substring(Edit_selStart + 1);
+			Edit_text = bcr + acr;
+			ensureCaretVisible();
+			showCaret();
+			update();
+		}
+	}
+
+	function onKeyPress(key)
+	{
+		// 键被按下
+		if(#key >= 32)
+		{
+			// 普通字符
+			if(!Edit_maxChars || Edit_text.length < Edit_maxChars)
+				insertCharacter(key);
+			// 临时隐藏鼠标光标
+			window.hideMouseCursor();
+		}
+		else super.onKeyPress(...);
+	}
+
+	function onKeyDown(key, shift)
+	{
+		// 特殊操作
+		if(shift & ssCtrl)
+		{
+			switch(key)
+			{
+			case VK_A:	operationAllSelection(); return;
+			case VK_C:	operationCopy(); return;
+			case VK_X:	operationCut(); return;
+			case VK_V:	operationPaste(); return;
+			}
+		}
+
+		if(key == (Edit_vertical?VK_UP:VK_LEFT)) stepLeft((shift & ssShift) == ssShift);
+		else if(key == (Edit_vertical?VK_DOWN:VK_RIGHT)) stepRight((shift & ssShift) == ssShift);
+		else if(key == VK_DELETE) deleteAfterCaret();
+		else if(key == VK_BACK) deleteBeforeCaret();
+		else super.onKeyDown(...);
+	}
+
+
+	function onFocus()
+	{
+		// 获得焦点
+		super.onFocus(...);
+		showCaret();
+	}
+
+	function onBlur()
+	{
+		// 失去焦点
+		super.onBlur(...);
+		hideCaret();
+	}
+
+
+	function onPaint()
+	{
+		// 在绘制前调用
+		// 绘制内容
+		// 先清空
+		var vert = Edit_vertical;
+		var imwidth = vert?imageHeight:imageWidth;
+		fillRect(0, 0, imageWidth, imageHeight, 0);
+		colorRect(0, 0, imageWidth, imageHeight, Edit_color, Edit_opacity);
+		// 绘制文本
+		// 由于全局变量和对象内变量访问较慢，
+		// 把常用变量提到局部
+		var h = font.height;
+		h = -h if(h<0);
+		var x = vert ? imageWidth - 3 : 3;
+		var y = 3;
+		var chpos = Edit_scrollPos;
+		var text = Edit_text;
+		var textlen = text.length;
+		var selstart = Edit_selStart;
+		var highlightbg = 0xff000000 | clHighlight;
+		var highlighttext = clHighlightText;
+		var anti = Edit_antialiased;
+		var textcolor = Edit_textColor;
+		var tx = "";
+		if(vert)
+		{
+			for(;;)
+			{
+				y = 3 + font.getTextWidth(tx);
+				if(y > imwidth) break;
+				if(chpos >= textlen) break;
+				var ch = text[chpos];
+				var chw = font.getTextWidth(ch);
+				if(isSelected(chpos++))
+				{
+					// 选区内
+					// 填充背景
+					fillRect(x, y, h, chw, highlightbg);
+					// 绘制文字
+					drawText(x, y, ch, highlighttext, 255, anti);
+				}
+				else
+				{
+					// 选区外
+					drawText(x, y, ch, textcolor, 255, anti);
+				}
+				tx += ch;
+			}
+		}
+		else
+		{
+			for(;;)
+			{
+				x = 3 + font.getTextWidth(tx);
+				if(x > imwidth) break;
+				if(chpos >= textlen) break;
+				var ch = text[chpos];
+				var chw = font.getTextWidth(ch);
+				if(isSelected(chpos++))
+				{
+					// 填充背景
+					fillRect(x, y, chw, h, highlightbg);
+					// 绘制文字
+					drawText(x, y, ch, highlighttext, 255, anti);
+				}
+				else
+				{
+					// 选区外
+					drawText(x, y, ch, textcolor, 255, anti);
+				}
+				tx += ch;
+			}
+		}
+		// 再次清除文本区域外
+		if(vert)
+		{
+			fillRect(0, imageHeight - 3, imageWidth, 3, 0);
+			colorRect(0, imageHeight - 3, imageWidth, 3, Edit_color, Edit_opacity);
+		}
+		else
+		{
+			fillRect(imageWidth - 3, 0, 3, imageHeight, 0);
+			colorRect(imageWidth - 3, 0, 3, imageHeight, Edit_color, Edit_opacity);
+		}
+		// 绘制边框
+		colorRect(0, 0, imageWidth, 1, 0x000000, 128);
+		colorRect(0, 1, 1, imageHeight-2, 0x000000, 128);
+		colorRect(imageWidth-1, 1, 1, imageHeight-1, 0xffffff, 128);
+		colorRect(1, imageHeight-1, imageWidth-2, 1, 0xffffff, 128);
+	}
+
+	property text
+	{
+		setter(x)
+		{
+			x = "" if x === void;
+			Edit_text = string x;
+			Edit_selStart = 0;
+			Edit_selAnchor = 0;
+			Edit_scrollPos = 0;
+			setCaretLayerPos();
+			update();
+		}
+		getter
+		{
+			return Edit_text;
+		}
+	}
+
+	property maxChars
+	{
+		setter(x)
+		{
+			Edit_maxChars = int x;
+			Edit_selStart = 0;
+			Edit_selAnchor = 0;
+			Edit_scrollPos = 0;
+			if(Edit_maxChars && Edit_text.length >= Edit_maxChars)
+				Edit_text = Edit_text.substring(0, Edit_maxChars);
+			setCaretLayerPos();
+			update();
+		}
+		getter
+		{
+			return Edit_maxChars;
+		}
+	}
+
+	property selectLength
+	{
+		getter
+		{
+			if(Edit_selStart > Edit_selAnchor)
+				return Edit_selStart - Edit_selAnchor;
+			return Edit_selAnchor - Edit_selStart;
+		}
+	}
+
+	property width
+	{
+		setter(x)
+		{
+			super.width = x;
+			imageWidth = x;
+			update();
+		}
+		getter
+		{
+			return super.width;
+		}
+	}
+
+	property height
+	{
+		setter(x)
+		{
+			super.height = x;
+			imageHeight = x;
+			update();
+		}
+		getter
+		{
+			return super.height;
+		}
+	}
+
+	function setSize(w, h)
+	{
+		super.setSize(w, h);
+		setImageSize(w, h);
+		update();
+	}
+
+	property vertical
+	{
+		setter(x)
+		{
+			Edit_vertical = int x;
+			update();
+		}
+		getter
+		{
+			return Edit_vertical;
+		}
+	}
+
+	property color
+	{
+		setter(x)
+		{
+			Edit_color = int x;
+			update();
+		}
+		getter
+		{
+			return Edit_color;
+		}
+	}
+
+	property textColor
+	{
+		setter(x)
+		{
+			Edit_textColor = int x;
+			update();
+		}
+		getter
+		{
+			return Edit_textColor;
+		}
+	}
+
+	property antialiased
+	{
+		setter(x)
+		{
+			Edit_antialiased = int x;
+			update();
+		}
+		getter
+		{
+			return Edit_antialiased;
+		}
+	}
+
+	property bgOpacity
+	{
+		setter(x)
+		{
+			Edit_opacity = int x;
+			update();
+		}
+		getter
+		{
+			return Edit_opacity;
+		}
+	}
+}
+
+

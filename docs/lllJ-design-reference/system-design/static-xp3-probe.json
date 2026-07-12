@@ -1,0 +1,24 @@
+{
+  "xp3_probe": [
+    {
+      "archive": "uipsd.xp3",
+      "encryption": "None",
+      "error": "'XP3File' object has no attribute 'infos'"
+    },
+    {
+      "archive": "image.xp3",
+      "encryption": "None",
+      "error": "'XP3File' object has no attribute 'infos'"
+    },
+    {
+      "archive": "data.xp3",
+      "encryption": "None",
+      "error": "'XP3File' object has no attribute 'infos'"
+    },
+    {
+      "archive": "scn.xp3",
+      "encryption": "None",
+      "error": "'XP3File' object has no attribute 'infos'"
+    }
+  ]
+}

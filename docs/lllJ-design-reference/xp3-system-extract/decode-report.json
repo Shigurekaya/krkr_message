@@ -1,0 +1,2663 @@
+{
+  "encoding_stats": {
+    "utf-16-le/yuzuex@8": 11,
+    "utf-16-le/yuzuex@6": 18,
+    "utf-16-le/yuzuex@10": 8,
+    "utf-16-le/yuzuex@12": 15,
+    "binary": 26,
+    "cp932": 1
+  },
+  "files": [
+    {
+      "file": "action.tjs",
+      "size": 70536
+    },
+    {
+      "file": "affinelayer.tjs",
+      "size": 42684
+    },
+    {
+      "file": "affinematrix.tjs",
+      "size": 14616
+    },
+    {
+      "file": "affinesource.tjs",
+      "size": 23196
+    },
+    {
+      "file": "affinesourceasd.tjs",
+      "size": 13532
+    },
+    {
+      "file": "affinesourcebitmap.tjs",
+      "size": 18396
+    },
+    {
+      "file": "affinesourcebmpbase.tjs",
+      "size": 14692
+    },
+    {
+      "file": "affinesourceflip.tjs",
+      "size": 9476
+    },
+    {
+      "file": "affinesourceimage.tjs",
+      "size": 13336
+    },
+    {
+      "file": "affinesourcemotion.tjs",
+      "size": 38412
+    },
+    {
+      "file": "affinesourcemultitile.tjs",
+      "size": 8184
+    },
+    {
+      "file": "affinesourcenoise.tjs",
+      "size": 2384
+    },
+    {
+      "file": "affinesourcepsd.tjs",
+      "size": 6356
+    },
+    {
+      "file": "affinesourcestand.tjs",
+      "size": 22804
+    },
+    {
+      "file": "affinesourcetile.tjs",
+      "size": 2772
+    },
+    {
+      "file": "affinesourcevector.tjs",
+      "size": 3332
+    },
+    {
+      "file": "afterinit.tjs",
+      "size": 3504
+    },
+    {
+      "file": "anim_title.ini",
+      "size": 1187,
+      "encoding": "utf-16-le/yuzuex@8",
+      "score": 1.3871,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\anim_title.ini.utf8.txt"
+    },
+    {
+      "file": "animationlayer.tjs",
+      "size": 25304
+    },
+    {
+      "file": "animkaglayer.tjs",
+      "size": 4300
+    },
+    {
+      "file": "anj_chart.ogg",
+      "size": 30824
+    },
+    {
+      "file": "anj_title.ogg",
+      "size": 28718
+    },
+    {
+      "file": "appconfig.tjs",
+      "size": 1087,
+      "encoding": "utf-16-le/yuzuex@8",
+      "score": 1.4387,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\appconfig.tjs.utf8.txt"
+    },
+    {
+      "file": "append_init.tjs",
+      "size": 26556
+    },
+    {
+      "file": "autoface.tjs",
+      "size": 13896
+    },
+    {
+      "file": "autoskipmark.tjs",
+      "size": 7968
+    },
+    {
+      "file": "autoskipmark_img.pbd",
+      "size": 17076
+    },
+    {
+      "file": "autoskipmark_img__pack.tlg",
+      "size": 90175
+    },
+    {
+      "file": "autoskipmark_pos.pbd",
+      "size": 664
+    },
+    {
+      "file": "backlog.tjs",
+      "size": 92716
+    },
+    {
+      "file": "baselayer.tjs",
+      "size": 16192
+    },
+    {
+      "file": "bgm.tjs",
+      "size": 17824
+    },
+    {
+      "file": "bgmtitle.pbd",
+      "size": 728
+    },
+    {
+      "file": "bgmtitleindicator.tjs",
+      "size": 22900
+    },
+    {
+      "file": "buttonlayer.tjs",
+      "size": 36836
+    },
+    {
+      "file": "cginipos.txt",
+      "size": 501,
+      "encoding": "utf-16-le/yuzuex@8",
+      "score": 1.112,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\cginipos.txt.utf8.txt"
+    },
+    {
+      "file": "cglist.csv",
+      "size": 82213,
+      "encoding": "utf-16-le/yuzuex@6",
+      "score": 1.3668,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\cglist.csv.utf8.txt"
+    },
+    {
+      "file": "cgmode.ks",
+      "size": 4349,
+      "encoding": "utf-16-le/yuzuex@8",
+      "score": 1.4212,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\cgmode.ks.utf8.txt"
+    },
+    {
+      "file": "cgmode.tjs",
+      "size": 54384
+    },
+    {
+      "file": "cgview.tjs",
+      "size": 33472
+    },
+    {
+      "file": "chapter.pbd",
+      "size": 1130
+    },
+    {
+      "file": "chapter__bg0.tlg",
+      "size": 14878
+    },
+    {
+      "file": "charlist.csv",
+      "size": 729,
+      "encoding": "utf-16-le/yuzuex@8",
+      "score": 1.2758,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\charlist.csv.utf8.txt"
+    },
+    {
+      "file": "charvoice.csv",
+      "size": 7015,
+      "encoding": "utf-16-le/yuzuex@10",
+      "score": 1.1405,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\charvoice.csv.utf8.txt"
+    },
+    {
+      "file": "colorspace.tjs",
+      "size": 24296
+    },
+    {
+      "file": "conductor.tjs",
+      "size": 20108
+    },
+    {
+      "file": "config.tjs",
+      "size": 52307,
+      "encoding": "utf-16-le/yuzuex@10",
+      "score": 1.3825,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\config.tjs.utf8.txt"
+    },
+    {
+      "file": "ctxfontprefs.tjs",
+      "size": 17355
+    },
+    {
+      "file": "currev_patch.ini",
+      "size": 21,
+      "encoding": "utf-16-le/yuzuex@6",
+      "score": 1.1429,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\currev_patch.ini.utf8.txt"
+    },
+    {
+      "file": "custom.ks",
+      "size": 31489,
+      "encoding": "utf-16-le/yuzuex@12",
+      "score": 1.4291,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\custom.ks.utf8.txt"
+    },
+    {
+      "file": "custom.tjs",
+      "size": 23221,
+      "encoding": "utf-16-le/yuzuex@10",
+      "score": 1.293,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\custom.tjs.utf8.txt"
+    },
+    {
+      "file": "data__action.tjs",
+      "size": 70536
+    },
+    {
+      "file": "data__affinelayer.tjs",
+      "size": 42684
+    },
+    {
+      "file": "data__affinematrix.tjs",
+      "size": 14616
+    },
+    {
+      "file": "data__affinesource.tjs",
+      "size": 23196
+    },
+    {
+      "file": "data__affinesourceasd.tjs",
+      "size": 13532
+    },
+    {
+      "file": "data__affinesourcebitmap.tjs",
+      "size": 18396
+    },
+    {
+      "file": "data__affinesourcebmpbase.tjs",
+      "size": 14692
+    },
+    {
+      "file": "data__affinesourceflip.tjs",
+      "size": 9476
+    },
+    {
+      "file": "data__affinesourceimage.tjs",
+      "size": 13336
+    },
+    {
+      "file": "data__affinesourcemotion.tjs",
+      "size": 38412
+    },
+    {
+      "file": "data__affinesourcemultitile.tjs",
+      "size": 8184
+    },
+    {
+      "file": "data__affinesourcenoise.tjs",
+      "size": 2384
+    },
+    {
+      "file": "data__affinesourcepsd.tjs",
+      "size": 6356
+    },
+    {
+      "file": "data__affinesourcestand.tjs",
+      "size": 22804
+    },
+    {
+      "file": "data__affinesourcetile.tjs",
+      "size": 2772
+    },
+    {
+      "file": "data__afterinit.tjs",
+      "size": 3504
+    },
+    {
+      "file": "data__anim_title.ini",
+      "size": 1187,
+      "encoding": "binary",
+      "score": 0.0
+    },
+    {
+      "file": "data__animationlayer.tjs",
+      "size": 25304
+    },
+    {
+      "file": "data__animkaglayer.tjs",
+      "size": 4300
+    },
+    {
+      "file": "data__appconfig.tjs",
+      "size": 1087
+    },
+    {
+      "file": "data__append_init.tjs",
+      "size": 26556
+    },
+    {
+      "file": "data__autoface.tjs",
+      "size": 13896
+    },
+    {
+      "file": "data__autoskipmark.tjs",
+      "size": 7968
+    },
+    {
+      "file": "data__backlog.tjs",
+      "size": 92716
+    },
+    {
+      "file": "data__baselayer.tjs",
+      "size": 16192
+    },
+    {
+      "file": "data__bgm.tjs",
+      "size": 17824
+    },
+    {
+      "file": "data__bgmtitleindicator.tjs",
+      "size": 22900
+    },
+    {
+      "file": "data__buttonlayer.tjs",
+      "size": 36836
+    },
+    {
+      "file": "data__cginipos.txt",
+      "size": 501,
+      "encoding": "binary",
+      "score": 0.0
+    },
+    {
+      "file": "data__cgmode.ks",
+      "size": 4349,
+      "encoding": "binary",
+      "score": 0.0
+    },
+    {
+      "file": "data__cgmode.tjs",
+      "size": 54384
+    },
+    {
+      "file": "data__cgview.tjs",
+      "size": 33472
+    },
+    {
+      "file": "data__charvoice.csv",
+      "size": 7015,
+      "encoding": "binary",
+      "score": 0.0
+    },
+    {
+      "file": "data__colorspace.tjs",
+      "size": 24296
+    },
+    {
+      "file": "data__conductor.tjs",
+      "size": 20108
+    },
+    {
+      "file": "data__config.tjs",
+      "size": 52307
+    },
+    {
+      "file": "data__currev_patch.ini",
+      "size": 21,
+      "encoding": "cp932",
+      "score": 0.8333,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\data__currev_patch.ini.utf8.txt"
+    },
+    {
+      "file": "data__custom.ks",
+      "size": 31489,
+      "encoding": "binary",
+      "score": 0.0
+    },
+    {
+      "file": "data__custom.tjs",
+      "size": 23221
+    },
+    {
+      "file": "data__defaultmover.tjs",
+      "size": 6592
+    },
+    {
+      "file": "data__deffontmap.tjs",
+      "size": 3519
+    },
+    {
+      "file": "data__dialoglayer.tjs",
+      "size": 35116
+    },
+    {
+      "file": "data__dragutil.tjs",
+      "size": 19068
+    },
+    {
+      "file": "data__drawtextparam.tjs",
+      "size": 14140
+    },
+    {
+      "file": "data__editlayer.tjs",
+      "size": 26948
+    },
+    {
+      "file": "data__embfontlist.tjs",
+      "size": 8621
+    },
+    {
+      "file": "data__embfontloader.tjs",
+      "size": 8508
+    },
+    {
+      "file": "data__emotion.tjs",
+      "size": 9400
+    },
+    {
+      "file": "data__end.ks",
+      "size": 2661,
+      "encoding": "binary",
+      "score": 0.0
+    },
+    {
+      "file": "data__enginerev.ini",
+      "size": 163,
+      "encoding": "binary",
+      "score": 0.0
+    },
+    {
+      "file": "data__exchview.tjs",
+      "size": 98512
+    },
+    {
+      "file": "data__exgallery.tjs",
+      "size": 99932
+    },
+    {
+      "file": "data__exgamepad.tjs",
+      "size": 34160
+    },
+    {
+      "file": "data__first.ks",
+      "size": 3565,
+      "encoding": "binary",
+      "score": 0.0
+    },
+    {
+      "file": "data__fontalias.tjs",
+      "size": 7236
+    },
+    {
+      "file": "data__gamecont.tjs",
+      "size": 10308
+    },
+    {
+      "file": "data__genericflip.tjs",
+      "size": 5156
+    },
+    {
+      "file": "data__gesture.tjs",
+      "size": 52080
+    },
+    {
+      "file": "data__gfx_amovie.tjs",
+      "size": 5476
+    },
+    {
+      "file": "data__gfx_movie.tjs",
+      "size": 10804
+    },
+    {
+      "file": "data__gfx_moviese.tjs",
+      "size": 2692
+    },
+    {
+      "file": "data__gfx_particle.tjs",
+      "size": 12964
+    },
+    {
+      "file": "data__headfont_atlas.tjs",
+      "size": 135952
+    },
+    {
+      "file": "data__help_flow.txt",
+      "size": 2011,
+      "encoding": "binary",
+      "score": 0.0
+    },
+    {
+      "file": "data__help_opt.txt",
+      "size": 30715,
+      "encoding": "binary",
+      "score": 0.0
+    },
+    {
+      "file": "data__helptextman.tjs",
+      "size": 37824
+    },
+    {
+      "file": "data__hsvcpick.tjs",
+      "size": 37920
+    },
+    {
+      "file": "data__imageevalmap.csv",
+      "size": 45785,
+      "encoding": "binary",
+      "score": 0.0
+    },
+    {
+      "file": "data__imagemulti.txt",
+      "size": 293,
+      "encoding": "binary",
+      "score": 0.0
+    },
+    {
+      "file": "data__imagenamemap.txt",
+      "size": 1021,
+      "encoding": "binary",
+      "score": 0.0
+    },
+    {
+      "file": "data__imagepropmap.txt",
+      "size": 271,
+      "encoding": "binary",
+      "score": 0.0
+    },
+    {
+      "file": "data__initialize.tjs",
+      "size": 32736
+    },
+    {
+      "file": "data__k2compat.tjs",
+      "size": 19124
+    },
+    {
+      "file": "data__k2compat_modeless.tjs",
+      "size": 13312
+    },
+    {
+      "file": "data__k2compat_pad.tjs",
+      "size": 1792
+    },
+    {
+      "file": "data__k2compat_padcommon.tjs",
+      "size": 21524
+    },
+    {
+      "file": "data__kagenvbase.tjs",
+      "size": 37864
+    },
+    {
+      "file": "data__kagenvhistorydata.tjs",
+      "size": 9940
+    },
+    {
+      "file": "data__kagenvimage.tjs",
+      "size": 100820
+    },
+    {
+      "file": "data__kagenvimagemapperstage.tjs",
+      "size": 7220
+    },
+    {
+      "file": "data__kagenvimagemapperstand.tjs",
+      "size": 16552
+    },
+    {
+      "file": "data__kagenvironment.tjs",
+      "size": 89216
+    },
+    {
+      "file": "data__kagenvminiplayer.tjs",
+      "size": 9388
+    },
+    {
+      "file": "data__kagenvminiplayerlayer.tjs",
+      "size": 10120
+    },
+    {
+      "file": "data__kagenvmusic.tjs",
+      "size": 11884
+    },
+    {
+      "file": "data__kagenvplayer.tjs",
+      "size": 48720
+    },
+    {
+      "file": "data__kagenvsound.tjs",
+      "size": 5276
+    },
+    {
+      "file": "data__kagenvtrans.tjs",
+      "size": 9644
+    },
+    {
+      "file": "data__kaglayer.tjs",
+      "size": 5228
+    },
+    {
+      "file": "data__keybinder.tjs",
+      "size": 38740
+    },
+    {
+      "file": "data__keyfont_atlas.tjs",
+      "size": 29092
+    },
+    {
+      "file": "data__Kosugi-LICENSE.txt",
+      "size": 20711,
+      "encoding": "binary",
+      "score": 0.0
+    },
+    {
+      "file": "data__Kosugi-NOTICE.txt",
+      "size": 1435,
+      "encoding": "binary",
+      "score": 0.0
+    },
+    {
+      "file": "data__langrender.tjs",
+      "size": 5012
+    },
+    {
+      "file": "data__layerex.tjs",
+      "size": 7808
+    },
+    {
+      "file": "data__linemode.tjs",
+      "size": 29760
+    },
+    {
+      "file": "data__linemodeex.tjs",
+      "size": 29144
+    },
+    {
+      "file": "data__loopvoice.tjs",
+      "size": 2612
+    },
+    {
+      "file": "data__macro.ks",
+      "size": 22471,
+      "encoding": "binary",
+      "score": 0.0
+    },
+    {
+      "file": "data__mainwindow.tjs",
+      "size": 474420
+    },
+    {
+      "file": "data__mapselectlayer.tjs",
+      "size": 13160
+    },
+    {
+      "file": "data__menus.tjs",
+      "size": 33752
+    },
+    {
+      "file": "data__messagelayer.tjs",
+      "size": 124624
+    },
+    {
+      "file": "data__mixinclass.tjs",
+      "size": 13764
+    },
+    {
+      "file": "data__motion.tjs",
+      "size": 3116
+    },
+    {
+      "file": "data__movieaudiosample.tjs",
+      "size": 20424
+    },
+    {
+      "file": "data__moviesecontroller.tjs",
+      "size": 9640
+    },
+    {
+      "file": "data__mscurautohide.tjs",
+      "size": 5304
+    },
+    {
+      "file": "data__msghack.tjs",
+      "size": 70636
+    },
+    {
+      "file": "data__multiresolution.tjs",
+      "size": 2724
+    },
+    {
+      "file": "data__myhistorylayer.tjs",
+      "size": 38280
+    },
+    {
+      "file": "data__mymapselectlayer.tjs",
+      "size": 11004
+    },
+    {
+      "file": "data__myyesnodialog.tjs",
+      "size": 24432
+    },
+    {
+      "file": "data__name.tjs",
+      "size": 11956
+    },
+    {
+      "file": "data__nocfchkdialog.tjs",
+      "size": 14204
+    },
+    {
+      "file": "data__numfont2_atlas.tjs",
+      "size": 5354
+    },
+    {
+      "file": "data__numfont_atlas.tjs",
+      "size": 5353
+    },
+    {
+      "file": "data__option.ks",
+      "size": 3233,
+      "encoding": "binary",
+      "score": 0.0
+    },
+    {
+      "file": "data__option.tjs",
+      "size": 134996
+    },
+    {
+      "file": "data__otherfonts-LICENSE.txt",
+      "size": 9607,
+      "encoding": "binary",
+      "score": 0.0
+    },
+    {
+      "file": "data__override.tjs",
+      "size": 139912
+    },
+    {
+      "file": "data__pagebase.tjs",
+      "size": 19348
+    },
+    {
+      "file": "data__passivecomp.tjs",
+      "size": 1555
+    },
+    {
+      "file": "data__plugin.tjs",
+      "size": 1428
+    },
+    {
+      "file": "data__prerenderfontex.tjs",
+      "size": 35892
+    },
+    {
+      "file": "data__psdlayer.tjs",
+      "size": 40780
+    },
+    {
+      "file": "data__qlpopup.tjs",
+      "size": 18192
+    },
+    {
+      "file": "data__quickmenu.tjs",
+      "size": 35004
+    },
+    {
+      "file": "data__rendermsgwin.tjs",
+      "size": 27512
+    },
+    {
+      "file": "data__rotatesave.tjs",
+      "size": 6188
+    },
+    {
+      "file": "data__saveload.tjs",
+      "size": 149128
+    },
+    {
+      "file": "data__scenemode.tjs",
+      "size": 9412
+    },
+    {
+      "file": "data__scnchart.ks",
+      "size": 7345,
+      "encoding": "binary",
+      "score": 0.0
+    },
+    {
+      "file": "data__scnchart.tjs",
+      "size": 32800
+    },
+    {
+      "file": "data__scnchart_ui.tjs",
+      "size": 128384
+    },
+    {
+      "file": "data__scnchart_ui_sel.tjs",
+      "size": 16480
+    },
+    {
+      "file": "data__scnchart_ui_smp.tjs",
+      "size": 20152
+    },
+    {
+      "file": "data__scrollutil.tjs",
+      "size": 127908
+    },
+    {
+      "file": "data__se.tjs",
+      "size": 8012
+    },
+    {
+      "file": "data__selectlayer.tjs",
+      "size": 30752
+    },
+    {
+      "file": "data__showdate.tjs",
+      "size": 14724
+    },
+    {
+      "file": "data__simpleanim.tjs",
+      "size": 64956
+    },
+    {
+      "file": "data__sliderlayer.tjs",
+      "size": 28864
+    },
+    {
+      "file": "data__soundlist.csv",
+      "size": 4749,
+      "encoding": "binary",
+      "score": 0.0
+    },
+    {
+      "file": "data__soundmode.tjs",
+      "size": 24060
+    },
+    {
+      "file": "data__SourceHanSansAndSerif-LICENSE.txt",
+      "size": 8791,
+      "encoding": "binary",
+      "score": 0.0
+    },
+    {
+      "file": "data__SourceHanSansAndSerif-NOTICE.txt",
+      "size": 359,
+      "encoding": "binary",
+      "score": 0.0
+    },
+    {
+      "file": "data__speech.tjs",
+      "size": 26484
+    },
+    {
+      "file": "data__sqscr.tjs",
+      "size": 15292
+    },
+    {
+      "file": "data__standimage.tjs",
+      "size": 24428
+    },
+    {
+      "file": "data__standinformation.tjs",
+      "size": 22176
+    },
+    {
+      "file": "data__standlayer.tjs",
+      "size": 13136
+    },
+    {
+      "file": "data__startup.tjs",
+      "size": 316
+    },
+    {
+      "file": "data__stayontop.tjs",
+      "size": 2752
+    },
+    {
+      "file": "data__stopdeactive.tjs",
+      "size": 9764
+    },
+    {
+      "file": "data__storages.tjs",
+      "size": 3419
+    },
+    {
+      "file": "data__subtitlelayer.tjs",
+      "size": 7268
+    },
+    {
+      "file": "data__sysse.ini",
+      "size": 18529,
+      "encoding": "binary",
+      "score": 0.0
+    },
+    {
+      "file": "data__system.tjs",
+      "size": 117724
+    },
+    {
+      "file": "data__systrans.ini",
+      "size": 1503,
+      "encoding": "binary",
+      "score": 0.0
+    },
+    {
+      "file": "data__sysvoice.tjs",
+      "size": 23184
+    },
+    {
+      "file": "data__tagtextconverter.tjs",
+      "size": 19040
+    },
+    {
+      "file": "data__tagtextconverterex.tjs",
+      "size": 7068
+    },
+    {
+      "file": "data__textrender.tjs",
+      "size": 15360
+    },
+    {
+      "file": "data__texttagconverter.tjs",
+      "size": 10248
+    },
+    {
+      "file": "data__title.ks",
+      "size": 2489,
+      "encoding": "binary",
+      "score": 0.0
+    },
+    {
+      "file": "data__title_bg7.mtn",
+      "size": 9043942
+    },
+    {
+      "file": "data__touchui.tjs",
+      "size": 56632
+    },
+    {
+      "file": "data__translayer.tjs",
+      "size": 6444
+    },
+    {
+      "file": "data__uichart.tjs",
+      "size": 47836
+    },
+    {
+      "file": "data__uiloader.tjs",
+      "size": 88448
+    },
+    {
+      "file": "data__uioption.tjs",
+      "size": 74616
+    },
+    {
+      "file": "data__uiparts.tjs",
+      "size": 34224
+    },
+    {
+      "file": "data__uiqconfpop.tjs",
+      "size": 57072
+    },
+    {
+      "file": "data__uisupport.tjs",
+      "size": 16324
+    },
+    {
+      "file": "data__uisystem.tjs",
+      "size": 60628
+    },
+    {
+      "file": "data__uitouch.tjs",
+      "size": 33208
+    },
+    {
+      "file": "data__updateregion.tjs",
+      "size": 3496
+    },
+    {
+      "file": "data__used2d.tjs",
+      "size": 4500
+    },
+    {
+      "file": "data__utils.tjs",
+      "size": 49672
+    },
+    {
+      "file": "data__voice.tjs",
+      "size": 12784
+    },
+    {
+      "file": "data__voiceeffect.tjs",
+      "size": 49116
+    },
+    {
+      "file": "data__voicemode.tjs",
+      "size": 88716
+    },
+    {
+      "file": "data__voiceprogress.tjs",
+      "size": 12976
+    },
+    {
+      "file": "data__win11depend.tjs",
+      "size": 4376
+    },
+    {
+      "file": "data__win32dialog.tjs",
+      "size": 65612
+    },
+    {
+      "file": "data__world.tjs",
+      "size": 241748
+    },
+    {
+      "file": "data__yaml.tjs",
+      "size": 12580
+    },
+    {
+      "file": "data__yesnodialog.tjs",
+      "size": 5360
+    },
+    {
+      "file": "data__yuzu_default.tjs",
+      "size": 31685
+    },
+    {
+      "file": "data__yuzu_patchdetect.tjs",
+      "size": 11531
+    },
+    {
+      "file": "default.tjs",
+      "size": 51575,
+      "encoding": "utf-16-le/yuzuex@8",
+      "score": 1.2878,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\default.tjs.utf8.txt"
+    },
+    {
+      "file": "defaultmover.tjs",
+      "size": 6592
+    },
+    {
+      "file": "deffontmap.tjs",
+      "size": 3519,
+      "encoding": "utf-16-le/yuzuex@12",
+      "score": 1.2434,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\deffontmap.tjs.utf8.txt"
+    },
+    {
+      "file": "dialog__bg0.tlg",
+      "size": 258346
+    },
+    {
+      "file": "dialog__pack.tlg",
+      "size": 317464
+    },
+    {
+      "file": "dialog_jp.pbd",
+      "size": 17784
+    },
+    {
+      "file": "dialog_jp__pack.tlg",
+      "size": 24291
+    },
+    {
+      "file": "dialoglayer.tjs",
+      "size": 35116
+    },
+    {
+      "file": "dragutil.tjs",
+      "size": 19068
+    },
+    {
+      "file": "drawtextparam.tjs",
+      "size": 14140
+    },
+    {
+      "file": "editlayer.tjs",
+      "size": 26948
+    },
+    {
+      "file": "embfontlist.tjs",
+      "size": 8621,
+      "encoding": "utf-16-le/yuzuex@6",
+      "score": 1.3668,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\embfontlist.tjs.utf8.txt"
+    },
+    {
+      "file": "embfontloader.tjs",
+      "size": 8508
+    },
+    {
+      "file": "emotion.csv",
+      "size": 215,
+      "encoding": "utf-16-le/yuzuex@8",
+      "score": 1.29,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\emotion.csv.utf8.txt"
+    },
+    {
+      "file": "emotion.tjs",
+      "size": 9400
+    },
+    {
+      "file": "ena_title.ogg",
+      "size": 28794
+    },
+    {
+      "file": "end.ks",
+      "size": 2661,
+      "encoding": "utf-16-le/yuzuex@6",
+      "score": 1.4457,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\end.ks.utf8.txt"
+    },
+    {
+      "file": "enginerev.ini",
+      "size": 163,
+      "encoding": "utf-16-le/yuzuex@6",
+      "score": 1.2949,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\enginerev.ini.utf8.txt"
+    },
+    {
+      "file": "envinit.tjs",
+      "size": 268389,
+      "encoding": "utf-16-le/yuzuex@12",
+      "score": 1.2661,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\envinit.tjs.utf8.txt"
+    },
+    {
+      "file": "exchview.tjs",
+      "size": 98512
+    },
+    {
+      "file": "exgallery.tjs",
+      "size": 99932
+    },
+    {
+      "file": "exgamepad.tjs",
+      "size": 34160
+    },
+    {
+      "file": "extra__bg0.tlg",
+      "size": 865753
+    },
+    {
+      "file": "extra__pack.tlg",
+      "size": 36306
+    },
+    {
+      "file": "extra_cg__pack.tlg",
+      "size": 81341
+    },
+    {
+      "file": "extra_cg_jp.pbd",
+      "size": 89082
+    },
+    {
+      "file": "extra_cgscene__bg0.tlg",
+      "size": 438146
+    },
+    {
+      "file": "extra_cgscene__pack.tlg",
+      "size": 144170
+    },
+    {
+      "file": "extra_cgscene_jp__pack.tlg",
+      "size": 6669
+    },
+    {
+      "file": "extra_cgview.pbd",
+      "size": 23016
+    },
+    {
+      "file": "extra_cgview__bg0.tlg",
+      "size": 105942
+    },
+    {
+      "file": "extra_cgview__pack.tlg",
+      "size": 112749
+    },
+    {
+      "file": "extra_jp__pack.tlg",
+      "size": 14261
+    },
+    {
+      "file": "extrans.dll",
+      "size": 237568
+    },
+    {
+      "file": "extrans.dll.sig",
+      "size": 212
+    },
+    {
+      "file": "facethumbdraw.tjs",
+      "size": 18900
+    },
+    {
+      "file": "facezoom.csv",
+      "size": 1179,
+      "encoding": "utf-16-le/yuzuex@10",
+      "score": 1.1904,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\facezoom.csv.utf8.txt"
+    },
+    {
+      "file": "filegain.csv",
+      "size": 3819,
+      "encoding": "utf-16-le/yuzuex@12",
+      "score": 1.2322,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\filegain.csv.utf8.txt"
+    },
+    {
+      "file": "first.ks",
+      "size": 3565,
+      "encoding": "utf-16-le/yuzuex@6",
+      "score": 1.4589,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\first.ks.utf8.txt"
+    },
+    {
+      "file": "fontalias.tjs",
+      "size": 7236
+    },
+    {
+      "file": "gamecont.tjs",
+      "size": 10308
+    },
+    {
+      "file": "genericflip.tjs",
+      "size": 5156
+    },
+    {
+      "file": "gesture.tjs",
+      "size": 52080
+    },
+    {
+      "file": "gfx_amovie.tjs",
+      "size": 5476
+    },
+    {
+      "file": "gfx_movie.tjs",
+      "size": 10804
+    },
+    {
+      "file": "gfx_moviese.tjs",
+      "size": 2692
+    },
+    {
+      "file": "gfx_particle.tjs",
+      "size": 12964
+    },
+    {
+      "file": "gfx_voice.tjs",
+      "size": 3332
+    },
+    {
+      "file": "headfont_atlas.tjs",
+      "size": 135952
+    },
+    {
+      "file": "help_extra.txt",
+      "size": 3689,
+      "encoding": "utf-16-le/yuzuex@8",
+      "score": 1.2466,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\help_extra.txt.utf8.txt"
+    },
+    {
+      "file": "help_flow.txt",
+      "size": 2011,
+      "encoding": "utf-16-le/yuzuex@10",
+      "score": 1.2738,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\help_flow.txt.utf8.txt"
+    },
+    {
+      "file": "help_opt.txt",
+      "size": 30715,
+      "encoding": "utf-16-le/yuzuex@8",
+      "score": 1.3034,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\help_opt.txt.utf8.txt"
+    },
+    {
+      "file": "helptextman.tjs",
+      "size": 37824
+    },
+    {
+      "file": "historylayer.tjs",
+      "size": 26752
+    },
+    {
+      "file": "hsvcpick.tjs",
+      "size": 37920
+    },
+    {
+      "file": "image__systrans_mask.png",
+      "size": 132
+    },
+    {
+      "file": "image__systrans_page.png",
+      "size": 104
+    },
+    {
+      "file": "image__systrans_rev.png",
+      "size": 744
+    },
+    {
+      "file": "image__systrans_rule.png",
+      "size": 984
+    },
+    {
+      "file": "image__title_bg7.png",
+      "size": 2719310
+    },
+    {
+      "file": "image__title_logo.png",
+      "size": 93820
+    },
+    {
+      "file": "imagediffmap.csv",
+      "size": 170527,
+      "encoding": "utf-16-le/yuzuex@12",
+      "score": 1.3988,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\imagediffmap.csv.utf8.txt"
+    },
+    {
+      "file": "imagedressmap.txt",
+      "size": 337,
+      "encoding": "utf-16-le/yuzuex@6",
+      "score": 1.2744,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\imagedressmap.txt.utf8.txt"
+    },
+    {
+      "file": "imageevalmap.csv",
+      "size": 45785,
+      "encoding": "utf-16-le/yuzuex@6",
+      "score": 1.444,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\imageevalmap.csv.utf8.txt"
+    },
+    {
+      "file": "imagemulti.txt",
+      "size": 293,
+      "encoding": "utf-16-le/yuzuex@12",
+      "score": 1.2014,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\imagemulti.txt.utf8.txt"
+    },
+    {
+      "file": "imagenamemap.txt",
+      "size": 1021,
+      "encoding": "utf-16-le/yuzuex@6",
+      "score": 1.2891,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\imagenamemap.txt.utf8.txt"
+    },
+    {
+      "file": "imagepropmap.txt",
+      "size": 271,
+      "encoding": "utf-16-le/yuzuex@6",
+      "score": 1.1923,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\imagepropmap.txt.utf8.txt"
+    },
+    {
+      "file": "initialize.tjs",
+      "size": 32736
+    },
+    {
+      "file": "k2compat.tjs",
+      "size": 19124
+    },
+    {
+      "file": "k2compat_modeless.tjs",
+      "size": 13312
+    },
+    {
+      "file": "k2compat_pad.tjs",
+      "size": 1792
+    },
+    {
+      "file": "k2compat_padcommon.tjs",
+      "size": 21524
+    },
+    {
+      "file": "kagenvbase.tjs",
+      "size": 37864
+    },
+    {
+      "file": "kagenvhistorydata.tjs",
+      "size": 9940
+    },
+    {
+      "file": "kagenvimage.tjs",
+      "size": 100820
+    },
+    {
+      "file": "kagenvimagemapperstage.tjs",
+      "size": 7220
+    },
+    {
+      "file": "kagenvimagemapperstand.tjs",
+      "size": 16552
+    },
+    {
+      "file": "kagenvironment.tjs",
+      "size": 89216
+    },
+    {
+      "file": "kagenvminiplayer.tjs",
+      "size": 9388
+    },
+    {
+      "file": "kagenvminiplayerlayer.tjs",
+      "size": 10120
+    },
+    {
+      "file": "kagenvmusic.tjs",
+      "size": 11884
+    },
+    {
+      "file": "kagenvplayer.tjs",
+      "size": 48720
+    },
+    {
+      "file": "kagenvsound.tjs",
+      "size": 5276
+    },
+    {
+      "file": "kagenvtrans.tjs",
+      "size": 9644
+    },
+    {
+      "file": "kaglayer.tjs",
+      "size": 5228
+    },
+    {
+      "file": "keybinder.tjs",
+      "size": 38740
+    },
+    {
+      "file": "keyfont_atlas.tjs",
+      "size": 29092
+    },
+    {
+      "file": "Kosugi-LICENSE.txt",
+      "size": 20711,
+      "encoding": "utf-16-le/yuzuex@12",
+      "score": 1.4604,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\Kosugi-LICENSE.txt.utf8.txt"
+    },
+    {
+      "file": "Kosugi-NOTICE.txt",
+      "size": 1435,
+      "encoding": "utf-16-le/yuzuex@6",
+      "score": 1.4636,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\Kosugi-NOTICE.txt.utf8.txt"
+    },
+    {
+      "file": "langrender.tjs",
+      "size": 5012
+    },
+    {
+      "file": "layerex.tjs",
+      "size": 7808
+    },
+    {
+      "file": "linemode.tjs",
+      "size": 29760
+    },
+    {
+      "file": "linemodeex.tjs",
+      "size": 29144
+    },
+    {
+      "file": "loopvoice.tjs",
+      "size": 2612
+    },
+    {
+      "file": "macro.ks",
+      "size": 22471,
+      "encoding": "utf-16-le/yuzuex@6",
+      "score": 1.419,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\macro.ks.utf8.txt"
+    },
+    {
+      "file": "mainwindow.tjs",
+      "size": 474420
+    },
+    {
+      "file": "mapselectlayer.tjs",
+      "size": 13160
+    },
+    {
+      "file": "menu.dll",
+      "size": 139264
+    },
+    {
+      "file": "menu.dll.sig",
+      "size": 212
+    },
+    {
+      "file": "menus.tjs",
+      "size": 33752
+    },
+    {
+      "file": "messagelayer.tjs",
+      "size": 124624
+    },
+    {
+      "file": "mik_config.ogg",
+      "size": 19436
+    },
+    {
+      "file": "mik_extra.ogg",
+      "size": 23416
+    },
+    {
+      "file": "mik_title.ogg",
+      "size": 28689
+    },
+    {
+      "file": "mixinclass.tjs",
+      "size": 13764
+    },
+    {
+      "file": "motion.tjs",
+      "size": 3116
+    },
+    {
+      "file": "movie.tjs",
+      "size": 26752
+    },
+    {
+      "file": "movieaudiosample.tjs",
+      "size": 20424
+    },
+    {
+      "file": "moviesecontroller.tjs",
+      "size": 9640
+    },
+    {
+      "file": "mscurautohide.tjs",
+      "size": 5304
+    },
+    {
+      "file": "msghack.tjs",
+      "size": 70636
+    },
+    {
+      "file": "multiresolution.tjs",
+      "size": 2724
+    },
+    {
+      "file": "myhistorylayer.tjs",
+      "size": 38280
+    },
+    {
+      "file": "mymapselectlayer.tjs",
+      "size": 11004
+    },
+    {
+      "file": "myyesnodialog.tjs",
+      "size": 24432
+    },
+    {
+      "file": "name.tjs",
+      "size": 11956
+    },
+    {
+      "file": "nay_window.ogg",
+      "size": 27353
+    },
+    {
+      "file": "nocfchkdialog.tjs",
+      "size": 14204
+    },
+    {
+      "file": "numfont2_atlas.tjs",
+      "size": 5354
+    },
+    {
+      "file": "numfont_atlas.tjs",
+      "size": 5353
+    },
+    {
+      "file": "option.ks",
+      "size": 3233,
+      "encoding": "utf-16-le/yuzuex@12",
+      "score": 1.3773,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\option.ks.utf8.txt"
+    },
+    {
+      "file": "option.tjs",
+      "size": 134996
+    },
+    {
+      "file": "option_01__pack.tlg",
+      "size": 346521
+    },
+    {
+      "file": "option_01_jp.pbd",
+      "size": 138770
+    },
+    {
+      "file": "option_01_jp__pack.tlg",
+      "size": 13901
+    },
+    {
+      "file": "option_02__pack.tlg",
+      "size": 313099
+    },
+    {
+      "file": "option_02_jp.pbd",
+      "size": 122288
+    },
+    {
+      "file": "option_02_jp__pack.tlg",
+      "size": 29152
+    },
+    {
+      "file": "option_03__pack.tlg",
+      "size": 329744
+    },
+    {
+      "file": "option_03_jp.pbd",
+      "size": 117672
+    },
+    {
+      "file": "option_03_jp__pack.tlg",
+      "size": 41601
+    },
+    {
+      "file": "option_04__pack.tlg",
+      "size": 394773
+    },
+    {
+      "file": "option_04_jp.pbd",
+      "size": 115170
+    },
+    {
+      "file": "option_04_jp__pack.tlg",
+      "size": 41611
+    },
+    {
+      "file": "option_05__pack.tlg",
+      "size": 688117
+    },
+    {
+      "file": "option_05_jp.pbd",
+      "size": 116402
+    },
+    {
+      "file": "option_05_jp__pack.tlg",
+      "size": 28253
+    },
+    {
+      "file": "option_06__pack.tlg",
+      "size": 766442
+    },
+    {
+      "file": "option_06_jp.pbd",
+      "size": 212968
+    },
+    {
+      "file": "option_06_jp__pack.tlg",
+      "size": 30649
+    },
+    {
+      "file": "option_07__pack.tlg",
+      "size": 322816
+    },
+    {
+      "file": "option_07_jp.pbd",
+      "size": 131408
+    },
+    {
+      "file": "option_07_jp__pack.tlg",
+      "size": 87465
+    },
+    {
+      "file": "option_08__pack.tlg",
+      "size": 547472
+    },
+    {
+      "file": "option_08_jp.pbd",
+      "size": 97178
+    },
+    {
+      "file": "option_08_jp__pack.tlg",
+      "size": 19588
+    },
+    {
+      "file": "option_09__pack.tlg",
+      "size": 534810
+    },
+    {
+      "file": "option_09_jp.pbd",
+      "size": 112268
+    },
+    {
+      "file": "option_09_jp__pack.tlg",
+      "size": 74766
+    },
+    {
+      "file": "option_10__pack.tlg",
+      "size": 638033
+    },
+    {
+      "file": "option_10_jp.pbd",
+      "size": 111978
+    },
+    {
+      "file": "option_10_jp__pack.tlg",
+      "size": 3437
+    },
+    {
+      "file": "option__bg0.tlg",
+      "size": 887572
+    },
+    {
+      "file": "option__pack.tlg",
+      "size": 176899
+    },
+    {
+      "file": "option_cmds__pack.tlg",
+      "size": 80798
+    },
+    {
+      "file": "option_jp__pack.tlg",
+      "size": 21826
+    },
+    {
+      "file": "otherfonts-LICENSE.txt",
+      "size": 9607,
+      "encoding": "utf-16-le/yuzuex@6",
+      "score": 1.4754,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\otherfonts-LICENSE.txt.utf8.txt"
+    },
+    {
+      "file": "override.tjs",
+      "size": 139912
+    },
+    {
+      "file": "pagebase.tjs",
+      "size": 19348
+    },
+    {
+      "file": "passivecomp.tjs",
+      "size": 1555,
+      "encoding": "utf-16-le/yuzuex@12",
+      "score": 1.3724,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\passivecomp.tjs.utf8.txt"
+    },
+    {
+      "file": "phonechat.pbd",
+      "size": 10952
+    },
+    {
+      "file": "phonechat.tjs",
+      "size": 64964
+    },
+    {
+      "file": "phonechat__bg0.tlg",
+      "size": 106005
+    },
+    {
+      "file": "phonechat__pack.tlg",
+      "size": 47130
+    },
+    {
+      "file": "plugin.tjs",
+      "size": 1428
+    },
+    {
+      "file": "prerenderfontex.tjs",
+      "size": 35892
+    },
+    {
+      "file": "psdlayer.tjs",
+      "size": 40780
+    },
+    {
+      "file": "qlpopup.tjs",
+      "size": 18192
+    },
+    {
+      "file": "quickmenu.pbd",
+      "size": 56960
+    },
+    {
+      "file": "quickmenu.tjs",
+      "size": 35004
+    },
+    {
+      "file": "quickmenu__bg0.tlg",
+      "size": 6253
+    },
+    {
+      "file": "quickmenu__pack.tlg",
+      "size": 211411
+    },
+    {
+      "file": "rendermsgwin.tjs",
+      "size": 27512
+    },
+    {
+      "file": "rir_dialog.ogg",
+      "size": 25316
+    },
+    {
+      "file": "rotatesave.tjs",
+      "size": 6188
+    },
+    {
+      "file": "saveload.tjs",
+      "size": 149128
+    },
+    {
+      "file": "scenemode.tjs",
+      "size": 9412
+    },
+    {
+      "file": "scnchart.ks",
+      "size": 7345,
+      "encoding": "utf-16-le/yuzuex@12",
+      "score": 1.4194,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\scnchart.ks.utf8.txt"
+    },
+    {
+      "file": "scnchart.tjs",
+      "size": 32800
+    },
+    {
+      "file": "scnchart__bg0.tlg",
+      "size": 545952
+    },
+    {
+      "file": "scnchart__pack.tlg",
+      "size": 574410
+    },
+    {
+      "file": "scnchart_jp.pbd",
+      "size": 48922
+    },
+    {
+      "file": "scnchart_jp__pack.tlg",
+      "size": 8199
+    },
+    {
+      "file": "scnchart_ui.tjs",
+      "size": 128384
+    },
+    {
+      "file": "scnchart_ui_sel.tjs",
+      "size": 16480
+    },
+    {
+      "file": "scnchart_ui_smp.tjs",
+      "size": 20152
+    },
+    {
+      "file": "scnchartdata.tjs",
+      "size": 379219,
+      "encoding": "utf-16-le/yuzuex@10",
+      "score": 1.1064,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\scnchartdata.tjs.utf8.txt"
+    },
+    {
+      "file": "scrollutil.tjs",
+      "size": 127908
+    },
+    {
+      "file": "se.tjs",
+      "size": 8012
+    },
+    {
+      "file": "select.pbd",
+      "size": 12568
+    },
+    {
+      "file": "selectlayer.tjs",
+      "size": 30752
+    },
+    {
+      "file": "showdate.tjs",
+      "size": 14724
+    },
+    {
+      "file": "simpleanim.tjs",
+      "size": 64956
+    },
+    {
+      "file": "sliderlayer.tjs",
+      "size": 28864
+    },
+    {
+      "file": "snapcapture.tjs",
+      "size": 78312
+    },
+    {
+      "file": "soundgain.csv",
+      "size": 2237,
+      "encoding": "utf-16-le/yuzuex@12",
+      "score": 1.1307,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\soundgain.csv.utf8.txt"
+    },
+    {
+      "file": "soundlist.csv",
+      "size": 4749,
+      "encoding": "utf-16-le/yuzuex@8",
+      "score": 1.4298,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\soundlist.csv.utf8.txt"
+    },
+    {
+      "file": "soundmode.tjs",
+      "size": 24060
+    },
+    {
+      "file": "SourceHanSansAndSerif-LICENSE.txt",
+      "size": 8791,
+      "encoding": "utf-16-le/yuzuex@6",
+      "score": 1.4761,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\SourceHanSansAndSerif-LICENSE.txt.utf8.txt"
+    },
+    {
+      "file": "SourceHanSansAndSerif-NOTICE.txt",
+      "size": 359,
+      "encoding": "utf-16-le/yuzuex@6",
+      "score": 1.4716,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\SourceHanSansAndSerif-NOTICE.txt.utf8.txt"
+    },
+    {
+      "file": "speech.tjs",
+      "size": 26484
+    },
+    {
+      "file": "sqscr.tjs",
+      "size": 15292
+    },
+    {
+      "file": "standimage.tjs",
+      "size": 24428
+    },
+    {
+      "file": "standinformation.tjs",
+      "size": 22176
+    },
+    {
+      "file": "standlayer.tjs",
+      "size": 13136
+    },
+    {
+      "file": "startup.tjs",
+      "size": 1300
+    },
+    {
+      "file": "stayontop.tjs",
+      "size": 2752
+    },
+    {
+      "file": "stopdeactive.tjs",
+      "size": 9764
+    },
+    {
+      "file": "storages.tjs",
+      "size": 3419,
+      "encoding": "utf-16-le/yuzuex@8",
+      "score": 1.3294,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\storages.tjs.utf8.txt"
+    },
+    {
+      "file": "subtitlelayer.tjs",
+      "size": 7268
+    },
+    {
+      "file": "sysse.ini",
+      "size": 18529,
+      "encoding": "utf-16-le/yuzuex@6",
+      "score": 1.4471,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\sysse.ini.utf8.txt"
+    },
+    {
+      "file": "system.tjs",
+      "size": 117724
+    },
+    {
+      "file": "systrans.ini",
+      "size": 1503,
+      "encoding": "utf-16-le/yuzuex@12",
+      "score": 1.3693,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\systrans.ini.utf8.txt"
+    },
+    {
+      "file": "systrans_mask.png",
+      "size": 132
+    },
+    {
+      "file": "systrans_page.png",
+      "size": 104
+    },
+    {
+      "file": "systrans_rev.png",
+      "size": 744
+    },
+    {
+      "file": "systrans_rule.png",
+      "size": 984
+    },
+    {
+      "file": "sysvoice.tjs",
+      "size": 23184
+    },
+    {
+      "file": "tagtextconverter.tjs",
+      "size": 19040
+    },
+    {
+      "file": "tagtextconverterex.tjs",
+      "size": 7068
+    },
+    {
+      "file": "textrender.tjs",
+      "size": 15360
+    },
+    {
+      "file": "texttagconverter.tjs",
+      "size": 10248
+    },
+    {
+      "file": "title.ks",
+      "size": 2489,
+      "encoding": "utf-16-le/yuzuex@6",
+      "score": 1.3441,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\title.ks.utf8.txt"
+    },
+    {
+      "file": "title__bg0.tlg",
+      "size": 11800
+    },
+    {
+      "file": "title__pack.tlg",
+      "size": 34011
+    },
+    {
+      "file": "title_bg.mtn",
+      "size": 32404171
+    },
+    {
+      "file": "title_bg0.png",
+      "size": 2568799
+    },
+    {
+      "file": "title_bg1.png",
+      "size": 1912894
+    },
+    {
+      "file": "title_bg2.png",
+      "size": 1795104
+    },
+    {
+      "file": "title_bg3.png",
+      "size": 1587092
+    },
+    {
+      "file": "title_bg4.png",
+      "size": 1765025
+    },
+    {
+      "file": "title_bg5.png",
+      "size": 1871851
+    },
+    {
+      "file": "title_bg6.png",
+      "size": 1803762
+    },
+    {
+      "file": "title_bg7.mtn",
+      "size": 9043942
+    },
+    {
+      "file": "title_bg7.png",
+      "size": 2719310
+    },
+    {
+      "file": "title_bg_trial.mtn",
+      "size": 10426997
+    },
+    {
+      "file": "title_bg_trial.png",
+      "size": 2126534
+    },
+    {
+      "file": "title_jp.pbd",
+      "size": 25990
+    },
+    {
+      "file": "title_jp__pack.tlg",
+      "size": 221208
+    },
+    {
+      "file": "title_logo.png",
+      "size": 93820
+    },
+    {
+      "file": "title_nolang.func",
+      "size": 51,
+      "encoding": "utf-16-le/yuzuex@10",
+      "score": 1.2632,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\title_nolang.func.utf8.txt"
+    },
+    {
+      "file": "toml.dll",
+      "size": 540672
+    },
+    {
+      "file": "toml.dll.sig",
+      "size": 212
+    },
+    {
+      "file": "touchui.tjs",
+      "size": 56632
+    },
+    {
+      "file": "touchuibar.pbd",
+      "size": 35124
+    },
+    {
+      "file": "touchuibar__bg0.tlg",
+      "size": 10101
+    },
+    {
+      "file": "touchuibar__pack.tlg",
+      "size": 48944
+    },
+    {
+      "file": "translayer.tjs",
+      "size": 6444
+    },
+    {
+      "file": "uichart.tjs",
+      "size": 47836
+    },
+    {
+      "file": "uiextra.tjs",
+      "size": 95424
+    },
+    {
+      "file": "uifile.tjs",
+      "size": 29612
+    },
+    {
+      "file": "uiloader.tjs",
+      "size": 88448
+    },
+    {
+      "file": "uimain.tjs",
+      "size": 90368
+    },
+    {
+      "file": "uioption.tjs",
+      "size": 74616
+    },
+    {
+      "file": "uiparts.tjs",
+      "size": 34224
+    },
+    {
+      "file": "uipsd__animkaglayer.tjs",
+      "size": 4300
+    },
+    {
+      "file": "uipsd__autoskipmark_img.pbd",
+      "size": 17076
+    },
+    {
+      "file": "uipsd__autoskipmark_img__pack.tlg",
+      "size": 90175
+    },
+    {
+      "file": "uipsd__autoskipmark_pos.pbd",
+      "size": 664
+    },
+    {
+      "file": "uipsd__bgmtitle.pbd",
+      "size": 728
+    },
+    {
+      "file": "uipsd__chapter.pbd",
+      "size": 1130
+    },
+    {
+      "file": "uipsd__chapter__bg0.tlg",
+      "size": 14878
+    },
+    {
+      "file": "uipsd__dialog__bg0.tlg",
+      "size": 258346
+    },
+    {
+      "file": "uipsd__dialog__pack.tlg",
+      "size": 317464
+    },
+    {
+      "file": "uipsd__dialog_jp.pbd",
+      "size": 17784
+    },
+    {
+      "file": "uipsd__dialog_jp__pack.tlg",
+      "size": 24291
+    },
+    {
+      "file": "uipsd__extra__bg0.tlg",
+      "size": 865753
+    },
+    {
+      "file": "uipsd__extra__pack.tlg",
+      "size": 36306
+    },
+    {
+      "file": "uipsd__extra_cg__pack.tlg",
+      "size": 81341
+    },
+    {
+      "file": "uipsd__extra_cg_jp.pbd",
+      "size": 89082
+    },
+    {
+      "file": "uipsd__extra_cgscene__bg0.tlg",
+      "size": 438146
+    },
+    {
+      "file": "uipsd__extra_cgscene__pack.tlg",
+      "size": 144170
+    },
+    {
+      "file": "uipsd__extra_cgscene_jp__pack.tlg",
+      "size": 6669
+    },
+    {
+      "file": "uipsd__extra_cgview.pbd",
+      "size": 23016
+    },
+    {
+      "file": "uipsd__extra_cgview__bg0.tlg",
+      "size": 105942
+    },
+    {
+      "file": "uipsd__extra_cgview__pack.tlg",
+      "size": 112749
+    },
+    {
+      "file": "uipsd__extra_jp__pack.tlg",
+      "size": 14261
+    },
+    {
+      "file": "uipsd__option_01__pack.tlg",
+      "size": 346521
+    },
+    {
+      "file": "uipsd__option_01_jp.pbd",
+      "size": 138770
+    },
+    {
+      "file": "uipsd__option_01_jp__pack.tlg",
+      "size": 13901
+    },
+    {
+      "file": "uipsd__option_02__pack.tlg",
+      "size": 313099
+    },
+    {
+      "file": "uipsd__option_02_jp.pbd",
+      "size": 122288
+    },
+    {
+      "file": "uipsd__option_02_jp__pack.tlg",
+      "size": 29152
+    },
+    {
+      "file": "uipsd__option_03__pack.tlg",
+      "size": 329744
+    },
+    {
+      "file": "uipsd__option_03_jp.pbd",
+      "size": 117672
+    },
+    {
+      "file": "uipsd__option_03_jp__pack.tlg",
+      "size": 41601
+    },
+    {
+      "file": "uipsd__option_04__pack.tlg",
+      "size": 394773
+    },
+    {
+      "file": "uipsd__option_04_jp.pbd",
+      "size": 115170
+    },
+    {
+      "file": "uipsd__option_04_jp__pack.tlg",
+      "size": 41611
+    },
+    {
+      "file": "uipsd__option_05__pack.tlg",
+      "size": 688117
+    },
+    {
+      "file": "uipsd__option_05_jp.pbd",
+      "size": 116402
+    },
+    {
+      "file": "uipsd__option_05_jp__pack.tlg",
+      "size": 28253
+    },
+    {
+      "file": "uipsd__option_06__pack.tlg",
+      "size": 766442
+    },
+    {
+      "file": "uipsd__option_06_jp.pbd",
+      "size": 212968
+    },
+    {
+      "file": "uipsd__option_06_jp__pack.tlg",
+      "size": 30649
+    },
+    {
+      "file": "uipsd__option_07__pack.tlg",
+      "size": 322816
+    },
+    {
+      "file": "uipsd__option_07_jp.pbd",
+      "size": 131408
+    },
+    {
+      "file": "uipsd__option_07_jp__pack.tlg",
+      "size": 87465
+    },
+    {
+      "file": "uipsd__option_08__pack.tlg",
+      "size": 547472
+    },
+    {
+      "file": "uipsd__option_08_jp.pbd",
+      "size": 97178
+    },
+    {
+      "file": "uipsd__option_08_jp__pack.tlg",
+      "size": 19588
+    },
+    {
+      "file": "uipsd__option_09__pack.tlg",
+      "size": 534810
+    },
+    {
+      "file": "uipsd__option_09_jp.pbd",
+      "size": 112268
+    },
+    {
+      "file": "uipsd__option_09_jp__pack.tlg",
+      "size": 74766
+    },
+    {
+      "file": "uipsd__option_10__pack.tlg",
+      "size": 638033
+    },
+    {
+      "file": "uipsd__option_10_jp.pbd",
+      "size": 111978
+    },
+    {
+      "file": "uipsd__option_10_jp__pack.tlg",
+      "size": 3437
+    },
+    {
+      "file": "uipsd__option__bg0.tlg",
+      "size": 887572
+    },
+    {
+      "file": "uipsd__option__pack.tlg",
+      "size": 176899
+    },
+    {
+      "file": "uipsd__option_cmds__pack.tlg",
+      "size": 80798
+    },
+    {
+      "file": "uipsd__option_jp__pack.tlg",
+      "size": 21826
+    },
+    {
+      "file": "uipsd__phonechat.pbd",
+      "size": 10952
+    },
+    {
+      "file": "uipsd__phonechat__bg0.tlg",
+      "size": 106005
+    },
+    {
+      "file": "uipsd__phonechat__pack.tlg",
+      "size": 47130
+    },
+    {
+      "file": "uipsd__quickmenu.pbd",
+      "size": 56960
+    },
+    {
+      "file": "uipsd__quickmenu__bg0.tlg",
+      "size": 6253
+    },
+    {
+      "file": "uipsd__quickmenu__pack.tlg",
+      "size": 211411
+    },
+    {
+      "file": "uipsd__scnchart__bg0.tlg",
+      "size": 545952
+    },
+    {
+      "file": "uipsd__scnchart__pack.tlg",
+      "size": 574410
+    },
+    {
+      "file": "uipsd__scnchart_jp.pbd",
+      "size": 48922
+    },
+    {
+      "file": "uipsd__scnchart_jp__pack.tlg",
+      "size": 8199
+    },
+    {
+      "file": "uipsd__select.pbd",
+      "size": 12568
+    },
+    {
+      "file": "uipsd__title__bg0.tlg",
+      "size": 11800
+    },
+    {
+      "file": "uipsd__title__pack.tlg",
+      "size": 34011
+    },
+    {
+      "file": "uipsd__title_jp.pbd",
+      "size": 25990
+    },
+    {
+      "file": "uipsd__title_jp__pack.tlg",
+      "size": 221208
+    },
+    {
+      "file": "uipsd__title_nolang.func",
+      "size": 51
+    },
+    {
+      "file": "uipsd__touchuibar.pbd",
+      "size": 35124
+    },
+    {
+      "file": "uipsd__touchuibar__bg0.tlg",
+      "size": 10101
+    },
+    {
+      "file": "uipsd__touchuibar__pack.tlg",
+      "size": 48944
+    },
+    {
+      "file": "uipsd__voicebar.pbd",
+      "size": 5664
+    },
+    {
+      "file": "uipsd__voicebar__pack.tlg",
+      "size": 14197
+    },
+    {
+      "file": "uipsd__window.pbd",
+      "size": 3094
+    },
+    {
+      "file": "uipsd__window__bg0.tlg",
+      "size": 202
+    },
+    {
+      "file": "uipsd__window__pack.tlg",
+      "size": 72780
+    },
+    {
+      "file": "uiqconfpop.tjs",
+      "size": 57072
+    },
+    {
+      "file": "uistand.tjs",
+      "size": 145340
+    },
+    {
+      "file": "uisupport.tjs",
+      "size": 16324
+    },
+    {
+      "file": "uisystem.tjs",
+      "size": 60628
+    },
+    {
+      "file": "uitext.tjs",
+      "size": 48248
+    },
+    {
+      "file": "uitexts.toml",
+      "size": 134369,
+      "encoding": "utf-16-le/yuzuex@10",
+      "score": 1.4026,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\uitexts.toml.utf8.txt"
+    },
+    {
+      "file": "uitouch.tjs",
+      "size": 33208
+    },
+    {
+      "file": "uivoice.tjs",
+      "size": 20692
+    },
+    {
+      "file": "updateregion.tjs",
+      "size": 3496
+    },
+    {
+      "file": "used2d.tjs",
+      "size": 4500
+    },
+    {
+      "file": "utils.tjs",
+      "size": 49672
+    },
+    {
+      "file": "version.ks",
+      "size": 341,
+      "encoding": "utf-16-le/yuzuex@12",
+      "score": 1.3988,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\version.ks.utf8.txt"
+    },
+    {
+      "file": "voice.tjs",
+      "size": 12784
+    },
+    {
+      "file": "voicebar.pbd",
+      "size": 5664
+    },
+    {
+      "file": "voicebar__pack.tlg",
+      "size": 14197
+    },
+    {
+      "file": "voiceeffect.tjs",
+      "size": 49116
+    },
+    {
+      "file": "voicemode.tjs",
+      "size": 88716
+    },
+    {
+      "file": "voiceprogress.tjs",
+      "size": 12976
+    },
+    {
+      "file": "wf_reverb.ini",
+      "size": 913,
+      "encoding": "utf-16-le/yuzuex@12",
+      "score": 1.096,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\wf_reverb.ini.utf8.txt"
+    },
+    {
+      "file": "win11depend.tjs",
+      "size": 4376
+    },
+    {
+      "file": "win32dialog.dll",
+      "size": 305664
+    },
+    {
+      "file": "win32dialog.dll.sig",
+      "size": 212
+    },
+    {
+      "file": "win32dialog.tjs",
+      "size": 65612
+    },
+    {
+      "file": "window.pbd",
+      "size": 3094
+    },
+    {
+      "file": "window__bg0.tlg",
+      "size": 202
+    },
+    {
+      "file": "window__pack.tlg",
+      "size": 72780
+    },
+    {
+      "file": "windowEx.dll",
+      "size": 262656
+    },
+    {
+      "file": "windowEx.dll.sig",
+      "size": 212
+    },
+    {
+      "file": "world.tjs",
+      "size": 241748
+    },
+    {
+      "file": "yaml.tjs",
+      "size": 12580
+    },
+    {
+      "file": "yesnodialog.tjs",
+      "size": 5360
+    },
+    {
+      "file": "yuzu_default.tjs",
+      "size": 31685,
+      "encoding": "utf-16-le/yuzuex@6",
+      "score": 1.3028,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\yuzu_default.tjs.utf8.txt"
+    },
+    {
+      "file": "yuzu_patchdetect.tjs",
+      "size": 11531,
+      "encoding": "utf-16-le/yuzuex@12",
+      "score": 1.3576,
+      "decoded": "D:\\gamedev\\GAL框架\\docs\\lllJ-design-reference\\xp3-system-extract\\decoded-text\\yuzu_patchdetect.tjs.utf8.txt"
+    }
+  ]
+}

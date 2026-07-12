@@ -1,0 +1,276 @@
+// Initialize.tjs - 系统初始化
+// Copyright (C)2001-2009, W.Dee and contributors  可自由修改与再分发
+
+// 系统版本
+var kagVersion = "3.32 stable rev. 2";
+
+/*
+	Debug.message 的快捷方式
+*/
+
+var dm = Debug.message; // 可通过 dm("message"); 在控制台显示 message
+
+
+/*
+	默认「未捕获异常」处理器
+*/
+
+System.exceptionHandler = function (e)
+{
+	// 当未被任何地方捕获的异常由系统侧捕获时，会调用此函数。
+	// e 为异常对象。
+	if(e instanceof "ConductorException")
+	{
+		// 由 Conductor 抛出的异常
+		Debug.logAsError(); // 开始将日志写入文件等
+		var event_disabled = System.eventDisabled;
+		System.eventDisabled = true;
+			// 显示错误原因期间若仍发生事件会很麻烦，
+			// 因此暂时停止事件派发
+		System.inform(e.message);
+		System.eventDisabled = event_disabled;
+			// 恢复事件派发开关至原状态
+		return true; // 返回 true 则本体侧不再处理该异常
+	}
+	else
+	{
+		return false; // 返回 false 则走常规异常处理
+	}
+};
+
+
+/*
+	路径设置
+	后指定的项优先级更高
+*/
+
+
+function useArchiveIfExists(name)
+{
+	// 若 name 存在则使用该归档
+	var arcname;
+	if(Storages.isExistentStorage(arcname = System.exePath + name))
+		Storages.addAutoPath(arcname + ">");
+}
+
+Storages.addAutoPath(System.exePath + "video/"); // exePath 下的 video/
+Storages.addAutoPath("video/"); // video 文件夹
+Storages.addAutoPath("others/"); // 其他
+Storages.addAutoPath("rule/"); // 过渡规则图文件夹
+Storages.addAutoPath("sound/"); // 音效文件夹
+Storages.addAutoPath("bgm/"); // BGM 文件夹
+Storages.addAutoPath("fgimage/"); // 前景图文件夹
+Storages.addAutoPath("bgimage/"); // 背景图文件夹
+Storages.addAutoPath("scenario/"); // 剧本文件夹
+Storages.addAutoPath("image/"); // 其他图片文件夹
+Storages.addAutoPath("system/"); // 系统文件夹
+
+// 补丁归档的查找与使用
+// 若可执行文件同目录下存在这些名称的归档，则优先使用
+useArchiveIfExists("video.xp3");
+useArchiveIfExists("others.xp3");
+useArchiveIfExists("rule.xp3");
+useArchiveIfExists("sound.xp3");
+useArchiveIfExists("bgm.xp3");
+useArchiveIfExists("fgimage.xp3");
+useArchiveIfExists("bgimage.xp3");
+useArchiveIfExists("scenario.xp3");
+useArchiveIfExists("image.xp3");
+useArchiveIfExists("system.xp3");
+
+useArchiveIfExists("patch.xp3");
+
+// 查找额外的补丁归档
+for(var i = 2; ; i++)
+{
+	// 若存在 patch2.xp3、patch3.xp3 ... 等补丁归档，则优先加载
+	if(Storages.isExistentStorage(System.exePath + "patch" + i + ".xp3"))
+		Storages.addAutoPath(System.exePath + "patch" + i + ".xp3>");
+	else
+		break;
+}
+
+delete useArchiveIfExists; // useArchiveIfExists 已用完，顺便删除
+
+/*
+	系统版本
+*/
+Debug.notice("OS : " + System.osName + " (" + System.platformName + ")");
+Debug.notice("KAG : " + kagVersion);
+Debug.notice("Kirikiri : " + System.versionString);
+
+/*
+	（调试）计时
+*/
+
+var parseStartTick = System.getTickCount();
+
+
+/*
+	脚本加载包装器
+*/
+
+function KAGLoadScript(name)
+{
+	var start = System.getTickCount();
+	Scripts.execStorage(name);
+	dm(name + " 已加载（" + (System.getTickCount() - start) + " ms）");
+}
+
+var loaded_scripts = %[];
+
+function KAGLoadScriptOnce(name)
+{
+	// 加载指定脚本，但只加载一次
+	if(global.loaded_scripts[name] === true) return; // 已加载
+	global.KAGLoadScript(name);
+	global.loaded_scripts[name] = true;
+}
+
+/*
+	加载 Config.tjs
+*/
+if(Storages.isExistentStorage("Config.tjs"))
+{
+	KAGLoadScript("Config.tjs");
+}
+else if(Storages.isExistentStorage("Config.~new"))
+{
+	System.inform("找不到 Config.tjs。\n请将 system 文件夹中的 "
+		"Config.~new 文件重命名为 Config.tjs。");
+	System.exit();
+}
+else
+{
+	throw new Exception("找不到 Config.tjs。");
+}
+
+/*
+	Config.tjs 版本检查
+*/
+
+if(typeof global.config_version == "undefined" || config_version != kagVersion)
+{
+	KAGLoadScript("UpdateConfig.tjs");
+}
+
+/*
+	重复启动检查
+*/
+
+// 以可执行文件路径为键进行加锁
+if(!System.createAppLock(System.exePath.replace(/[^A-Za-z]/g, '_')))
+{
+	// 已在运行
+	System.inform(System.title + " 已在运行中");
+	System.exit();
+}
+
+
+/*
+	按需加载（On-Demand Loading）的定义
+*/
+
+
+property askYesNo { getter() { KAGLoadScript("YesNoDialog.tjs"); return global.askYesNo; } }
+property CheckBoxLayer { getter() { KAGLoadScript("CheckBoxLayer.tjs"); return global.CheckBoxLayer; } }
+property ButtonLayer { getter() { KAGLoadScript("ButtonLayer.tjs"); return global.ButtonLayer; } }
+property EditLayer { getter() { KAGLoadScript("EditLayer.tjs"); return global.EditLayer; } }
+property KAGPlugin { getter() { KAGLoadScript("Plugin.tjs"); return global.KAGPlugin; } }
+
+/*
+	加载各系统脚本
+*/
+dm("正在加载 KAG 系统脚本...");
+
+KAGLoadScript("Utils.tjs");
+KAGLoadScript("KAGLayer.tjs");
+KAGLoadScript("HistoryLayer.tjs");
+KAGLoadScript("BGM.tjs");
+KAGLoadScript("SE.tjs");
+KAGLoadScript("Movie.tjs");
+KAGLoadScript("Conductor.tjs");
+KAGLoadScript("AnimationLayer.tjs");
+KAGLoadScript("GraphicLayer.tjs");
+KAGLoadScript("MessageLayer.tjs");
+KAGLoadScript("Menus.tjs");
+KAGLoadScript("DefaultMover.tjs");
+KAGLoadScript("MainWindow.tjs");
+if(Storages.isExistentStorage("Override.tjs"))
+	KAGLoadScript("Override.tjs");
+if(Storages.isExistentStorage(System.exePath + "Override2.tjs"))
+	KAGLoadScript(System.exePath + "Override2.tjs");
+
+
+/*
+	（调试）计时
+*/
+dm("脚本加载耗时 " + (System.getTickCount() - parseStartTick) + " ms");
+parseStartTick = System.getTickCount();
+
+/*
+	（调试）VM 代码转储
+*/
+
+// Scripts.dump();
+
+/*
+	（调试）计时
+*/
+
+parseStartTick = System.getTickCount();
+
+
+/*
+	创建 KAG 主窗口
+	若全局成员 kag 不存在，则创建 KAGWindow 类对象并赋值
+*/
+
+global.kag = new KAGWindow() if typeof global.kag == "undefined";
+
+
+
+
+/*
+	为便于从全局访问，创建若干变量的别名
+*/
+
+var f = kag.flags;   // 用户变量（flag）
+var sf = kag.sflags; // 系统变量（system flag）
+var tf = kag.tflags; // 临时变量（临时 flag）
+
+property mp
+{
+	getter { return kag.conductor.macroParams; }
+}
+
+/*
+	（调试）计时
+*/
+dm("KAGMainWindow 构造函数耗时 " + (System.getTickCount() - parseStartTick) + " ms");
+delete parseStartTick;
+
+
+/*
+	若存在 AfterInit.tjs 则执行
+*/
+if(Storages.isExistentStorage("AfterInit.tjs"))
+	KAGLoadScript("AfterInit.tjs");
+if(Storages.isExistentStorage(System.exePath + "AfterInit2.tjs"))
+	KAGLoadScript(System.exePath + "AfterInit2.tjs");
+
+/*
+	若命令行参数指定了 -ovr，
+	则将该参数作为 TJS 表达式执行
+*/
+{
+	var ovr = System.getArgument('-ovr');
+	if(ovr !== void && ovr != 'yes') Scripts.eval(ovr);
+}
+
+/*
+	执行 first.ks
+*/
+
+kag.process("first.ks");
+

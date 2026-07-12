@@ -1,0 +1,549 @@
+// BGM.tjs - BGM 管理
+// Copyright (C)2001-2009, W.Dee and contributors  可自由修改与再分发
+
+class KAGSoundBuffer
+{
+	// 让各 KAG 使用的声音缓冲区类继承这个 KAGSoundBuffer
+	// 类
+
+	var sbclass; // 声音缓冲区类
+	var owner; // 所有者
+
+	var inFadeAndStop = false; // 淡出结束时是否停止播放
+    var inFadeAndPause = false; // 淡出结束时是否暂停播放
+    var inFading = false; // 是否正在淡入淡出
+	var prevstatus = "unload"; // 上一次状态
+
+	function KAGSoundBuffer(owner, sbclass)
+	{
+		this.sbclass = sbclass;
+		this.owner = owner;
+	}
+
+	function finalize()
+	{
+	}
+
+	function fade()
+	{
+		// 重载 fade
+		inFading = true;
+		inFadeAndStop = false;
+        inFadeAndPause = false;
+		sbclass.fade(...);
+	}
+
+	function stopFade()
+	{
+		// 重载 stopFade
+		sbclass.stopFade(...);
+		inFadeAndStop = false;
+        inFadeAndPause = false;
+    }
+
+	function stop()
+	{
+		// 重载 stop
+		sbclass.stop(...);
+		inFadeAndStop = false;
+		inFadeAndPause = false;
+	}
+
+	function fadeOutAndStop(time, delay = 0)
+	{
+		// 在 time 和 delay 指定的时间后淡出，并停止播放
+		inFading = true;
+		inFadeAndStop = true;
+		sbclass.fade(0, time, delay);
+	}
+
+	function fadeOutAndPause(time, delay = 0)
+	{
+		// 在 time、delay 指定的时间后淡出，并暂停播放
+		inFading = true;
+		inFadeAndPause = true;
+		sbclass.fade(0, time, delay);
+	}
+    
+	function onFadeCompleted()
+	{
+        // 淡出结束
+		inFading = false;
+		if(inFadeAndStop)
+		{
+			sbclass.stop(); // inFadeAndStop 时停止
+			inFadeAndStop = false;
+        } else if (inFadeAndPause) {
+			sbclass.paused = true; // inFadeAndPause 时暂停
+			inFadeAndPause = false;
+        }
+		sbclass.onFadeCompleted(...);
+		owner.onSoundBufferFadeCompleted(this);
+	}
+
+	function onStatusChanged()
+	{
+        sbclass.onStatusChanged(...);
+		var ps = prevstatus; // 之前的状态
+		var cs = sbclass.status; // 当前状态
+		prevstatus = cs;
+		if(ps == "play" && cs == "stop")
+			owner.onSoundBufferStop(this); // play => stop：播放已停止
+	}
+}
+
+class KAGWaveSoundBuffer extends WaveSoundBuffer, KAGSoundBuffer
+{
+	function KAGWaveSoundBuffer(owner)
+	{
+		WaveSoundBuffer(owner);
+		KAGSoundBuffer(owner, global.WaveSoundBuffer);
+	}
+
+	function finalize()
+	{
+		global.KAGSoundBuffer.finalize(...);
+		global.WaveSoundBuffer.finalize(...);
+	}
+
+    function onLabel(label) {
+        owner.owner.onBGMLabel(label);
+    }
+}
+
+
+class BGM
+{
+	var owner; // 持有此对象的 KAGWindow 类对象
+	var doubleBuffered = true; // 是否进行交叉淡入淡出
+
+	var buf1; // 缓冲区 1
+	var buf2; // 缓冲区 2
+	var currentBuffer;  // buf1 or buf2
+	var looping = true; // 是否正在循环
+    var volume = 100000; // 音量
+
+	var playingStorage; // 正在播放的资源
+	var currentStorage; // 表面上的播放中资源
+
+
+	var _enabled; // 是否有效
+
+	function BGM(owner)
+	{
+		this.owner = owner;
+
+		(BGM_config incontextof this)();
+		(BGM_config_override incontextof this)()
+			if typeof global.BGM_config_override != "undefined";
+
+		createBuffers(); // 创建声音缓冲区
+
+		currentStorage = '';
+		playingStorage = '';
+		currentBuffer = buf1;
+		_enabled = true;
+	}
+
+	function finalize()
+	{
+		invalidate buf1 if buf1 !== void;
+		invalidate buf2 if buf2 !== void;
+//		super.finalize(...);
+	}
+
+	function createBuffers()
+	{
+		// 创建缓冲区
+		buf1 = new KAGWaveSoundBuffer(this);
+		buf2 = new KAGWaveSoundBuffer(this) if doubleBuffered;
+		buf1.looping = looping;
+		buf2.looping = looping if buf2 !== void;
+	}
+
+	function freeBuffers()
+	{
+		// 释放缓冲区
+		invalidate buf1 if buf1 !== void;
+		invalidate buf2 if buf2 !== void;
+	}
+
+	function playBuffer(buf, storage, loop, paused = false, start)
+	{
+		// 在 buf 上开始播放
+
+		// 若省略扩展名或盘符，则进行搜索
+		var found = true;
+		var test;
+		if(!Storages.isExistentStorage(storage))
+		{
+			if(test = storage + ".wav", Storages.isExistentStorage(test))
+				storage = test;
+			else if(test = storage + ".ogg", Storages.isExistentStorage(test))
+				storage = test;
+			else if(test = storage + ".opus", Storages.isExistentStorage(test))
+				storage = test;
+			else if(test = storage + ".tcw", Storages.isExistentStorage(test))
+				storage = test;
+			else
+				found = false;
+		}
+
+
+		if(_enabled)
+		{
+			if(!found)
+			{
+				dm("BGM " + storage + " 未找到");
+				return;
+			}
+
+			try
+			{
+				buf.looping = loop; // 参数 "loop"
+				buf.open(storage);
+                // 播放位置控制
+                if (start !== void &&
+                    buf.labels !== void &&
+                    (start = buf.labels[start]) !== void &&
+                    (start = start.samplePosition) !== void) {
+                    buf.samplePosition = start;
+                }
+                buf.paused = paused;
+                buf.play();
+			}
+			catch(e)
+			{
+				dm("BGM " + storage + " 无法播放：" + e.message);
+				return;
+			}
+		}
+		currentBuffer = buf;
+	}
+
+	function play(elm)
+	{
+		// 开始播放 elm.storage 指定的 BGM
+		// elm.loop 为 true 则循环播放
+		// elm.paused 为 true 则以暂停状态开始播放
+		// 使用 buf1 播放
+		var loop = elm.loop === void ? true : +elm.loop;
+
+		try
+		{
+			buf1.stop();
+			buf2.stop() if buf2 !== void;
+		}
+		catch(e)
+		{
+			dm("BGM 停止失败（将继续运行）：" + e.message);
+		}
+		stopFade(); // 结束淡入淡出
+        buf1.volume = volume;
+        playBuffer(buf1, elm.storage, loop, elm.paused ? true : false, elm.start);
+		if(loop)
+			currentStorage = elm.storage; // 循环播放时
+		else
+			currentStorage = ""; // 单次播放时
+		playingStorage = elm.storage;
+		looping = loop;
+	}
+
+	function fadeIn(elm)
+	{
+		// 从音量 0 开始播放并淡入
+		var loop = elm.loop === void ? true : +elm.loop;
+		var time = elm.time === void ? 5000 : +elm.time;
+
+//		stopFade();
+		try
+		{
+			buf1.stop();
+			buf2.stop() if buf2 !== void;
+		}
+		catch(e)
+		{
+			dm("BGM 停止失败（将继续运行）：" + e.message);
+		}
+		if(time != 0) buf1.volume = 0; else buf1.volume = volume;
+		playBuffer(buf1, elm.storage, loop, false, elm.start);
+		if(_enabled) if(time !=0 ) currentBuffer.fade(volume, time);
+		looping = loop;
+		if(loop) currentStorage = elm.storage; else currentStorage = "";
+		playingStorage = elm.storage;
+	}
+
+	function stop()
+	{
+		// 停止播放
+		try
+		{
+			buf1.stop();
+			buf2.stop() if buf2 !== void;
+		}
+		catch(e)
+		{
+			dm("BGM 停止失败（将继续运行）：" + e.message);
+		}
+//		stopFade();
+        currentStorage = "";
+		playingStorage = "";
+	}
+
+	function pause()
+	{
+		// 暂停播放
+		buf1.paused = true;
+		buf2.paused = true if buf2 !== void;
+	}
+
+	function resume()
+	{
+        // 恢复播放
+        buf1.paused = false;
+        buf2.paused = false if buf2 !== void;
+	}
+
+	function fadeOut(elm)
+	{
+		// 淡出
+//		stopFade();
+		if(_enabled) currentBuffer.fadeOutAndStop(elm.time);
+		currentStorage = "";
+	}
+
+    function fadePause(elm)
+    {
+        if(_enabled) currentBuffer.fadeOutAndPause(elm.time);
+    }    
+    
+	function fade(elm)
+	{
+		// 淡入淡出至指定音量
+		var time = elm.time === void ? 5000 : +elm.time;
+		var vol = +elm.volume * 1000;
+//		stopFade();
+		if(_enabled)
+		{
+			currentBuffer.fade(vol, time);
+		}
+		volume = vol;
+	}
+
+	function stopFade()
+	{
+		buf1.stopFade();
+		buf2.stopFade() if buf2 !== void;
+	}
+
+	function exchange(elm)
+	{
+		// 切换曲目
+		// 当前播放的曲目在 time 指定的时间内淡出，
+		// storage 指定的曲目在 time 指定的时间内淡入播放。
+		// 若未指定 time 而指定了 intime 与 outtime，
+		// 则 intime 为淡入时间、outtime 为淡出时间。
+		// overlap 为当前曲目淡出完毕至新曲目开始淡入的等待时间
+		// （传入值的正负相反），
+		// 指定正值则成为交叉淡入淡出。
+		// storage 在本方法被调用时即开始播放
+
+		if(elm.storage == playingStorage) return;
+
+//		stopFade();
+
+		var loop = elm.loop === void ? true : +elm.loop;
+		var intime, outtime;
+		if(elm.time === void)
+		{
+			intime = elm.intime === void ? 5000:+elm.intime;
+			outtime = elm.outtime === void ? 5000:+elm.outtime;
+		}
+		else
+		{
+			intime = outtime = elm.time === void ? 5000 : +elm.time;
+		}
+		var overlap = elm.overlap === void ? 0 : +elm.overlap;
+
+		if(!_enabled)
+		{
+			// 无效时仍调用 play 后直接返回
+			play(elm);
+			return;
+		}
+
+		if(playingStorage == '')
+		{
+			// 当前无播放曲目时，与单纯淡入行为相同
+			elm.time = intime;
+			fadeIn(elm);
+			return;
+		}
+
+		volume = int(+elm.volume * 1000) if elm.volume !== void;
+
+		if(doubleBuffered)
+		{
+			// 双缓冲时
+			if(outtime != 0)
+				currentBuffer.fadeOutAndStop(outtime); // 淡出当前播放的 BGM
+			else
+				currentBuffer.stop();
+			var nextbuffer; // 下一个播放缓冲区
+			nextbuffer = (currentBuffer == buf1) ? buf2 : buf1;
+			if(intime != 0) nextbuffer.volume = 0; else nextbuffer.volume = volume;
+			playBuffer(nextbuffer, elm.storage, loop, false, elm.start);
+			if(intime != 0) nextbuffer.fade(volume, intime, outtime - overlap);
+		}
+		else
+		{
+			// 单缓冲时
+			play(elm); // 仅播放下一个曲目
+		}
+
+		if(loop)
+			currentStorage = elm.storage;
+		else
+			currentStorage = "";
+		looping = loop;
+		playingStorage = elm.storage;
+
+	}
+
+	function setVolume(vol)
+	{
+		volume = +vol;
+		stopFade();
+		buf1.volume = volume;
+		buf2.volume = volume if doubleBuffered;
+	}
+
+	function setOptions(elm)
+	{
+		if(elm.volume !== void)
+		{
+			setVolume(int(+elm.volume * 1000));
+		}
+		if(elm.gvolume !== void)
+		{
+			// 全局音量
+			var sysvar = owner.scflags; // 系统（核心）变量
+			if(sysvar.bgm === void) sysvar.bgm = %[];
+            sysvar = sysvar.bgm;
+            var v2 = +elm.gvolume;
+            v2 = int(v2 * 1000);
+			sysvar.globalVolume = v2;
+            if (sysvar.enable === void || sysvar.enable) {
+                buf1.volume2 = v2;
+                buf2.volume2 = v2 if doubleBuffered;
+            } else {
+                buf1.volume2 = 0;
+                buf2.volume2 = 0 if doubleBuffered;
+            }
+		}
+	}
+
+	property inFading // 返回是否正在淡入淡出
+	{
+		getter { return  currentBuffer.inFading; }
+	}
+
+	property canWaitStop // 返回是否可等待 BGM 结束
+	{
+		getter { return currentBuffer.status == "play" && !currentBuffer.looping; }
+	}
+
+
+	function onSoundBufferFadeCompleted(source)
+	{
+		if(currentBuffer == source)
+		{
+			// 淡入淡出已结束
+			owner.onBGMFadeCompleted();
+		}
+	}
+
+	function onSoundBufferStop(source)
+	{
+        if(currentBuffer == source)
+		{
+			// 播放已结束
+			playingStorage = "";
+			currentStorage = "";
+			owner.onBGMStop();
+		}
+	}
+
+	function store()
+	{
+		// 将当前状态保存到字典数组
+		var dic = %[];
+		dic.currentStorage = currentStorage;
+        dic.paused = buf1.paused;
+		dic.volume = volume;
+		return dic;
+	}
+
+	function restore(dic)
+	{
+		// 从字典数组恢复当前状态
+		stopFade();
+        setVolume(dic.volume);
+        if(dic.currentStorage != "") {
+            play(%[ storage : dic.currentStorage, loop : true, paused: dic.paused]);
+        } else
+			stop();
+	}
+
+	function restoreSystemState(dic)
+	{
+		// 从系统变量 dic 设置信息
+		// 获取全局音量信息
+        var sysvar = dic.bgm;
+        if(sysvar !== void)
+		{
+            if (sysvar.enable === void || sysvar.enable) {
+                var v2 = sysvar.globalVolume;
+                if(v2 !== void)	{
+                    v2 = +v2;
+                    buf1.volume2 = v2;
+                    buf2.volume2 = v2 if doubleBuffered;
+                }
+            } else {
+                buf1.volume2 = 0;
+                buf2.volume2 = 0 if doubleBuffered;
+            }
+		}
+	}
+
+
+    // 为 true 时进行音量衰减
+    var _voldown;
+
+    property voldown {
+        getter() {
+            return _voldown;
+        }
+        setter(v) {
+            _voldown = v;
+            if (_enabled &&  currentStorage != "") {
+                if (_voldown) {
+                    currentBuffer.fade(volume * 0.5, 300);
+                } else {
+                    currentBuffer.fade(volume, 300);
+                }
+            }
+        }
+    }
+
+    function setLoop(loop) {
+        if(_enabled) {
+            currentBuffer.looping = loop;
+            // 循环时将 flag0 置 0 的规则
+            currentBuffer.flags[0] = loop ? 0 : 1;
+        }
+        looping = loop;
+    }
+
+}
+

@@ -1,0 +1,5915 @@
+//;# MainWindow.tjs - KAG 主窗口
+//;# Copyright (C)2001-2009, W.Dee and contributors  可自由修改与再分发
+//;<<'END_OF_TJS_SCRIPT';
+
+// 本脚本同时是有效的 perl5 脚本
+
+class KAGWindow extends Window
+{
+	// KAG 窗口类
+	// KAG 运行的主要逻辑写在此处
+
+	// 以下带 /*C*/ 的变量，由文件末尾 perl 脚本
+	// 自动生成写入存档的复制代码
+
+	var scWidth = 640; // 画面宽度
+	var scHeight = 480; // 画面高度
+
+	var aboutWidth = 320; // 「关于本软件」窗口宽度
+	var aboutHeight = 200; // 同上高度
+
+	var isFirstProcess = true; // 是否为首次 process 调用
+
+	var freeSaveDataMode = false; // 存档不由菜单栏等管理，而以独立文件管理
+	var saveThumbnail = false; // 是否保存缩略图
+	var thumbnailWidth = 133; // 缩略图宽度
+	var thumbnailDepth = 8; // 缩略图 BMP 模式：8 或 24
+		// 缩略图全彩化与自由尺寸补丁
+		// 由 Yun 氏提供。
+		// 在此致谢。
+
+
+	var snapshotLayer = void; // 临时保存图像快照的层
+	var snapshotLockCount = 0; // 锁定计数
+
+	var lastSaveDataNameGlobal = ""; // 自由存档模式下最后保存的文件名
+	/*C*/var lastSaveDataName = ""; // 自由存档模式下最后保存的文件名
+
+	var saveDataLocation = System.dataPath; // 存档保存位置
+
+	var saveDataID = "00000000-0000-0000-0000-000000000000"; // 存档 ID
+
+	var readOnlyMode = false; // 只读模式（不向磁盘写入数据）
+	var dataName = "data"; // 存档数据名
+	var saveDataMode = ""; // 数据保存模式（"c" 为加密）
+
+	var recordHistoryOfStore = 0; // 是否记录经过履历
+		// 0 = 不自动记录  1 = 每个可存档标签
+		// 2 = 每个选项（@s 标签）
+	var maxHistoryOfStore = 5; // 经过记录的最大数量
+	var historyOfStore = []; // 经过履历数据
+	var nextRecordHistory = false;
+		// 下次经过可存档标签时是否保存当前信息
+
+	var stablePosibility = false;
+		// 存档在可存档标签之间是否可能变为 stable
+
+	var fullScreened = false; // 当前是否全屏
+
+	var isMain = true; // 是否为主窗口
+
+	var askOnClose = true; // 退出时是否询问用户
+
+	var helpFile = ""; // 「帮助 > 目录」打开的文件
+
+	var quakeTimer; // 震动用计时器
+	var defaultQuakeTimeInChUnit = false;
+	/*C*/var quaking = false; // 是否正在震动
+	/*C*/var quakeEndTick = 0; // 结束震动的 tick
+	/*C*/var quakeHorzMax = 0; // 横向振幅
+	/*C*/var quakeVertMax = 0; // 纵向振幅
+	/*C*/var quakePhase = 0;
+
+	var chDefaultAntialiased; // 文字是否抗锯齿
+	var chDefaultFace; // 文字默认字体
+
+	var initialMessageLayerVisible = true;
+
+	var historyLayer; // 对话履历层
+	/*C*/var historyWriteEnabled = true; // 是否向消息层输出文字
+	/*C*/var historyEnabled = true; // 对话履历层是否可显示
+	var historyShowing = false; // 是否正在显示对话履历层
+	var lastHistoryHiddenTick = 0; // 履历层最后隐藏时的 tick
+
+	/*C*/var numCharacterLayers = 0; // 立绘层数量
+	/*C*/var numMessageLayers = 1; // 消息层数量
+
+	var _primaryLayer;
+	property primaryLayer { getter { return fore.base; } };
+
+	var fore = %[]; // 表层
+	var back = %[]; // 里层
+
+	var scPositionX = %[]; // 立绘中心坐标(X)
+
+	var tempLayer = void; // 临时层
+
+	var lineBreak; // 行等待用动画层
+	var pageBreak; // 翻页等待用符号动画层
+	var clickWaiting = false; // 是否点击等待
+
+	var mainConductor; // 主指挥器
+	var extraConductor; // 备用指挥器
+	var conductor; // 当前指挥器
+	var usingExtraConductor = false; // 是否使用备用指挥器
+	var onExtraConductorReturn; // 从 extraConductor 回到通常指挥器时调用的函数
+
+	var tagHandlers; // 标签处理函数字典数组
+
+	var saveMacros = true; // 是否将宏写入存档
+
+	var current; // 当前操作中的消息层
+	/*C*/var currentNum; // 当前操作中的消息层编号
+	/*C*/var currentPage; // 当前操作中的消息层页（表0/里1）
+	/*C*/var currentWithBack = false; // 是否也在里屏绘制文字
+
+	var bgm; // BGM 对象
+
+	var numSEBuffers = 1; // 音效缓冲区数量
+	var se = []; // 音效缓冲区对象
+
+	var numMovies = 1; // 视频对象数量
+//	var movie; // 视频对象
+	var movies = []; // 视频对象
+
+	var transCount; // 当前进行中的过渡数量
+	var moveCount; // 当前进行中的自动移动数量
+
+	var chSpeeds = %[
+		fast: 10, // 「高速」文字显示速度
+		normal: 30, // 「普通」文字显示速度
+		slow: 50, // 「慢速」文字显示速度
+		];
+
+	var userChSpeed = 30; // 用户选择的文字显示速度
+	var userCh2ndSpeed = -1; // 用户选择的已读部分文字显示速度
+	var chNonStopToPageBreak = false; // 是否一口气读到页末（忽略 l 标签）
+	var ch2ndNonStopToPageBreak = false; // 已读部分是否一口气读到页末
+	/*C*/var chUserMode = true; // 文字显示速度是否为用户当前选择
+	/*C*/var chSpeed = 30; // 当前文字显示速度
+	/*C*/var actualChSpeed = chSpeed; // 实际文字显示速度
+
+	/*C*/var beforeNoWaitActualChSpeed; // 进入 nowait 前的 actualChSpeed
+	/*C*/var beforeNoWaitChUserMode; // 进入 nowait 前的 chUserMode
+
+	/*C*/var clickSkipEnabled = true; // 点击跳过是否有效
+	/*C*/var nextSkipEnabled = true; // 跳到下一选项(/未读)是否有效
+	var skipMode = 0; // 跳过模式
+		// 0=不跳过, 1=到点击等待符号, 2=到换行/翻页等待符号, 3=到下一停止点
+		// 4=快进
+	var autoMode = false; // 是否自动推进模式
+	var autoModePageWait = 350; // 自动推进模式下翻页等待
+	var autoModeLineWait = 50; // 自动推进模式下行末点击等待
+		// 若要无等待，上述两项应设 -4 而非 0
+
+	var skipKeyRepressed = false; // 按下 return 或 space（非 f 等）时为 true（解除跳过时置 false）
+
+	var autoModePageWaits = %[
+		fast: 400,  // 自动推进翻页等待「短」
+		faster: 700,  // 自动推进翻页等待「较短」
+		medium: 1000,  // 自动推进翻页等待「普通」
+		slower: 1300, // 自动推进翻页等待「较慢」
+		slow: 2000, // 自动推进翻页等待「慢」
+		];
+
+	var autoModeLineWaits = %[
+		fast: 180,  // 自动推进行末等待「短」
+		faster: 240,  // 自动推进行末等待「较短」
+		medium: 300,  // 自动推进行末等待「普通」
+		slower: 360, // 自动推进行末等待「较慢」
+		slow: 500, // 自动推进行末等待「慢」
+		];
+
+	/*C*/var canCancelSkipByClick = true; // 是否可用点击取消跳过状态
+
+	/*C*/var autoWCEnabled = false; // 自动等待是否有效
+	/*C*/var autoWCChars = ""; // 施加自动等待的字符
+	var autoWCWaits = []; // 自动等待时长
+
+	var timeOrigin; // resetWait 设置的时间原点
+	var lastWaitTime; // wait mode=until 实际等待的时间
+
+	var stableHandlers = []; // 系统稳定（点击等待/停止）时调用
+	var runHandlers = []; // 系统开始运行时调用
+	var inStable = true; // 稳定时（非运行中）为 true
+	var inSleep = false; // @s 标签停止时为 true
+
+	var updateBeforeCh = 0; // 绘制字符前是否先刷新画面的计数
+
+	var messageLayerHiding = false; // 用户是否隐藏了消息层
+
+	/*C*/var rightClickEnabled = true; // 右键是否有效
+	/*C*/var rightClickCall = false; // 右键是否调用特定例程
+	/*C*/var rightClickJump = false; // 右键是否跳转到特定标签
+	/*C*/var rightClickTarget = ""; // 右键调用目标
+	/*C*/var rightClickStorage = ""; // 右键调用目标
+	/*C*/var rightClickName = "default"; // 右键菜单显示名
+	/*C*/var rightClickCurrentMenuName = ""; // 右键菜单当前设置的名称
+	var rightClickDefaultName = ""; // 右键默认菜单显示名
+
+	/*C*/var lastClickGlyphVisible; // 使用 extraConductor 前点击等待符号是否可见
+	var lastClickGlyphMessagePage;
+		// 使用 extraConductor 前点击等待符号所在消息层页
+	var lastClickGlyphMessageNum; // 同上编号
+	var lastClickGlyphWhich; // 同上 "page" 或 "line"
+	var inSleepBeforeExtraConductor; // 使用 extraConductor 前是否 inSleep
+
+	// 普通鼠标光标
+	/*C*/var cursorDefault = crArrow;  // 普通鼠标光标
+	/*C*/var cursorPointed = crHandPoint;  // 指向按钮、链接等时的鼠标光标
+	/*C*/var cursorWaitingClick = crArrow;  // 点击等待时的鼠标光标
+	/*C*/var cursorDraggable = crSizeAll; // 可拖拽区域的鼠标光标
+
+	/*C*/var supportReadingKey = VK_SPACE; // 附加推进键
+
+	/*C*/var startAnchorEnabled = false; // 「回到开头」是否可用
+
+	/*C*/var storeEnabled = true; // 用户是否可访问「插入存档」菜单
+	/*C*/var restoreEnabled = true; // 用户是否可访问「读取存档」菜单
+	var storeLabelPassed = false; // 是否经过可存档标签
+	/*C*/var currentLabel = ""; // 当前标签
+	/*C*/var currentPageName = ""; // 当前页名
+	var currentRecordName = ""; // 当前记录名 ( trail_存储_标签 )
+	var autoRecordPageShowing = false; // 是否显示标签经过记录
+
+	var numBookMarks = 10; // 菜单中存档子菜单项数量
+	var showBookMarkDate = false; // 菜单是否显示插入存档的日期时间
+
+	var bookMarkNames = []; // 菜单中设置的存档名称
+	var bookMarkDates = []; // 存档日期
+	var bookMarkProtectedStates = []; // 存档是否受保护
+
+	var showFixedPitchOnlyInFontSelector = false; // 字体选择是否仅显示等宽字体
+
+	var flags = %[]; // 标志（用户）
+	var pflags = %[]; // 经过「可存档标签」时的标志（用户）
+	var pcflags = %[]; // 同上（核心）
+	var sflags = %[]; // 系统变量区（用户）
+	var scflags = %[]; // 系统变量区（核心）
+	var tflags = %[]; // 临时标志
+
+	var tempBookMarks = []; // 临时保存的存档
+
+	var clickCount = 0; // 左键点击计数
+	var lastMouseDownX; // 最后点击的 X 坐标
+	var lastMouseDownY; // 最后点击的 Y 坐标
+
+	var mouseKeyEnabledCount = 0; // 鼠标键是否有效
+
+	var kagPlugins = []; // KAG 插件
+
+	var keyDownHook = []; // 按键时调用
+	var leftClickHook = []; // 左键点击时调用
+	var rightClickHook = []; // 右键点击时调用
+
+	var padKeyMap; // 手柄按钮 -> 处理（键码）。在构造函数内设置
+	var padKeyMapReverse; // 键码 -> 手柄按钮。在构造函数内设置
+
+
+	var holdPeriodEventQueue = [];	// 保留的视频周期事件队列
+	var isLeavePeriodEvent = false;	// 是否保留视频周期事件
+	var isWaitPeriodEvent = false;	// 是否处于视频周期事件等待状态
+	var waitedPeriodEventStorageName = void;	// 调用周期事件等待的存储名
+
+	//------------------------------------------------------ 构造函数 --
+
+	function KAGWindow(ismain = true, width = 0, height = 0)
+	{
+		// 构造函数
+		// 参数 ismain：是否作为主窗口创建
+		super.Window(); // 调用父类构造函数
+
+		// 配置
+		isMain = ismain;
+		if(ismain)
+		{
+			(KAGWindow_config incontextof this)();
+			(KAGWindow_config_override incontextof this)()
+				if typeof global.KAGWindow_config_override != "undefined";
+		}
+
+		userChSpeed = chSpeed = actualChSpeed = chSpeeds.normal;
+		autoModePageWait = autoModePageWaits.medium;
+		autoModeLineWait = autoModeLineWaits.medium;
+
+		askOnClose = false if !ismain;
+
+		// saveDataLocation 若非完整路径则加上 System.exePath
+		if(saveDataLocation.indexOf(":") == -1)
+			saveDataLocation = System.exePath + saveDataLocation;
+
+		// 日志输出到 saveDataLocation
+		if(ismain) Debug.logLocation = saveDataLocation;
+
+		// 创建菜单项
+		if(ismain) (KAGWindow_createMenus incontextof this)();
+		if(typeof this.rightClickMenuItem != "undefined")
+			rightClickDefaultName = rightClickCurrentMenuName = rightClickMenuItem.caption;
+
+		if(typeof this.autoModeMediumMenuItem != "undefined")
+			autoModeMediumMenuItem.checked = true;
+		if(typeof this.windowedMenuItem != "undefined")
+			windowedMenuItem.checked = true;
+		if(typeof this.chNormalMenuItem != "undefined")
+			chNormalMenuItem.checked = true;
+		if(typeof this.ch2ndNoChangeMenuItem != "undefined")
+			ch2ndNoChangeMenuItem.checked = true;
+
+		if(ismain) (Menu_visible_config incontextof this)();
+
+		createBookMarkSubMenus();
+
+		// 调整窗口外观
+		if(ismain)
+		{
+			borderStyle = bsSingle;
+			innerSunken = true;
+		}
+		else
+		{
+			borderStyle = bsDialog;
+			innerSunken = false;
+		}
+		showScrollBars = false;
+		if(ismain) caption = System.title;
+
+		// 系统标题与标题栏一致
+		if(ismain) System.title = caption;
+
+		// 调整窗口尺寸
+		if(width != 0 && height != 0)
+		{
+			// 应用给定尺寸
+			scWidth = width;
+			scHeight = height;
+		}
+		setInnerSize(scWidth, scHeight);
+
+		// 创建震动用计时器
+		quakeTimer = new Timer(onQuakeTimerInterval, '');
+		add(quakeTimer);
+		quakeTimer.interval = 50;
+
+		add(_primaryLayer = new Layer(this, null));
+		with (_primaryLayer) {
+			.name = "主层";
+			.setSize(scWidth, scHeight);
+			.fillRect(0,0,.width,.height,0);
+			.type = ltOpaque;
+			.visible = true;
+			//.hasImage = false;
+			.onMouseDown = function (x, y, btn) {
+				switch (btn) {
+				case mbLeft:  window.onPrimaryClick();      break;
+				case mbRight: window.onPrimaryRightClick(); break;
+				}
+				return (global.Layer.onMouseDown incontextof this)(...);
+			} incontextof _primaryLayer;
+		}
+
+		// 创建背景层
+		fore.messages = [];
+		back.messages = [];
+		fore.layers = [];
+		back.layers = [];
+		fore.base = new BaseLayer(this, _primaryLayer, "表-背景");
+		add(fore.base);
+		fore.base.setImageSize(scWidth, scHeight);
+		fore.base.setSizeToImageSize();
+		fore.base.visible = true;
+		back.base = new BaseLayer(this, _primaryLayer, "裏-背景");
+		add(back.base);
+		back.base.setImageSize(scWidth, scHeight);
+		back.base.setSizeToImageSize();
+		fore.base.setCompLayer(back.base);
+		back.base.setCompLayer(fore.base);
+		fore.base.freeImage();
+		back.base.freeImage();
+
+		fore.base.setDefaultCursor(cursorDefault);
+		back.base.setDefaultCursor(cursorDefault);
+
+		// 创建对话履历层
+		historyLayer = new HistoryLayer(this, fore.base);
+		add(historyLayer);
+
+		// 创建立绘层
+		allocateCharacterLayers(numCharacterLayers);
+
+		// 创建消息层
+		allocateMessageLayers(numMessageLayers, false);
+		current = fore.messages[0];
+		currentNum = 0;
+		currentPage = 0;
+		currentWithBack = false;
+		if(initialMessageLayerVisible)
+		{
+			fore.messages[0].visible = true;
+			back.messages[0].visible = true;
+		}
+
+		chDefaultAntialiased = fore.messages[0].defaultAntialiased;
+			// 文字是否抗锯齿
+		chDefaultFace = fore.messages[0].userFace;
+			// 文字默认字体
+
+		if(typeof this.chAntialiasMenuItem != "undefined")
+			chAntialiasMenuItem.checked = chDefaultAntialiased;
+
+		// 创建行等待/翻页等待动画层
+		lineBreak = new ClickGlyphLayer(this, fore.base);
+		add(lineBreak);
+		lineBreak.name = "行点击等待标记";
+		pageBreak = new ClickGlyphLayer(this, fore.base);
+		add(pageBreak);
+		pageBreak.name = "页末点击等待标记";
+
+		// 创建标签处理与指挥器
+		tagHandlers = getHandlers();
+		mainConductor = new Conductor(this, tagHandlers);
+		add(mainConductor);
+		conductor = mainConductor;
+		extraConductor = new Conductor(this, tagHandlers);
+		add(extraConductor);
+
+		// 创建 BGM 对象
+		bgm = new BGM(this);
+		add(bgm);
+
+		// 创建音效对象
+		for(var i = 0; i < numSEBuffers; i++)
+			add(se[i] = new SESoundBuffer(this, i));
+
+		// 创建视频对象
+		if(ismain)
+		{
+			for( var i = 0; i < numMovies; i++)
+				add(movies[i] = new Movie(this,i));
+		}
+
+		// 添加默认处理
+		stableHandlers.add(defaultStableHandler);
+		runHandlers.add(defaultRunHandler);
+
+		// 读取系统变量
+		if(ismain) loadSystemVariables();
+
+		// 应用系统变量
+		if(ismain)
+		{
+			setSystemStateFromSystemVariables();
+			setBookMarkMenuCaptions();
+		}
+
+		// 清除消息层
+		clearMessageLayers(false);
+
+@if (kirikiriz==0)
+		// 调整窗口位置
+		if(this.width + this.left > System.desktopLeft + System.desktopWidth)
+			left = ((System.desktopWidth - this.width) >>1) + System.desktopLeft;
+		if(this.height + this.top > System.desktopTop + System.desktopHeight)
+			top = ((System.desktopHeight - this.height) >>1) + System.desktopTop;
+@endif
+
+		// 创建手柄按钮映射
+		createPadKeyMap();
+
+
+		// 显示窗口
+		if(ismain) visible = true;
+
+		// 若屏幕尺寸小于窗口尺寸则尝试全屏
+		if(ismain)
+		{
+			if(System.screenWidth <= scWidth && System.screenHeight <= scHeight)
+				onFullScreenMenuItemClick(this);
+		}
+
+		// 若上次启动为全屏则尝试全屏
+		if(ismain)
+		{
+			if(scflags.fullScreen !== void && +scflags.fullScreen)
+				onFullScreenMenuItemClick(this);
+		}
+
+		// 先写出系统变量
+		if(ismain) saveSystemVariables();
+	}
+
+	//------------------------------------------------------------- finalize --
+
+	function finalize()
+	{
+		// finalize 方法
+        clearBgmStop();
+        clearBgmLabel();
+
+		// 失效插件
+		for(var i = 0; i < kagPlugins.count; i++) invalidate kagPlugins[i];
+
+		// 失效立绘层、消息层
+		for(var i = 0; i< fore.layers.count; i++) invalidate fore.layers[i];
+		for(var i = 0; i< back.layers.count; i++) invalidate back.layers[i];
+		for(var i = 0; i< fore.messages.count; i++) invalidate fore.messages[i];
+		for(var i = 0; i< back.messages.count; i++) invalidate back.messages[i];
+
+		// 失效 snapshotLayer
+		invalidate snapshotLayer if snapshotLayer !== void;
+
+		// 失效 tempLayer
+		invalidate tempLayer if tempLayer !== void;
+
+		// 调用超类的 finalize
+		super.finalize(...);
+	}
+
+	//-------------------------------------------------- onCloseQuery/close --
+
+	function onCloseQuery()
+	{
+		saveSystemVariables();
+		if(!askOnClose) { super.onCloseQuery(true); return; }
+		super.onCloseQuery(askYesNo("确定要退出吗？"));
+	}
+
+	function close()
+	{
+		// 关闭窗口
+		saveSystemVariables();
+		super.close(...);
+	}
+
+	function shutdown()
+	{
+		// 关闭窗口，但不进行退出确认
+		// 若在本方法内直接 close，诸多对象会被失效，
+		// 从本函数返回后会发生错误。
+		// 因此先经 AsyncTrigger，待所有方法返回后再
+		// 执行关闭处理。
+		global.shutdownTrigger =
+			new AsyncTrigger(handleShutdown, '');
+		global.shutdownTrigger.cached = true;
+		global.shutdownTrigger.trigger();
+		if(conductor.status == conductor.mRun)
+			conductor.interrupt();
+			// 指挥器运行中时通知中断
+	}
+
+	function handleShutdown()
+	{
+		// 实际处理来自 shutdown() 的关闭请求
+		var askOnClose_save = askOnClose;
+		askOnClose = false;
+		close();
+		if(this isvalid) askOnClose = askOnClose_save;
+	}
+
+	function closeByScript(elm)
+	{
+		// 关闭窗口
+		// 写法略繁琐，原因与 shutdown 相同
+		// 若选择「否」而未关闭窗口，
+		// 则发出 'not_closed' 触发器，执行继续。
+		var askOnClose_save = askOnClose;
+		if(elm.ask !== void && !(+elm.ask)) askOnClose = false;
+		global.shutdownTrigger =
+			new AsyncTrigger(handleCloseByScript, '');
+		global.shutdownTrigger.cached = true;
+		global.shutdownTrigger.trigger();
+
+		// closeByScript 在本处理函数结束后
+		// 立即显示「确定要退出吗？」对话框。
+		// 若退出则直接退出。
+		// 若不退出则发出 'not_closed' 触发器，
+		// 执行继续。
+		conductor.wait(%[
+			not_closed : askOnClose_save
+			? (function
+			{
+				// 实际上不会被调用，但以防万一
+				askOnClose = true;
+			} incontextof this)
+			: (function
+			{
+			} incontextof this)
+			]);
+	}
+
+	function handleCloseByScript()
+	{
+		// 实际处理来自 shutdown() 的关闭请求
+		close();
+		if(this isvalid) // 选择了「否」
+			conductor.trigger('not_closed');
+	}
+
+	//------------------------------------------------------ 插件处理 --
+
+	function forEachEventHook(method, func, arg)
+	{
+		// 对各插件对象的 method 执行 func
+		// func 的参数为各元素与 arg
+		if(kagPlugins.count)
+		{
+			var array = [];
+			array.assign(kagPlugins); // 先复制，再对复制项执行
+			var arraycount = array.count;
+			for(var i =0; i<arraycount; i++)
+			{
+				var obj = array[i];
+				if(typeof obj[method] != "undefined")
+					func(obj[method], arg);
+			}
+		}
+	}
+
+	function addPlugin(plugin)
+	{
+		// 添加插件对象
+		kagPlugins.add(plugin);
+	}
+
+	function removePlugin(plugin)
+	{
+		// 删除插件对象
+		kagPlugins.remove(plugin);
+	}
+
+	//---------------------------------------------------------- 钩子处理 --
+
+	function callHook(array, arg1, arg2, arg3)
+	{
+		if(array.count)
+		{
+			var processed = false;
+			var newarray = [];
+			newarray.assign(array);
+			var arraycount = newarray.count;
+			for(var i  = 0; i < arraycount; i++)
+			{
+				var func = newarray[i];
+				var ret = func(arg1, arg2, arg3);
+				processed = processed || ret;
+			}
+			return processed;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	//------------------------------------------ 创建手柄键映射 --
+
+	function createPadKeyMap()
+	{
+		// 手柄输入与对应动作的映射。
+		// 默认方向键映射到键盘光标键，
+		// 按钮1 为 Return、按钮2 为 ESC、按钮3 为显示对话履历。
+		// 若指定函数则按下按钮时调用该函数。
+
+		padKeyMap = %[
+			VK_PADLEFT =>		VK_LEFT,
+			VK_PADRIGHT =>		VK_RIGHT,
+			VK_PADUP =>			VK_UP,
+			VK_PADDOWN =>		VK_DOWN,
+			VK_PAD1 =>			VK_RETURN,
+			VK_PAD2 =>			VK_ESCAPE,
+			VK_PAD3 =>
+				function(ev) {
+					showHistoryByKey(this);
+				},
+			];
+
+		// 创建 padKeyMapReverse
+		padKeyMapReverse = %[];
+		var ar = [];
+		ar.assign(padKeyMap);
+		for(var i = 0; i < ar.count; i += 2)
+		{
+			if(typeof(ar[i+1]) != "Object")
+			{
+				padKeyMapReverse[ar[i+1]] = ar[i];
+			}
+		}
+	}
+
+	function getKeyState(key)
+	{
+		// 等同 System.getKeyState，对手柄键也返回状态
+		var sg = System.getKeyState;
+		var state = sg(key);
+		if(state) return true;
+		var pad_key = padKeyMapReverse[key];
+		if(pad_key !== void)
+		{
+			// 找到键码 -> 手柄键码的映射
+			return sg(pad_key);
+		}
+		return false;
+	}
+
+	//-------------------------------------------------------------- action --
+
+	function action(ev)
+	{
+		if(ev.type == 'onKeyDown' && ev.target === this)
+		{
+			// 手柄输入对应处理
+			var handler = padKeyMap[ev.key];
+			if(handler !== void)
+			{
+				// 找到处理函数
+				if(typeof(handler) == "Object")
+				{
+					// 处理函数为函数
+					(handler incontextof this)(ev);
+				}
+				else
+				{
+					// 处理函数为键码
+					postInputEvent('onKeyDown', %[key: handler]);
+					postInputEvent('onKeyUp', %[key: handler]);
+				}
+			}
+		}
+	}
+
+	//------------------------------------------------------ tempLayer 相关 --
+
+	property temporaryLayer
+	{
+		// 返回可作工作区临时使用的层
+		getter()
+		{
+			if(tempLayer === void)
+			{
+				tempLayer = new KAGLayer(this, primaryLayer);
+				tempLayer.name = "临时工作层";
+			}
+			return tempLayer;
+		}
+	}
+
+	//------------------------------------------------ 菜单项相关 --
+
+	function onExitMenuItemClick(sender)
+	{
+		close();
+	}
+
+	function onRightClickMenuItemClick(sender)
+	{
+		onPrimaryRightClick(); // 右键动作
+	}
+
+	function onShowHistoryMenuItemClick(sender)
+	{
+		if(historyLayer.visible) hideHistory(); else showHistory();
+	}
+
+	function onSkipToNextStopMenuItemClick(sender)
+	{
+		skipToStop();
+	}
+
+	function onAutoModeMenuItemClick(sender)
+	{
+		if(autoMode) cancelAutoMode(); else enterAutoMode();
+	}
+
+	function onAutoModeWaitMenuClick(sender)
+	{
+		sender.checked = true;
+		autoModePageWait = sender.wait;
+		autoModeLineWait = sender.lwait;
+	}
+
+	function onBackStartMenuItemClick(sender)
+	{
+		goBackHistory();
+	}
+
+	function onGoToStartMenuItemClick(sender)
+	{
+		goToStartWithAsk();
+	}
+
+	function onChSpeedMenuItemClick(sender)
+	{
+		sender.checked = true;
+		userChSpeed = sender.speed;
+		setUserSpeed();
+		saveSystemVariables();
+	}
+
+	function onChNonStopToPageBreakItemClick(sender)
+	{
+		chNonStopToPageBreak = ! chNonStopToPageBreak;
+		if(typeof this.chNonStopToPageBreakItem != "undefined")
+			chNonStopToPageBreakItem.checked = chNonStopToPageBreak;
+			saveSystemVariables();
+	}
+
+	function onCh2ndNonStopToPageBreakItemClick(sender)
+	{
+		ch2ndNonStopToPageBreak = ! ch2ndNonStopToPageBreak;
+		if(typeof this.ch2ndNonStopToPageBreakItem != "undefined")
+			ch2ndNonStopToPageBreakItem.checked = ch2ndNonStopToPageBreak;
+			saveSystemVariables();
+	}
+
+	function onCh2ndSpeedMenuItemClick(sender)
+	{
+		sender.checked = true;
+		userCh2ndSpeed = sender.speed;
+		setUserSpeed();
+		saveSystemVariables();
+	}
+
+	function onChAntialiasMenuItemClick(sender)
+	{
+		chDefaultAntialiased = !chDefaultAntialiased;
+		if(typeof this.chAntialiasMenuItem != "undefined")
+			chAntialiasMenuItem.checked = chDefaultAntialiased;
+		setMessageLayerUserFont();
+		saveSystemVariables();
+	}
+
+	function onChChangeFontMenuItem(sender)
+	{
+		selectFont();
+		saveSystemVariables();
+	}
+
+	function onRestoreMenuClick(sender)
+	{
+		if(!freeSaveDataMode) return;
+		loadBookMarkFromFileWithAsk();
+	}
+
+	function onStoreMenuClick(sender)
+	{
+		if(!freeSaveDataMode) return;
+		saveBookMarkToFileWithAsk();
+	}
+
+	function onWindowedMenuItemClick(sender)
+	{
+		if(fullScreened)
+		{
+			try
+			{
+				fullScreen = false;
+			}
+			catch(e)
+			{
+				Debug.notice("无法切换到窗口模式：" + e.message);
+			}
+			fullScreened = fullScreen;
+			if(fullScreened)
+				fullScreenMenuItem.checked = true;
+			else
+				windowedMenuItem.checked = true;
+		}
+		saveSystemVariables();
+	}
+
+	function onFullScreenMenuItemClick(sender)
+	{
+		if(!fullScreened)
+		{
+			try
+			{
+				fullScreen = true;
+			}
+			catch(e)
+			{
+				Debug.notice("无法切换到全屏模式：" + e.message);
+			}
+			fullScreened = fullScreen;
+			if(fullScreened)
+				fullScreenMenuItem.checked = true;
+			else
+				windowedMenuItem.checked = true;
+		}
+		saveSystemVariables();
+	}
+
+	function onHelpIndexMenuItemClick(sender)
+	{
+		// 打开帮助文件
+		if(helpFile == "") return;
+		if(Storages.isExistentStorage(helpFile))
+			System.shellExecute(Storages.getLocalName(Storages.getPlacedPath(helpFile)));
+		else
+			System.shellExecute(Storages.getLocalName(System.exePath) + helpFile);
+	}
+
+	function onHelpAboutMenuItemClick(sender)
+	{
+		// 显示「关于本软件」窗口
+		var win = new global.KAGWindow(false, aboutWidth, aboutHeight);
+		win.setPos(left + ((width - win.width)>>1), top + ((height - win.height)>>1));
+		win.process('about.ks' ,,, true); // 以 immediate 模式显示 about.ks
+		win.showModal(); // 模态显示
+		invalidate win;
+	}
+
+	function onReloadScenarioMenuItemClick(sender)
+	{
+		saveBookMark(1000, false);
+		loadBookMark(1000);
+	}
+
+	function onShowConsoleMenuItemClick(sender)
+	{
+		Debug.console.visible = true;
+	}
+
+	function onShowContollerMenuItemClick(sender)
+	{
+		Debug.controller.visible = true;
+	}
+
+	function internalSetMenuAccessibleAll(menu, state)
+	{
+		// 对所有 autoEnable 为 true 的菜单项
+		// 将 accessible 设为 state
+		if(typeof menu.autoEnable != "undefined" && menu.autoEnable)
+			menu.accessible = state;
+		if(typeof menu.stopRecur == "undefined" || !menu.stopRecur)
+		{
+			var children = menu.children;
+			for(var i = children.count -1; i >= 0; i--)
+				internalSetMenuAccessibleAll(children[i], state); // 递归
+		}
+	}
+
+	function canStore()
+	{
+		return storeEnabled && storeLabelPassed;
+	}
+
+	function canRestore()
+	{
+		return restoreEnabled;
+	}
+
+	function setMenuAccessibleAll()
+	{
+		// 设置菜单项可用/不可用
+
+		// 对所有 autoEnable 为 true 的菜单项
+		// 设置 accessible 值
+		var notmodal = !historyLayer.visible && !messageLayerHiding;
+		var state = inStable && notmodal;
+		internalSetMenuAccessibleAll(menu, state);
+
+		// 其他菜单的可用/不可用
+		if(typeof this.skipToNextStopMenuItem != "undefined")
+			skipToNextStopMenuItem.enabled = state && !inSleep && nextSkipEnabled;
+
+		if(typeof this.rightClickMenuItem != "undefined")
+			rightClickMenuItem.enabled = inStable && !historyLayer.visible;
+
+		if(typeof this.showHistoryMenuItem != "undefined")
+			showHistoryMenuItem.enabled = inStable && !messageLayerHiding &&
+				historyEnabled;
+
+		if(typeof this.autoModeMenuItem != "undefined")
+			autoModeMenuItem.enabled = notmodal;
+
+		if(typeof this.goBackMenuItem != "undefined")
+			goBackMenuItem.enabled = state && isHistoryOfStoreAlive();
+
+		if(typeof this.goToStartMenuItem != "undefined")
+			goToStartMenuItem.enabled = state && startAnchorEnabled;
+
+		if(typeof this.storeMenu != "undefined")
+		{
+			var st = state && canStore();
+			var children = storeMenu.children;
+			if(freeSaveDataMode) storeMenu.enabled = st;
+			for(var i = children.count - 1; i >= 0; i--)
+			{
+				var obj = children[i];
+				obj.enabled = obj.orgEnabled && st;
+			}
+		}
+
+		if(typeof this.restoreMenu != "undefined")
+		{
+			var st = state && canRestore();
+			var children = restoreMenu.children;
+			if(freeSaveDataMode) restoreMenu.enabled = st;
+			for(var i = children.count - 1; i >= 0; i--)
+			{
+				var obj = children[i];
+				obj.enabled = obj.orgEnabled && st;
+			}
+		}
+	}
+
+	//----------------------------------------------- 启用鼠标键 --
+
+	function enableMouseKey()
+	{
+		// 启用鼠标键
+		if(mouseKeyEnabledCount == 0)
+		{
+			useMouseKey = true;
+			mouseCursorState = mcsVisible;
+		}
+		mouseKeyEnabledCount++; // 引用计数方式
+	}
+
+	function disableMouseKey()
+	{
+		// 禁用鼠标键
+		mouseKeyEnabledCount --;
+		if(mouseKeyEnabledCount == 0) useMouseKey = false;
+	}
+
+	//----------------------------------------------------- 系统变量相关 --
+
+	function loadSystemVariables()
+	{
+		// 读取系统变量
+		try
+		{
+			var fn = saveDataLocation + "/" + dataName +
+				"sc.ksd";
+			if(Storages.isExistentStorage(fn))
+			{
+				scflags = Scripts.evalStorage(fn);
+				scflags = %[] if scflags === void;
+			}
+			else
+			{
+				scflags = %[];
+			}
+
+			var fn = saveDataLocation + "/" + dataName +
+				"su.ksd";
+			if(Storages.isExistentStorage(fn))
+			{
+				sflags = Scripts.evalStorage(fn);
+				sflags = %[] if sflags === void;
+			}
+			else
+			{
+				sflags = %[];
+			}
+		}
+		catch(e)
+		{
+			throw new Exception("无法读取系统变量数据，"
+				"或系统变量数据已损坏（" + e.message + "）");
+		}
+	}
+
+	function setSystemStateFromSystemVariables()
+	{
+		// 根据系统变量设置系统
+		// （不含全屏相关）
+		if(scflags.autoModePageWait !== void)
+		{
+			if(typeof this.autoModeWaitMenu !== "undefined")
+			{
+				var children = autoModeWaitMenu.children;
+				for(var i = children.count-1; i >= 0; i--)
+				{
+					var item = children[i];
+					if(typeof item.wait !== "undefined" && item.wait == scflags.autoModePageWait)
+					{
+						item.checked = true;
+						break;
+					}
+				}
+			}
+		}
+
+		if(scflags.userChSpeed !== void)
+		{
+			if(typeof this.chSpeedMenu !== "undefined")
+			{
+				var children = chSpeedMenu.children;
+				for(var i = children.count-1; i >= 0; i--)
+				{
+					var item = children[i];
+					if(typeof item.speed !== "undefined" && item.speed == scflags.userChSpeed)
+					{
+						item.checked = true;
+						break;
+					}
+				}
+			}
+		}
+
+		if(scflags.userCh2ndSpeed !== void)
+		{
+			if(typeof this.chSpeedMenu !== "undefined")
+			{
+				var children = ch2ndSpeedMenu.children;
+				for(var i = children.count-1; i >= 0; i--)
+				{
+					var item = children[i];
+					if(typeof item.speed !== "undefined" && item.speed == scflags.userCh2ndSpeed)
+					{
+						item.checked = true;
+						break;
+					}
+				}
+			}
+		}
+
+		lastSaveDataNameGlobal = scflags.lastSaveDataNameGlobal if scflags.lastSaveDataNameGlobal !== void;
+
+		bookMarkNames = scflags.bookMarkNames if scflags.bookMarkNames !== void;
+		bookMarkDates = scflags.bookMarkDates if scflags.bookMarkDates !== void;
+		bookMarkProtectedStates = scflags.bookMarkProtectedStates if scflags.bookMarkProtectedStates !== void;
+
+		autoModePageWait = scflags.autoModePageWait if scflags.autoModePageWait !== void;
+		autoModeLineWait = scflags.autoModeLineWait if scflags.autoModeLineWait !== void;
+		userChSpeed = scflags.userChSpeed if scflags.userChSpeed !== void;
+		userCh2ndSpeed = scflags.userCh2ndSpeed if scflags.userCh2ndSpeed !== void;
+
+		setUserSpeed();
+
+		chNonStopToPageBreak = scflags.chNonStopToPageBreak if scflags.chNonStopToPageBreak !== void;
+		if(typeof this.chNonStopToPageBreakItem != "undefined")
+			chNonStopToPageBreakItem.checked = chNonStopToPageBreak;
+
+		ch2ndNonStopToPageBreak = scflags.ch2ndNonStopToPageBreak if scflags.ch2ndNonStopToPageBreak !== void;
+		if(typeof this.ch2ndNonStopToPageBreakItem != "undefined")
+			ch2ndNonStopToPageBreakItem.checked = ch2ndNonStopToPageBreak;
+
+		chDefaultAntialiased = scflags.chDefaultAntialiased if scflags.chDefaultAntialiased !== void;
+		if(typeof this.chAntialiasMenuItem != "undefined")
+			chAntialiasMenuItem.checked = chDefaultAntialiased;
+		chDefaultFace = scflags.chDefaultFace if scflags.chDefaultFace !== void;
+
+		setMessageLayerUserFont();
+
+		bgm.restoreSystemState(scflags);
+
+		for(var i = 0; i<numSEBuffers; i++)
+		{
+			se[i].restoreSystemState(scflags);
+		}
+	}
+
+	function clearSystemVariables()
+	{
+		// 清除系统变量
+		(Dictionary.clear incontextof sflags)();
+	}
+
+	function saveSystemVariables()
+	{
+		// 保存系统变量
+		if(!isMain) return;
+
+		// 调用插件
+		forEachEventHook('onSaveSystemVariables',
+			function(handler, f) { handler(); } incontextof this);
+
+		// 全屏
+		scflags.fullScreen = fullScreened;
+
+		// 文字显示速度
+		scflags.autoModePageWait = autoModePageWait;
+		scflags.autoModeLineWait = autoModeLineWait;
+		scflags.userChSpeed = userChSpeed;
+		scflags.userCh2ndSpeed = userCh2ndSpeed;
+		scflags.chDefaultAntialiased = chDefaultAntialiased;
+		scflags.chDefaultFace = chDefaultFace;
+		scflags.chNonStopToPageBreak = chNonStopToPageBreak;
+		scflags.ch2ndNonStopToPageBreak = ch2ndNonStopToPageBreak;
+
+		// 书签名
+		scflags.bookMarkNames = bookMarkNames; // 引用即可，无需复制
+		scflags.bookMarkDates = bookMarkDates;
+		scflags.bookMarkProtectedStates = bookMarkProtectedStates;
+
+		scflags.lastSaveDataNameGlobal = lastSaveDataNameGlobal;
+
+		// 写入文件
+		if(!readOnlyMode)
+		{
+			var fn = saveDataLocation + "/" + dataName +
+				"sc.ksd";
+			(Dictionary.saveStruct incontextof scflags)(fn, saveDataMode);
+
+			var fn = saveDataLocation + "/" + dataName +
+				"su.ksd";
+			(Dictionary.saveStruct incontextof sflags)(fn, saveDataMode);
+		}
+	}
+
+	//------------------------------------------------------- 游戏变量相关 --
+
+	function internalStoreFlags(f)
+	{
+		// 将当前状态记录到 f
+
+		// KAGWindow 相关
+		(Dictionary.clear incontextof f)(); // 清除
+		// 此处 [start_store_vars] 至 [end_store_vars] 之间的部分
+		// 由文件末尾 perl 脚本自动处理，请勿删除这些标记
+		// 或编辑标记之间的内容。
+		// [start_store_vars]
+		f.lastSaveDataName = lastSaveDataName;
+		f.quaking = quaking;
+		f.quakeEndTick = quakeEndTick;
+		f.quakeHorzMax = quakeHorzMax;
+		f.quakeVertMax = quakeVertMax;
+		f.quakePhase = quakePhase;
+		f.historyWriteEnabled = historyWriteEnabled;
+		f.historyEnabled = historyEnabled;
+		f.numCharacterLayers = numCharacterLayers;
+		f.numMessageLayers = numMessageLayers;
+		f.currentNum = currentNum;
+		f.currentPage = currentPage;
+		f.currentWithBack = currentWithBack;
+		f.chUserMode = chUserMode;
+		f.chSpeed = chSpeed;
+		f.actualChSpeed = actualChSpeed;
+		f.beforeNoWaitActualChSpeed = beforeNoWaitActualChSpeed;
+		f.beforeNoWaitChUserMode = beforeNoWaitChUserMode;
+		f.clickSkipEnabled = clickSkipEnabled;
+		f.nextSkipEnabled = nextSkipEnabled;
+		f.canCancelSkipByClick = canCancelSkipByClick;
+		f.autoWCEnabled = autoWCEnabled;
+		f.autoWCChars = autoWCChars;
+		f.rightClickEnabled = rightClickEnabled;
+		f.rightClickCall = rightClickCall;
+		f.rightClickJump = rightClickJump;
+		f.rightClickTarget = rightClickTarget;
+		f.rightClickStorage = rightClickStorage;
+		f.rightClickName = rightClickName;
+		f.rightClickCurrentMenuName = rightClickCurrentMenuName;
+		f.lastClickGlyphVisible = lastClickGlyphVisible;
+		f.cursorDefault = cursorDefault;
+		f.cursorPointed = cursorPointed;
+		f.cursorWaitingClick = cursorWaitingClick;
+		f.cursorDraggable = cursorDraggable;
+		f.supportReadingKey = supportReadingKey;
+		f.startAnchorEnabled = startAnchorEnabled;
+		f.storeEnabled = storeEnabled;
+		f.restoreEnabled = restoreEnabled;
+		f.currentLabel = currentLabel;
+		f.currentPageName = currentPageName;
+		// [end_store_vars]
+
+		// perl 脚本未自动处理的部分
+
+		// 自动等待
+		f.autoWCWaits = [];
+		f.autoWCWaits.assign(autoWCWaits); // 自动等待时长
+
+		// bgm
+		f.bgm = bgm.store();
+
+		// 音效
+		f.se = [];
+		for(var i = 0; i<numSEBuffers; i++)
+		{
+			f.se[i] = se[i].store();
+		}
+
+		// 消息层
+		f.foreMessageLayers = [];
+		f.backMessageLayers = [];
+		for(var i = 0; i < numMessageLayers; i++)
+		{
+			f.foreMessageLayers[i] = fore.messages[i].store();
+			f.backMessageLayers[i] = back.messages[i].store();
+		}
+
+		// 立绘层
+		f.foreCharacterLayers = [];
+		f.backCharacterLayers = [];
+		for(var i = 0; i < numCharacterLayers; i++)
+		{
+			f.foreCharacterLayers[i] = fore.layers[i].store();
+			f.backCharacterLayers[i] = back.layers[i].store();
+		}
+
+		// 背景层
+		f.foreBaseLayer = fore.base.store();
+		f.backBaseLayer = back.base.store();
+
+		// 窗口标题
+		f.caption = caption;
+
+		// 指挥器
+		f.mainConductor = mainConductor.store();
+		if(!saveMacros) f.mainConductor.macros = void;
+			// 用 void 覆盖宏信息则存档中的宏信息无效
+
+		// 对话履历
+		if(historyLayer.storeState)
+		{
+			f.historyData = historyLayer.save();
+		}
+
+		// 视频
+		if( isMain )
+		{
+			f.movies = [];
+			for( var i = 0; i < numMovies; i++)
+				f.movies[i] = movies[i].store();
+		}
+
+		// storeHook
+		forEachEventHook('onStore',
+			function(handler, f) { handler(f.flags, f.options); } incontextof this,
+			%[flags:f, options:void]);
+	}
+
+	function storeFlags()
+	{
+		// 向 pcflags、pflags 写入值
+
+		// flags -> pflags
+		(Dictionary.assignStruct incontextof pflags)(flags);
+
+		internalStoreFlags(pcflags);
+	}
+
+	function internalRestoreFlags(f, clear = true, elm = void)
+	{
+		// 从 f 读取信息
+		// clear 为 true 时清除消息层
+		// se、bgm 分别为 true 时也反映相应信息
+		// backlay 为 true 时，应加载到表屏的内容加载到里屏
+
+		// 与 KAGWindow 相关
+		// 此处 [start_restore_vars] 到 [end_restore_vars] 之间
+		// (略)
+		// [start_restore_vars]
+		lastSaveDataName = f.lastSaveDataName if f.lastSaveDataName !== void;
+		quaking = f.quaking if f.quaking !== void;
+		quakeEndTick = f.quakeEndTick if f.quakeEndTick !== void;
+		quakeHorzMax = f.quakeHorzMax if f.quakeHorzMax !== void;
+		quakeVertMax = f.quakeVertMax if f.quakeVertMax !== void;
+		quakePhase = f.quakePhase if f.quakePhase !== void;
+		historyWriteEnabled = f.historyWriteEnabled if f.historyWriteEnabled !== void;
+		historyEnabled = f.historyEnabled if f.historyEnabled !== void;
+		numCharacterLayers = f.numCharacterLayers if f.numCharacterLayers !== void;
+		numMessageLayers = f.numMessageLayers if f.numMessageLayers !== void;
+		currentNum = f.currentNum if f.currentNum !== void;
+		currentPage = f.currentPage if f.currentPage !== void;
+		currentWithBack = f.currentWithBack if f.currentWithBack !== void;
+		chUserMode = f.chUserMode if f.chUserMode !== void;
+		chSpeed = f.chSpeed if f.chSpeed !== void;
+		actualChSpeed = f.actualChSpeed if f.actualChSpeed !== void;
+		beforeNoWaitActualChSpeed = f.beforeNoWaitActualChSpeed if f.beforeNoWaitActualChSpeed !== void;
+		beforeNoWaitChUserMode = f.beforeNoWaitChUserMode if f.beforeNoWaitChUserMode !== void;
+		clickSkipEnabled = f.clickSkipEnabled if f.clickSkipEnabled !== void;
+		nextSkipEnabled = f.nextSkipEnabled if f.nextSkipEnabled !== void;
+		canCancelSkipByClick = f.canCancelSkipByClick if f.canCancelSkipByClick !== void;
+		autoWCEnabled = f.autoWCEnabled if f.autoWCEnabled !== void;
+		autoWCChars = f.autoWCChars if f.autoWCChars !== void;
+		rightClickEnabled = f.rightClickEnabled if f.rightClickEnabled !== void;
+		rightClickCall = f.rightClickCall if f.rightClickCall !== void;
+		rightClickJump = f.rightClickJump if f.rightClickJump !== void;
+		rightClickTarget = f.rightClickTarget if f.rightClickTarget !== void;
+		rightClickStorage = f.rightClickStorage if f.rightClickStorage !== void;
+		rightClickName = f.rightClickName if f.rightClickName !== void;
+		rightClickCurrentMenuName = f.rightClickCurrentMenuName if f.rightClickCurrentMenuName !== void;
+		lastClickGlyphVisible = f.lastClickGlyphVisible if f.lastClickGlyphVisible !== void;
+		cursorDefault = f.cursorDefault if f.cursorDefault !== void;
+		cursorPointed = f.cursorPointed if f.cursorPointed !== void;
+		cursorWaitingClick = f.cursorWaitingClick if f.cursorWaitingClick !== void;
+		cursorDraggable = f.cursorDraggable if f.cursorDraggable !== void;
+		supportReadingKey = f.supportReadingKey if f.supportReadingKey !== void;
+		startAnchorEnabled = f.startAnchorEnabled if f.startAnchorEnabled !== void;
+		storeEnabled = f.storeEnabled if f.storeEnabled !== void;
+		restoreEnabled = f.restoreEnabled if f.restoreEnabled !== void;
+		currentLabel = f.currentLabel if f.currentLabel !== void;
+		currentPageName = f.currentPageName if f.currentPageName !== void;
+		// [end_restore_vars]
+
+		// perl 脚本未自动处理的部分
+
+		// 自动等待
+		autoWCWaits.assign(f.autoWCWaits) if f.autoWCWaits !== void;
+
+		// 视频
+		if( isMain )
+		{
+			for( var i = 0; i < numMovies; i++)
+				movies[i].restore(f.movies[i]);
+		}
+
+		// 背景层
+		var backlay = elm != void && elm.backlay != void && +elm.backlay;
+		if(backlay)
+		{
+			back.base.restore(f.foreBaseLayer);
+		}
+		else
+		{
+			fore.base.restore(f.foreBaseLayer);
+			back.base.restore(f.backBaseLayer);
+		}
+
+		// 消息层
+		allocateMessageLayers(numMessageLayers);
+		if(backlay)
+		{
+			for(var i = 0; i < numMessageLayers; i++)
+			{
+				back.messages[i].restore(f.foreMessageLayers[i]);
+			}
+		}
+		else
+		{
+			for(var i = 0; i < numMessageLayers; i++)
+			{
+				fore.messages[i].restore(f.foreMessageLayers[i]);
+				back.messages[i].restore(f.backMessageLayers[i]);
+			}
+		}
+
+		if(clear)
+		{
+			for(var i = 0; i < numMessageLayers; i++)
+			{
+				fore.messages[i].clear();
+				back.messages[i].clear();
+			}
+			if(historyLayer.storeState)
+			{
+				historyLayer.load(f.historyData);
+			}
+			else
+			{
+				if(historyWriteEnabled)
+				{
+					if(historyLayer.everypage)
+						historyLayer.repage();
+					else
+						historyLayer.reline(), historyLayer.reline();
+				}
+				historyLayer.clearAction();
+			}
+		}
+
+		// 立绘层
+		allocateCharacterLayers(numCharacterLayers);
+		if(backlay)
+		{
+			for(var i = 0; i < numCharacterLayers; i++)
+			{
+				back.layers[i].restore(f.foreCharacterLayers[i]);
+			}
+		}
+		else
+		{
+			for(var i = 0; i < numCharacterLayers; i++)
+			{
+				fore.layers[i].restore(f.foreCharacterLayers[i]);
+				back.layers[i].restore(f.backCharacterLayers[i]);
+			}
+		}
+
+		// 震动相关
+		restoreQuake();
+
+		// bgm
+		if(elm === void || elm.bgm === void || +elm.bgm)
+		{
+			bgm.restore(f.bgm);
+		}
+
+		// 音效
+		if(elm === void || elm.se === void || +elm.se)
+		{
+			for(var i = 0; i<numSEBuffers; i++)
+			{
+				se[i].restore(f.se[i]);
+			}
+		}
+
+		// 窗口标题
+		caption = f.caption;
+		System.title = caption;
+
+		// 重新设置 current
+		current = (currentPage?back:fore).messages[currentNum];
+
+		// 右键菜单名
+		if(typeof this.rightClickMenuItem != "undefined")
+			rightClickMenuItem.caption = rightClickCurrentMenuName;
+
+		// restoreHook
+		forEachEventHook('onRestore',
+			function(handler, f) { handler(f.flags, f.clear, f.options); } incontextof this,
+			%[flags:f, clear:clear, options:elm]);
+
+	}
+
+	function restoreFlags()
+	{
+		// 从 pcflags、pflags 读取信息
+
+		// 加载时清除视频 period 事件信息
+		purgeMoviePeriod();
+
+		// 释放快照
+		freeSnapshot();
+
+		// 停止过渡、自动移动
+		stopAllTransitions();
+		stopAllMoves();
+
+		// 隐藏点击等待符号
+		hideClickGlyphs();
+
+		// 隐藏对话履历
+		hideHistory();
+
+		// 取消跳过
+		cancelSkip();
+
+		// pflags -> flags
+		(Dictionary.assignStruct incontextof flags)(pflags);
+
+		// 存档管理関連
+		storeLabelPassed = true;
+		nextRecordHistory = false;
+		stablePosibility = false;
+
+		// 指挥器
+		currentRecordName = "";
+		mainConductor.restore(pcflags.mainConductor);
+		extraConductor.clear();
+		setConductorToMain();
+
+		// 读取
+		internalRestoreFlags(pcflags);
+
+		// 菜单相关
+		setMenuAccessibleAll();
+
+		// 开始执行
+		processGo();
+	}
+
+	function clearVariables()
+	{
+		// 清除游戏变量
+		(Dictionary.clear incontextof flags)();
+	}
+
+	//--------------------------------------------------------- 经过记录管理 --
+
+	function pushHistoryOfStore()
+	{
+		// 进行经过记录
+		// 须在将信息写入 pflags、pcflags 之后调用
+
+		if(nextRecordHistory)
+		{
+			if(stablePosibility)
+			{
+				// stablePosibility 为 false 时，
+				// 即使在该标签进行经过记录，
+				// 也无法回到更早的位置，故不进行经过记录
+
+				// 创建字典数组
+				var dic = %[];
+
+				// 记录 user 与 core
+				dic.user = %[];
+				(Dictionary.assignStruct incontextof dic.user)(pflags);
+				dic.core = %[];
+				(Dictionary.assignStruct incontextof dic.core)(pcflags);
+
+				// 将 dic 插入 historyOfStore 开头
+
+				// 删除超出部分
+				if(historyOfStore.count > maxHistoryOfStore)
+					historyOfStore.count = maxHistoryOfStore;
+			}
+
+			nextRecordHistory = false;
+		}
+	}
+
+	function setToRecordHistory()
+	{
+		// 设置于下次经过「可存档标签」时
+		// 进行经过记录
+		// （但记录的是当前状态）
+		nextRecordHistory = true;
+	}
+
+	function isHistoryOfStoreAlive()
+	{
+		// 返回经过记录是否可用
+		return historyOfStore.count;
+	}
+
+	function goBackHistory(ask = true)
+	{
+		// 沿经过记录回退
+
+		if(!isHistoryOfStoreAlive())
+			return false;
+
+		var result;
+		if(ask)
+		{
+			var prompt = "确定回退到「"+ historyOfStore[0].core.currentPageName + "」吗？";
+			result = askYesNo(prompt);
+		}
+		else
+		{
+			result = true;
+		}
+
+		if(result)
+		{
+			// 将 user 与 core 恢复到 pflags、pcflags
+			(Dictionary.assignStruct incontextof pflags)(historyOfStore[0].user);
+			(Dictionary.assignStruct incontextof pcflags)(historyOfStore[0].core);
+
+			// 删除记录开头
+			historyOfStore.erase(0);
+
+			// 根据数据执行读取存档
+			restoreFlags();
+
+			return true;
+		}
+		return false;
+	}
+
+	//--------------------------------------------------------------- 存档管理 --
+
+	function createBookMarkSubMenus()
+	{
+		// 在「读取存档」「插入存档」下添加子菜单项
+		if(freeSaveDataMode) return; // 自由存档模式下不处理
+		if(typeof this.storeMenu !== "undefined" && storeMenu.visible)
+		{
+			for(var i = 0; i<numBookMarks; i++)
+			{
+				var item;
+				storeMenu.add(item = new KAGMenuItem(this, string i, 0, onBookMarkStore,
+					false));
+				item.bmNum = i;
+				item.orgEnabled = false;
+			}
+		}
+		if(typeof this.restoreMenu !== "undefined" && restoreMenu.visible)
+		{
+			for(var i = 0; i<numBookMarks; i++)
+			{
+				var item;
+				restoreMenu.add(item = new KAGMenuItem(this, string i, 0, onBookMarkRestore,
+					false));
+				item.bmNum = i;
+				item.orgEnabled = false;
+			}
+		}
+	}
+
+	function setBookMarkMenuCaptions()
+	{
+		// 为「读取存档」「插入存档」下的子菜单
+		// 设置标题
+
+		// 插入存档
+		if(typeof this.storeMenu !== "undefined")
+		{
+			var children = storeMenu.children;
+			for(var i = children.count - 1; i >= 0; i--)
+			{
+				if(bookMarkDates[i] != '') // 空字符串表示无存档
+				{
+					// 存档存在
+					var caption;
+					if(showBookMarkDate) caption = bookMarkDates[i] + " ";
+					caption += bookMarkNames[i];
+					var item = children[i];
+					item.caption = caption;
+					item.enabled = false;
+					item.orgEnabled = !bookMarkProtectedStates[i];
+				}
+				else
+				{
+					// 存档不存在
+					var item = children[i];
+					item.caption = "（未设置）";
+					item.enabled = false;
+					item.orgEnabled = !bookMarkProtectedStates[i];
+				}
+			}
+		}
+
+		// 读取存档
+		if(typeof this.restoreMenu !== "undefined")
+		{
+			var children = restoreMenu.children;
+			for(var i = children.count - 1; i >= 0; i--)
+			{
+				if(bookMarkDates[i] != '') // 空字符串表示无存档
+				{
+					// 存档存在
+					var caption;
+					if(showBookMarkDate) caption = bookMarkDates[i] + " ";
+					caption += bookMarkNames[i];
+					var item = restoreMenu.children[i];
+					item.caption = caption;
+					item.enabled = false;
+					item.orgEnabled = true;
+				}
+				else
+				{
+					var item = restoreMenu.children[i];
+					item.caption = "（未设置）";
+					item.enabled = false;
+					item.orgEnabled = false;
+				}
+			}
+		}
+		setMenuAccessibleAll();
+	}
+
+	function setBookMarkProtectedState(num, s)
+	{
+		// 设置第 n 个存档的保护标志
+		// s = true 时保护存档不被写入
+		bookMarkProtectedStates[num] = s;
+		setBookMarkMenuCaptions();
+	}
+
+	function onBookMarkStore(sender)
+	{
+		// 选择了插入存档菜单
+//		if(!sender.parent.accessEnabled) return;
+		saveBookMarkWithAsk(sender.bmNum);
+	}
+
+	function onBookMarkRestore(sender)
+	{
+		// 选择了读取存档菜单
+//		if(!sender.parent.accessEnabled) return;
+		loadBookMarkWithAsk(sender.bmNum);
+	}
+
+	function getBookMarkPageName(num)
+	{
+		// 获取存档编号 num 的书签名
+		if(bookMarkDates[num] != '') // 空字符串表示无存档
+			return bookMarkNames[num];
+		return "（未设置）";
+	}
+
+	function getBookMarkDate(num)
+	{
+		// 获取存档编号 num 的日期
+		return bookMarkDates[num];
+	}
+
+	function getBookMarkFileNameAtNum(num)
+	{
+		if(num >= 999) // 999 号及以后用于特殊数据
+			return saveDataLocation + "/" + dataName + num + ".ksd";
+		else
+			return saveDataLocation + "/" + dataName + num + (saveThumbnail?".bmp":".kdt");
+	}
+
+	function lockSnapshot()
+	{
+		// 锁定快照
+		// 首次锁定时保存当前画面
+		if(snapshotLockCount == 0)
+		{
+			if(snapshotLayer === void)
+				snapshotLayer = new Layer(this, primaryLayer);
+			snapshotLayer.setImageSize(scWidth, scHeight);
+			snapshotLayer.face = dfAlpha;
+			snapshotLayer.piledCopy(0, 0, kag.fore.base, 0, 0, scWidth, scHeight);
+		}
+		snapshotLockCount ++;
+	}
+
+	function unlockSnapshot()
+	{
+		// 解除快照锁定
+		if(snapshotLockCount == 0)
+			throw new Exception("snapshotLockCount 计数下溢");
+		snapshotLockCount --;
+		if(snapshotLockCount == 0)
+		{
+			if(snapshotLayer !== void)
+				invalidate snapshotLayer, snapshotLayer = void;
+		}
+	}
+
+	function calcThumbnailSize()
+	{
+		// 计算缩略图尺寸
+		// 宽度为 133
+		var ratio = scHeight / scWidth;
+		var w = thumbnailWidth;
+		var h = (int)(w * ratio);
+
+		// 计算缩略图用位图尺寸
+		// 缩略图图像为 256 色 BMP 或 24 位全彩 BMP
+		var size;
+		if (thumbnailDepth == 8)
+		  size = ((((w - 1) >> 2) + 1) << 2) * h + 1024 + 54;
+		else
+		  size = (((w * 3 + 3) >> 2) << 2) * h + 54;
+
+		return %[width : w, height : h, size : size];
+	}
+
+	function freeSnapshot()
+	{
+		// 强制释放快照，并将 snapshotLockCount 设为 0
+		snapshotLockCount = 0;
+		if(snapshotLayer !== void)
+			invalidate snapshotLayer, snapshotLayer = void;
+	}
+
+	function saveBookMarkToFile(fn, savehist = true)
+	{
+		// 将存档保存到文件 fn
+		if(readOnlyMode) return false;
+		pcflags.storeTime = (new Date()).getTime(); // 保存日期
+
+		// 汇总存档数据
+		var data = %[];
+		data.id = saveDataID;
+		data.core = pcflags;
+		data.user = pflags;
+		if(savehist) data.history = historyOfStore;
+
+		if(saveThumbnail)
+		{
+			// 保存缩略图
+			lockSnapshot();
+			try
+			{
+				// 缩小至缩略图尺寸
+				var size = calcThumbnailSize();
+				var tmp = new Layer(this, primaryLayer);
+				try
+				{
+					tmp.setImageSize(size.width, size.height);
+					tmp.face = dfAlpha;
+					tmp.stretchCopy(0, 0, size.width, size.height, snapshotLayer,
+						0, 0, snapshotLayer.imageWidth, snapshotLayer.imageHeight, stLinear);
+					/*
+					// 若要以棕褐色调保存缩略图图像，请取消注释
+					tmp.doGrayScale();
+					tmp.adjustGamma(
+									1.3, 0, 255,  // R gamma, floor, ceil
+									1.0, 0, 255,  // G gamma, floor, ceil
+									0.8, 0, 255); // B gamma, floor, ceil
+					*/
+					try
+					{
+						// 保存缩略图
+						tmp.saveLayerImage(fn, "bmp" + thumbnailDepth);
+
+						// 保存数据
+						var mode = saveDataMode;
+						mode += "o" + size.size; // 在模式字符串中指定写入偏移
+						(Dictionary.saveStruct incontextof data)(fn, mode);
+					}
+					catch(e)
+					{
+						invalidate tmp;
+						unlockSnapshot();
+						System.inform("无法保存到文件（无法打开文件或禁止写入）");
+						return false;
+					}
+				}
+				catch(e)
+				{
+					invalidate tmp;
+					throw e;
+				}
+				invalidate tmp;
+			}
+			catch(e)
+			{
+				unlockSnapshot();
+				throw e;
+			}
+			unlockSnapshot();
+		}
+		else
+		{
+			// 保存到普通文件
+			try
+			{
+				(Dictionary.saveStruct incontextof data)(fn, saveDataMode);
+			}
+			catch(e)
+			{
+				System.inform("无法保存到文件（无法打开文件或禁止写入）");
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	function saveBookMark(num, savehist = true)
+	{
+		// 保存到存档编号 num
+		if(readOnlyMode) return false;
+		if(bookMarkProtectedStates[num]) return false;
+
+		var ret = saveBookMarkToFile(getBookMarkFileNameAtNum(num), savehist);
+		if(ret)
+		{
+			// 更新菜单 / bookMarkNames / bookMarkDates
+			getBookMarkInfoFromData(pcflags, num);
+		}
+		return ret;
+	}
+
+	function getBookMarkInfoFromData(dic, num)
+	{
+		// 从字典数组 dic 读取存档页名与日期，
+		// 设置到 bookMarkDates[num]、bookMarkNames[num]
+		if(num < numBookMarks)
+		{
+			bookMarkNames[num] = dic.currentPageName;
+			var date = new Date();
+			date.setTime(dic.storeTime);
+			date = "%04d/%02d/%02d %02d:%02d".sprintf(
+				date.getYear(), date.getMonth() + 1, date.getDate(),
+				date.getHours(), date.getMinutes() );
+			bookMarkDates[num] = date;
+			setBookMarkMenuCaptions();
+			saveSystemVariables();
+		}
+	}
+
+	function loadBookMarkFromFile(fn, loaduser = true)
+	{
+		// 从文件 fn 读取存档
+		// loaduser 为 false 时不读取 user
+		try
+		{
+			if(!Storages.isExistentStorage(fn)) return false; // 文件不存在
+
+			var data;
+
+			var modestr;
+
+			if(saveThumbnail)
+			{
+				// 从指定偏移读取数据
+				modestr += "o" + calcThumbnailSize().size;
+			}
+
+			data = Scripts.evalStorage(fn, modestr);
+
+			if(data.id != saveDataID)
+			{
+				System.inform("试图加载其他系统的存档数据", "错误");
+				return false;
+			}
+
+			pcflags = data.core;
+			pcflags = %[] if pcflags === void;
+			if(loaduser)
+			{
+				pflags = data.user;
+				pflags = %[] if pflags === void;
+			}
+			else
+			{
+				(Dictionary.assignStruct incontextof pflags)(flags);
+			}
+			historyOfStore = data.history;
+			historyOfStore = [] if historyOfStore === void;
+		}
+		catch(e)
+		{
+			System.inform("无法读取存档，或存档已损坏，"
+				"或存档格式不正确"
+				"（" + e.message + "）", "错误");
+			return false;
+		}
+
+		restoreFlags();
+		return true;
+	}
+
+	function loadBookMark(num, loaduser = true)
+	{
+		// 从存档编号 num 读取数据
+		return loadBookMarkFromFile(getBookMarkFileNameAtNum(num), loaduser);
+	}
+
+	function saveBookMarkWithAsk(num)
+	{
+		// 保存到存档编号 num
+		// 并询问是否保存
+		if(readOnlyMode) return false;
+		if(bookMarkProtectedStates[num]) return false;
+		var prompt = "存档 ";
+		if(num < numBookMarks) prompt += (num + 1);
+		if(bookMarkDates[num] != "") // bookMarkDates 为空字符串表示无存档
+			prompt += "「" + bookMarkNames[num] + "」";
+		prompt += " 中保存「"+ pcflags.currentPageName + "」吗？";
+		var result = askYesNo(prompt);
+		if(result) return saveBookMark(num);
+		return false;
+	}
+
+	function loadBookMarkWithAsk(num)
+	{
+		// 从存档编号 num 读取存档
+		// 并询问是否读取
+		if(num < numBookMarks && bookMarkDates[num] == "") // bookMarkDates 为空字符串表示无存档
+			return false;
+		var prompt = "存档 ";
+		if(num < numBookMarks) prompt += (num + 1);
+		prompt += "「"+ bookMarkNames[num] + "」读取吗？";
+		var result = askYesNo(prompt);
+		if(result) return loadBookMark(num);
+		return false;
+	}
+
+	function saveBookMarkToFileWithAsk()
+	{
+		// 保存到任意文件
+		// 将 currentPageName 变形为合适的文件名
+		var invalid = "\\/:,;*?\"<>!.";
+		var valid = "￥／：，；＊？”＜＞！．";
+
+		var initialname = saveDataLocation + "/";
+		var through = false;
+		var orgname = currentPageName;
+
+		if(lastSaveDataNameGlobal != "")
+		{
+			try
+			{
+				initialname = Storages.extractStoragePath(lastSaveDataNameGlobal);
+			}
+			catch(e)
+			{
+				initialname = saveDataLocation + "/";
+			}
+		}
+
+		if(orgname == "")
+		{
+			// 无存档标题
+			if(lastSaveDataName == "")
+				orgname = System.title; // 改用 System.title
+			else
+				initialname = lastSaveDataName, through = true;
+		}
+
+		if(!through)
+		{
+			var length = orgname.length;
+			for(var i = 0; i < length; i++)
+			{
+				var ch = orgname[i];
+					var ind = invalid.indexOf(ch);
+				if(ind != -1)
+					initialname += valid[ind];
+				else if(#ch >= 32)
+					initialname += ch;
+			}
+		}
+
+		// 获取要保存的文件名
+		var selectdata = %[
+			title:"保存存档",
+			filter: [saveThumbnail ?
+					"带缩略图的存档数据(*.bmp)|*.bmp" :
+					"存档数据(*.kdt)|*.kdt"],
+			filterIndex : 1,
+			name : initialname,
+			initialDir : "",
+			defaultExt : saveThumbnail?"bmp":"kdt",
+			save : true,
+		];
+		if(Storages.selectFile(selectdata))
+		{
+			// 保存
+			saveBookMarkToFile(lastSaveDataName = lastSaveDataNameGlobal = selectdata.name);
+			lastSaveDataName = Storages.chopStorageExt(lastSaveDataName);
+		}
+	}
+
+	function loadBookMarkFromFileWithAsk()
+	{
+		// 从任意文件读取存档
+		var initialdir = "";
+		if(lastSaveDataNameGlobal == "")
+			initialdir = saveDataLocation + "/";
+
+		var selectdata = %[
+			title:"读取存档",
+			filter: [saveThumbnail ?
+					"带缩略图的存档数据(*.bmp)|*.bmp" :
+					"存档数据(*.kdt)|*.kdt"],
+			filterIndex : 1,
+			name : lastSaveDataNameGlobal,
+			initialDir : initialdir,
+			defaultExt : saveThumbnail?"bmp":"kdt",
+			save : false,
+		];
+		if(Storages.selectFile(selectdata))
+		{
+			loadBookMarkFromFile(lastSaveDataName = lastSaveDataNameGlobal = selectdata.name);
+			lastSaveDataName = Storages.chopStorageExt(lastSaveDataName);
+		}
+	}
+
+
+	function copyBookMark(from, to)
+	{
+		// 从存档编号 from 复制到存档编号 to
+		if(readOnlyMode) return false;
+		if(bookMarkProtectedStates[to]) return;
+
+		var fn = getBookMarkFileNameAtNum(from);
+
+		if(!Storages.isExistentStorage(fn)) return; // 文件不存在
+
+		var data = Scripts.evalStorage(fn);
+
+		fn = getBookMarkFileNameAtNum(to);
+
+		(Dictionary.saveStruct incontextof data)(fn, saveDataMode);
+		getBookMarkInfoFromData(data.core, to);
+	}
+
+	function eraseBookMark(num)
+	{
+		// 删除存档
+		// 注意：仅在 num < numBookMarks 时有效
+		if(num < numBookMarks)
+		{
+			if(!bookMarkProtectedStates[num])
+			{
+				bookMarkDates[num] = "";
+				setBookMarkMenuCaptions();
+			}
+		}
+	}
+
+	function tempDisableStore(elm)
+	{
+		// 暂时禁止存档
+		storeEnabled = true;
+		if(elm.store === void)
+			storeLabelPassed = false;
+		else
+			storeLabelPassed = !(+elm.store);
+		if(elm.restore == void)
+			restoreEnabled = true;
+		else
+			restoreEnabled = !(+elm.restore);
+		setMenuAccessibleAll();
+	}
+
+	function setStoreEnabled(enabled)
+	{
+		// 设置存档菜单启用/禁用
+		storeEnabled = enabled;
+		restoreEnabled = enabled;
+		setMenuAccessibleAll();
+	}
+
+	function setStartAnchorEnabled(enabled)
+	{
+		// 设置「回到开头」启用/禁用
+		startAnchorEnabled = enabled;
+		if(enabled) saveBookMark(999, false); // 保存到 999 号
+		setMenuAccessibleAll();
+	}
+
+	function goToStart()
+	{
+		// 回到开头
+		if(!startAnchorEnabled) return;
+		loadBookMark(999, false); // 读取存档
+	}
+
+	function goToStartWithAsk()
+	{
+		// 回到开头（带确认）
+		var result = askYesNo("将回到开头，确定继续吗？");
+		if(result) goToStart();
+	}
+
+	function tempSave(num)
+	{
+		// 将当前状态保存到 tempBookMarks[num]
+		tempBookMarks[num] = %[];
+		internalStoreFlags(tempBookMarks[num]);
+	}
+
+	function tempLoad(num, elm)
+	{
+		// 从 tempBookMarks[num] 读取状态
+		internalRestoreFlags(tempBookMarks[num], false, elm);
+	}
+
+	function restoreBookMark(num, ask = true)
+	{
+		// KAG 2.x 兼容用
+		if(ask)
+			return loadBookMarkWithAsk(num);
+		else
+			return loadBookMark(num);
+	}
+
+	function storeBookMark(num, ask = true)
+	{
+		// KAG 2.x 兼容用
+		if(ask)
+			return saveBookMarkWithAsk(num);
+		else
+			return saveBookMark(num);
+	}
+
+	//------------------------------------------------- 未读/已读/标签记录 --
+
+	function setRecordLabel(storage, label)
+	{
+		// 设置当前标签
+		if(autoRecordPageShowing)
+		{
+			if(label != '')
+			{
+				if(label[0] == '*') label = label.substring(1);
+				if(label[1] == '-') return; // 局部标签
+			}
+			currentRecordName = 'trail_' + Storages.chopStorageExt(
+				Storages.extractStorageName(storage)) + '_' + label;
+		}
+	}
+
+	function incRecordLabel(count)
+	{
+		// sflags[currentRecordName]++
+		if(autoRecordPageShowing)
+		{
+			if(currentRecordName != "")
+			{
+				if(count)
+				{
+					if(sflags[currentRecordName] === void)
+						sflags[currentRecordName] = 0;
+					sflags[currentRecordName]++;
+				}
+				currentRecordName = "";
+			}
+		}
+	}
+
+	//------------------------------------------- 系统全局相关 --
+
+	function setTitle(title)
+	{
+		// 设置标题
+		if(isMain) System.title = title;
+		caption = title;
+	}
+
+	function setCursor(elm)
+	{
+		// 设置鼠标光标
+		var conv = function(variable, value)
+		{
+			if(value !== void)
+			{
+				if(!(typeof value == "String" &&
+					(value.indexOf('.cur')!=-1 || value.indexOf('.ani')!=-1) ))
+						value = +value;
+				this[variable] = value;
+			}
+		} incontextof this;
+
+		conv('cursorDefault', elm['default']); 
+		conv('cursorPointed', elm.pointed);
+		conv('cursorWaitingClick', elm.click);
+		conv('cursorDraggable', elm.draggable);
+		fore.base.setDefaultCursor(cursorDefault);
+		back.base.setDefaultCursor(cursorDefault);
+	}
+
+	//---------------------------------------------------- 触发器管理（TJS 用） --
+
+	function waitTrigger(elm)
+	{
+		// 等待 elm.name 所示的触发器
+		if((elm.canskip !== void && +elm.canskip) && clickSkipEnabled)
+		{
+			// 可跳过时
+			if(skipMode)
+			{
+				// 跳过中
+				if(elm.onskip !== void) Scripts.eval(elm.onskip);
+				return 0; // 立即返回
+			}
+			conductor.wait(%[
+				click : function(arg)
+				{
+					if(arg !== void) Scripts.eval(arg);
+				} incontextof this,
+				click_arg : elm.onskip,
+				elm.name => function
+				{
+				} incontextof this
+				]);
+		}
+		else
+		{
+			conductor.wait(%[
+				elm.name => function
+				{
+				} incontextof this
+				]);
+		}
+		return -2;
+	}
+
+	function trigger(name)
+	{
+		// 触发 name 所示的触发器
+		conductor.trigger(name);
+	}
+
+	//------------------------------------------------------- 对话履历 --
+
+	function showHistory()
+	{
+		// 显示对话履历层
+		historyLayer.parent = fore.base; // 重新设置对话履历层的父层
+		historyLayer.absolute = 2000000;
+		historyLayer.dispInit();
+		historyShowing = true;
+		if(typeof this.showHistoryMenuItem != "undefined")
+			showHistoryMenuItem.checked = true;
+		setMenuAccessibleAll();
+	}
+
+	function hideHistory()
+	{
+		// 隐藏对话履历层
+		historyLayer.dispUninit();
+		historyShowing = false;
+		if(typeof this.showHistoryMenuItem != "undefined")
+			showHistoryMenuItem.checked = false;
+		setMenuAccessibleAll();
+		lastHistoryHiddenTick = System.getTickCount();
+		conductor.trigger('history'); // 发送 'history'
+	}
+
+	function setHistoryOptions(elm)
+	{
+		// 从 elm 设置对话履历层选项
+		historyWriteEnabled = +elm.output if elm.output !== void;
+		historyEnabled = +elm.enabled if elm.enabled !== void;
+		if(elm.enabled !== void && !historyEnabled)
+			historyLayer.clearAction();
+		historyLayer.setOptions(elm); // 其他选项
+		setMenuAccessibleAll();
+	}
+
+	function showHistoryByScenario(elm)
+	{
+		// 从脚本中显示对话履历
+		showHistory();
+		conductor.wait(%[ // 等待指挥器
+			history : function
+			{
+				// 无操作
+			} incontextof this
+			]);
+		return -2; // break
+	}
+
+	//-------------------------------------------------------------- process --
+
+	function process(file, label, countpage = true, immediate = false)
+	{
+		// 从指定文件、指定标签开始执行
+		if(!usingExtraConductor) incRecordLabel(countpage);
+		setUserSpeed();
+
+		if(file != '')
+		{
+			// 读取文件
+			conductor.loadScenario(file);
+		}
+
+		if(label != '')
+		{
+			// 移动到标签
+			conductor.goToLabel(label);
+		}
+
+		if(isFirstProcess)
+		{
+			storeFlags(); // 保存最初的状态
+			isFirstProcess = false;
+		}
+
+
+		dm("开始处理");
+		inSleep = false;
+		notifyRun();
+		if(conductor.status != conductor.mRun) conductor.run(immediate); // 执行开始
+	}
+
+	function processGo()
+	{
+		// 从指挥器当前位置开始执行
+		dm("开始处理");
+		inSleep = false;
+		notifyRun();
+		conductor.run(false); // 执行开始
+	}
+
+	function processCall(file, label)
+	{
+		// 调用指定文件、指定标签
+		// 注意：不会调用 incRecordLabel()
+
+		if(file != '')
+		{
+			// 读取文件
+			conductor.loadScenario(file);
+		}
+
+		inSleep = false;
+		notifyRun();
+		conductor.callLabel(label); // 执行开始
+		dm("开始处理");
+		if(conductor.status != conductor.mRun) conductor.run();
+	}
+
+	//------------------------------------------------- 指挥器事件 --
+
+	function onConductorScenarioLoad(name)
+	{
+		// 指挥器读取新脚本文件之前调用。
+		// name 为即将读取的脚本文件。
+		// 若返回字符串，则作为脚本
+		// 替代文件使用，可在此编写过滤器。
+		// 返回 true 则按通常方式读取脚本文件。
+		return true;
+	}
+
+
+	function onConductorScenarioLoaded(name)
+	{
+		// 指挥器已读取新脚本文件
+//		if(!usingExtraConductor) incRecordLabel(true);
+		return true;
+	}
+
+	function onConductorLabel(label, page)
+	{
+		// 指挥器经过标签
+		if(!usingExtraConductor)
+		{
+			incRecordLabel(true);
+			setRecordLabel(conductor.curStorage, label);
+		}
+		setUserSpeed();
+		if(!usingExtraConductor)
+		{
+			if(!getCurrentRead() && skipMode != 4)
+				cancelSkip(); // 未读，停止跳过
+			currentLabel = label;
+		}
+		if(page !== void && page !== '')
+		{
+			if(page[0] == '&') page = Scripts.eval((page.substring(1)));
+			currentPageName = page;
+		}
+		if(page !== void)
+		{
+			pushHistoryOfStore();
+			stablePosibility = false;
+			dm(conductor.curStorage + "：标签/页面：" + label + "/" + currentPageName);
+			if(usingExtraConductor) throw new Exception("在右键子程序内/extraConductor"
+				"子程序内无法记录可保存的标签");
+			storeFlags(), storeLabelPassed = true, setMenuAccessibleAll();
+			if(recordHistoryOfStore == 1) // 1：每个可存档标签
+				setToRecordHistory();
+		}
+		return true;
+	}
+
+	function onConductorJump(elm)
+	{
+		// 指挥器处理 jump 标签时
+		if(!usingExtraConductor) incRecordLabel(elm.countpage === void || +elm.countpage);
+		return true;
+	}
+
+	function onConductorCall(elm)
+	{
+		// 指挥器处理 call 标签时
+		if(!usingExtraConductor) incRecordLabel(elm.countpage !== void && +elm.countpage);
+		return true;
+	}
+
+	function onConductorReturn(elm)
+	{
+		// 指挥器处理 return 标签时
+		if(!usingExtraConductor) incRecordLabel(elm.countpage === void || +elm.countpage);
+		if(conductor === extraConductor)
+		{
+			// 由 extraConductor 子程序用指挥器调用
+			if(conductor.callStackDepth == 1)
+			{
+				// 即执行了最后的 return
+				dm("从 extraConductor 子程序返回 ...");
+				var run;
+				if(elm.storage !== void || elm.target !== void) run = true; else run = false;
+				returnExtraConductor(run);
+				if(elm.storage !== void) conductor.loadScenario(elm.storage);
+				if(elm.target !== void) conductor.goToLabel(elm.target);
+				setRecordLabel(conductor.curStorage, currentLabel = conductor.curLabel);
+				if(run)
+				{
+					notifyRun();
+					conductor.run();
+				}
+				isLeavePeriodEvent = false;
+				if(elm.storage !== void || elm.target !== void)
+				{	// return 回到原位置以外时清除 period 事件。
+					holdPeriodEventQueue.clear();
+					isWaitPeriodEvent = false;
+				}
+				if( isWaitPeriodEvent == true )
+				{	// 仅在 [wp] 等待 period 事件时触发
+					fireMoviePeriodFromQueue();
+				}
+				return false; // 不执行 return
+			}
+		}
+		return true;
+	}
+	function purgeMoviePeriod()
+	{
+		isLeavePeriodEvent = false;
+		holdPeriodEventQueue.clear();
+		isWaitPeriodEvent = false;
+		waitedPeriodEventStorageName = void;
+	}
+	function fireMoviePeriodFromQueue()
+	{
+		var retVal = false;
+		if( holdPeriodEventQueue.count > 0 )
+		{
+			if( waitedPeriodEventStorageName == conductor.curStorage && conductor == mainConductor )
+			{
+				for( var i = 0; i < holdPeriodEventQueue.count; i++ )
+				{
+					conductor.trigger( holdPeriodEventQueue[i] );
+					retVal = true;
+				}
+			}
+			holdPeriodEventQueue.clear();
+		}
+		return retVal;
+	}
+
+	function onConductorAfterReturn()
+	{
+		// 指挥器执行 return 标签之后
+		if(!usingExtraConductor)
+		{
+			setRecordLabel(conductor.curStorage, currentLabel = conductor.curLabel);
+		}
+		setUserSpeed();
+		if(!usingExtraConductor)
+		{
+			if(!getCurrentRead() && skipMode != 4)
+				cancelSkip(); // 未读，停止跳过
+		}
+	}
+
+
+	function onConductorScript(script, scriptname, lineofs)
+	{
+		// iscript 标签
+		try
+		{
+			Scripts.exec(script, scriptname, lineofs);
+		}
+		catch(e)
+		{
+			throw new Exception(scriptname + " 第 " + lineofs + " 行开始的"
+				" iscript 块发生错误。"
+				"\n（详情请查看控制台）\n" + e.message);
+		}
+		return true;
+	}
+
+	function onConductorUnknownTag(tagname, elm)
+	{
+		// 存在未知标签时
+		throw new Exception("标签/宏 \"" + tagname + "\" 不存在");
+		return 0; // 返回值与各标签处理函数相同
+	}
+
+	//----------------------------------------------------------- stable/run --
+
+	function notifyStable()
+	{
+		// 系统稳定（点击等待/停止）时调用处理函数
+		if(!inStable)
+		{
+			inStable = true;
+			var handlers = stableHandlers;
+			for(var i = handlers.count-1; i>=0; i--)
+				handlers[i]();
+
+			// stableHook
+			forEachEventHook('onStableStateChanged',
+				function(handler, f) { handler(f.stable); } incontextof this,
+				%[stable:true]);
+		}
+	}
+
+	function notifyRun()
+	{
+		// 系统开始运行时调用处理函数
+		if(inStable)
+		{
+			inStable = false;
+			var handlers = runHandlers;
+			for(var i = handlers.count-1; i>=0; i--)
+				handlers[i]();
+
+			// runHook
+			forEachEventHook('onStableStateChanged',
+				function(handler, f) { handler(f.stable); } incontextof this,
+				%[stable:false]);
+
+			if(autoMode) hideMouseCursor();
+		}
+	}
+
+	function defaultStableHandler()
+	{
+		// 默认 stable 处理函数
+		setMenuAccessibleAll();
+	}
+
+	function defaultRunHandler()
+	{
+		// 默认 run 处理函数
+		hideHistory();
+		hideClickGlyphs();
+		showMessageLayerByUser();
+		setMenuAccessibleAll();
+	}
+
+	//----------------------------------------------------------- 字符串输入 --
+
+	var inputTemp;
+	function inputString(elm)
+	{
+		// 输入字符串
+		var name = elm.name;
+		var initial = Scripts.eval(name);
+		var res = System.inputString(elm.title, elm.prompt, initial);
+		if(res !== void)
+		{
+			// 将 res 赋给 name
+			inputTemp = res;
+			Scripts.eval(("(" + name + ") = kag.inputTemp"));
+		}
+	}
+
+	//-------------------------------------------------- extraConductor 处理 --
+
+	function callExtraConductor(storage, label, onreturn)
+	{
+		// 使用 extraConductor 调用子程序
+		onExtraConductorReturn = onreturn;
+		inSleepBeforeExtraConductor = inSleep; // 保存 inSleep
+		storeMessageLayerSelProcessLock(); // 调用消息层的 storeSelProcessLock
+		conductor = extraConductor; // 切换指挥器
+		(Dictionary.assign incontextof extraConductor.macros)(mainConductor.macros);
+			// 复制宏
+		usingExtraConductor = true;
+		if(storage == '')
+		{
+			// 未指定 storage，读取当前 storage
+			storage = mainConductor.curStorage;
+		}
+
+		// 调用
+		conductor.clearCallStack();
+		processCall(storage, label);
+	}
+
+	function returnExtraConductor(run)
+	{
+		// 从 extraConductor 子程序返回
+		// run 为 true 时不恢复等待状态
+
+		conductor.sleep(); // 停止
+		conductor.interrupt();
+			// interrupt 是在指挥器事件内
+			// 停止指挥器执行的方法
+		conductor = mainConductor; // 切换指挥器
+		(Dictionary.assign incontextof mainConductor.macros)(extraConductor.macros);
+			// 复制宏
+		usingExtraConductor = false;
+		if(!run)
+		{	restoreClickGlyphState(); // 恢复点击等待符号
+			inSleep = inSleepBeforeExtraConductor; // 恢复 inSleep
+			notifyStable();
+		}
+		restoreMessageLayerSelProcessLock(); // 调用消息层的 restoreSelProcessLock
+		setMenuAccessibleAll();
+		cancelSkip();
+
+		if(onExtraConductorReturn !== void) onExtraConductorReturn();
+	}
+
+	//------------------------------------------------------- 右键处理 --
+
+	function setRightClickOptions(elm)
+	{
+		// 设置右键选项
+		rightClickEnabled = +elm.enabled if elm.enabled !== void;
+		if(elm.call !== void)
+		{
+			rightClickCall = +elm.call;
+			if(rightClickCall) rightClickJump = false;
+		}
+		if(elm.jump !== void)
+		{
+			rightClickJump = +elm.jump;
+			if(rightClickJump) rightClickCall = false;
+		}
+		rightClickTarget = elm.target if elm.target !== void;
+		rightClickStorage = elm.storage if elm.storage !== void;
+		if(elm.name !== void)
+		{
+			if(typeof this.rightClickMenuItem != "undefined")
+			{
+				rightClickName = elm.name;
+				if(rightClickName == "default")
+					rightClickMenuItem.caption = rightClickCurrentMenuName = rightClickDefaultName;
+				else
+					rightClickMenuItem.caption = rightClickCurrentMenuName = rightClickName;
+			}
+		}
+	}
+
+	function callRightClickSubRoutine()
+	{
+		isLeavePeriodEvent = true;
+
+		// 调用右键子程序
+		if(typeof this.rightClickMenuItem != "undefined")
+		{
+			rightClickMenuItem.caption = rightClickCurrentMenuName = rightClickDefaultName;
+		}
+
+		callExtraConductor(rightClickStorage, rightClickTarget, restoreFromRightClick);
+
+		lockMessageLayerSelProcess(); // 锁定选项
+	}
+
+	function restoreFromRightClick()
+	{
+		// 退出右键子程序时调用
+		if(typeof this.rightClickMenuItem != "undefined")
+		{
+			if(rightClickName == "default")
+				rightClickMenuItem.caption = rightClickCurrentMenuName = rightClickDefaultName;
+			else
+				rightClickMenuItem.caption = rightClickCurrentMenuName = rightClickName;
+		}
+	}
+
+	function setConductorToMain()
+	{
+		// 读取存档时调用，将指挥器切换为 main
+		if(usingExtraConductor)
+		{
+			extraConductor.sleep();
+			extraConductor.interrupt();
+			conductor= mainConductor;
+			usingExtraConductor = false;
+		}
+	}
+
+	function jumpToRightClickTarget()
+	{
+		process(rightClickStorage, rightClickTarget);
+	}
+
+	function onPrimaryRightClick()
+	{
+		// 主层上右键时调用
+		if(!callHook(rightClickHook))
+		{
+			if(getKeyState(VK_LBUTTON))
+			{
+				enterAutoMode();
+				return;
+			}
+			if(!rightClickEnabled) return;
+			if(inStable)
+			{
+				if(rightClickJump)
+					jumpToRightClickTarget();
+				else if(rightClickCall && conductor == mainConductor)
+					callRightClickSubRoutine();
+				else
+					switchMessageLayerHiddenByUser();
+			}
+			setMenuAccessibleAll();
+		}
+	}
+
+	//------------------------------------------------------- 立绘层处理 --
+
+	function allocateCharacterLayers(num)
+	{
+		// 将立绘层数设为 num
+		if(fore.layers.count > num)
+		{
+			// 层减少
+			for(var i = num; i<fore.layers.count; i++)
+			{
+				invalidate fore.layers[i];
+				invalidate back.layers[i];
+			}
+			fore.layers.count = num;
+			back.layers.count = num;
+		}
+		else if(fore.layers.count < num)
+		{
+			// 层增加
+			for(var i = fore.layers.count; i<num; i++)
+			{
+				fore.layers[i] = new CharacterLayer(this, fore.base, "表立绘层" + i, i);
+				back.layers[i] = new CharacterLayer(this, back.base, "里立绘层" + i, i);
+				fore.layers[i].setCompLayer(back.layers[i]);
+				back.layers[i].setCompLayer(fore.layers[i]);
+			}
+			reorderLayers();
+		}
+		numCharacterLayers = num;
+	}
+
+	//------------------------------------------------- 消息层处理 --
+
+	function allocateMessageLayers(num, setdefaultfont = true)
+	{
+		// 将消息层数设为 num
+		if(fore.messages.count > num)
+		{
+			// 层减少
+			for(var i = num; i<fore.messages.count; i++)
+			{
+				if(current == fore.messages[i] || current == back.messages[i])
+					current = fore.messages[0], currentNum = 0, currentPage = 0;
+				invalidate fore.messages[i];
+				invalidate back.messages[i];
+			}
+			fore.messages.count = num;
+			back.messages.count = num;
+		}
+		else if(fore.messages.count < num)
+		{
+			// 层增加
+			for(var i = fore.messages.count; i<num; i++)
+			{
+				fore.messages[i] = new MessageLayer(this, fore.base, "表消息层" + i, i, true);
+				back.messages[i] = new MessageLayer(this, back.base, "里消息层" + i, i, true);
+				fore.messages[i].setCompLayer(back.messages[i]);
+				back.messages[i].setCompLayer(fore.messages[i]);
+				fore.messages[i].clear();
+				back.messages[i].clear();
+			}
+			reorderLayers();
+			if(setdefaultfont) setMessageLayerUserFont();
+		}
+		numMessageLayers = num;
+	}
+
+	function setCurrentMessageLayer(elm)
+	{
+		// 设置当前消息层
+		var page = getMessageLayerPageFromElm(elm);
+		var num = getMessageLayerNumberFromElm(elm);
+		currentNum = num;
+		currentPage = page;
+		if(page) current = back.messages[num]; else current = fore.messages[num];
+		currentWithBack = +elm.withback if elm.withback !== void;
+	}
+
+	function setMessageLayerPosition(elm)
+	{
+		// 设置当前消息层的位置与属性
+		var layer = getMessageLayerObjectFromElm(elm);
+		elm.setPosition(elm);
+	}
+
+	function clearMessageLayers(resetcurrent)
+	{
+		// 清除所有消息层
+		// 由 ct 标签调用
+		// resetcurrent 为 true 时将当前消息层
+		// 设为表 0
+
+		var messages;
+		messages = fore.messages;
+		for(var i = messages.count-1; i >= 0; i--) messages[i].clear();
+		messages = back.messages;
+		for(var i = messages.count-1; i >= 0; i--) messages[i].clear();
+		if(resetcurrent)
+		{
+			currentNum = 0;
+			currentPage = 0;
+			current = fore.messages[0];
+			currentWithBack = false;
+		}
+	}
+
+	function lockMessageLayerSelProcess()
+	{
+		// 禁止所有消息层的选择与 process
+		var messages;
+		messages = fore.messages;
+		for(var i = messages.count-1; i >= 0; i--) messages[i].setSelProcessLock(true);
+		messages = back.messages;
+		for(var i = messages.count-1; i >= 0; i--) messages[i].setSelProcessLock(true);
+	}
+
+	function unlockMessageLayerSelProcess()
+	{
+		// 允许所有消息层的选择
+		var messages;
+		messages = fore.messages;
+		for(var i = messages.count-1; i >= 0; i--) messages[i].setSelProcessLock(false);
+		messages = back.messages;
+		for(var i = messages.count-1; i >= 0; i--) messages[i].setSelProcessLock(false);
+	}
+
+	function setMessageLayerUserFont()
+	{
+		// 设置所有消息层的 defaultAntialiased 与
+		// userFace
+		var messages;
+		messages = fore.messages;
+		for(var i = messages.count-1; i >= 0; i--)
+			messages[i].defaultAntialiased = chDefaultAntialiased,
+			messages[i].userFace = chDefaultFace;
+		messages = back.messages;
+		for(var i = messages.count-1; i >= 0; i--)
+			messages[i].defaultAntialiased = chDefaultAntialiased,
+			messages[i].userFace = chDefaultFace;
+	}
+
+	function storeMessageLayerSelProcessLock()
+	{
+		// 调用所有消息层的 storeSelProcessLock
+		var messages;
+		messages = fore.messages;
+		for(var i = messages.count-1; i >= 0; i--) messages[i].storeSelProcessLock();
+		messages = back.messages;
+		for(var i = messages.count-1; i >= 0; i--) messages[i].storeSelProcessLock();
+	}
+
+	function restoreMessageLayerSelProcessLock()
+	{
+		// 调用所有消息层的 restoreSelProcessLock
+		var messages;
+		messages = fore.messages;
+		for(var i = messages.count-1; i >= 0; i--) messages[i].restoreSelProcessLock();
+		messages = back.messages;
+		for(var i = messages.count-1; i >= 0; i--) messages[i].restoreSelProcessLock();
+	}
+
+	function setMessageLayerHiddenState(b)
+	{
+		var layers;
+		layers = fore.messages;
+		for(var i = layers.count-1; i >= 0; i--) layers[i].setHiddenStateByUser(b);
+		layers = fore.layers;
+		for(var i = layers.count-1; i >= 0; i--) layers[i].setHiddenStateByUser(b);
+
+		// 调用插件
+		forEachEventHook('onMessageHiddenStateChanged',
+			function(handler, f) { handler(f.hidden); } incontextof this,
+			%[hidden:b]);
+	}
+
+	function hideMessageLayerByUser()
+	{
+		// 暂时隐藏消息层
+		if(messageLayerHiding) return;
+		setMessageLayerHiddenState(true);
+		if(typeof this.rightClickMenuItem !== "undefined")
+			rightClickMenuItem.checked = true;
+		messageLayerHiding = true;
+		fore.base.cursor = cursorWaitingClick;
+		setMenuAccessibleAll();
+	}
+
+	function showMessageLayerByUser()
+	{
+		// 恢复暂时隐藏的消息层
+		if(!messageLayerHiding) return;
+		setMessageLayerHiddenState(false);
+		if(typeof this.rightClickMenuItem !== "undefined")
+			rightClickMenuItem.checked = false;
+		messageLayerHiding = false;
+		conductor.trigger('message'); // 发送 'message'
+		if(clickWaiting)
+			fore.base.cursor = cursorWaitingClick;
+		else
+			fore.base.cursor = cursorDefault;
+		setMenuAccessibleAll();
+	}
+
+	function switchMessageLayerHiddenByUser()
+	{
+		// 切换消息层隐藏/显示
+		if(messageLayerHiding) showMessageLayerByUser(); else hideMessageLayerByUser();
+	}
+
+	function hideMessageLayerByScenario(elm)
+	{
+		// 从脚本中暂时隐藏消息
+		hideMessageLayerByUser();
+		conductor.wait(%[ // 等待指挥器
+			message : function
+			{
+				// 无操作
+			} incontextof this
+			]);
+		return -2; // break
+	}
+
+	function selectFont()
+	{
+		// 选择字体
+		fore.base.font.face = chDefaultFace;
+		fore.base.font.height = -20;
+		var flags = fsfSameCharSet | fsfNoVertical | fsfTrueTypeOnly | fsfUseFontFace;
+		if(showFixedPitchOnlyInFontSelector) flags |= fsfFixedPitch;
+		if(fore.base.font.doUserSelect(flags, "选择字体",
+			"请选择字体", "ABCDEFGHIあいうえお亜胃宇絵御"))
+		{
+			chDefaultFace = fore.base.font.face;
+			setMessageLayerUserFont();
+		}
+	}
+
+	function mapPrerenderedFont(storage)
+	{
+		// 将预渲染字体映射到当前操作对象层
+		// 所选字体
+		current.decideSizeChange();
+		current.lineLayer.font.mapPrerenderedFont(storage);
+	}
+
+	//------------------------------------------------- 层排序 --
+
+	function reorderLayers()
+	{
+		// 将层按正确顺序排列
+		var index = 1000;
+		for(var i = 0; i<fore.layers.count; i++)
+		{
+			fore.layers[i].absolute = index;
+			back.layers[i].absolute = index;
+			index += 1000;
+		}
+		index = 1000000;
+		for(var i = 0; i<fore.messages.count; i++)
+		{
+			fore.messages[i].absolute = index;
+			back.messages[i].absolute = index;
+			index += 1000;
+		}
+
+		historyLayer.absolute = 2000000;
+
+	}
+
+	//--------------------------------------------- 属性 -> 层对象 --
+
+	function getLayerFromElm(elm, prefix = '')
+	{
+		// 根据 elm 指定的 page 与 layer 属性
+		// 返回对应对象
+		// prefix 指定属性名前的前缀
+		var base;
+		if(elm[prefix + 'page'] == 'back') base = back; else base = fore;
+		var layer = elm[prefix + 'layer'];
+		if(layer == 'base') return base.base; // 背景
+		if(layer[0] == 'm')
+		{
+			// message? ( ? = 数値 )
+			// 此处不做严格错误检查
+			if(layer == 'message') return base.messages[currentNum];
+			return base.messages[+layer.substr(7)];
+		}
+		return base.layers[+layer];
+	}
+
+	function getLayerPageFromElm(elm, backlay)
+	{
+		// 与 getLayerFromElm 类似，但不看 page 属性。
+		// backlay 为 true 时返回里层，false 时返回表层。
+		// elm.layer 为 void 时返回背景层
+		var base = backlay?back:fore;
+		var layer = elm.layer;
+		if(layer === void || layer == 'base') return base.base; // 背景
+		if(layer[0] == 'm')
+		{
+			if(layer == 'message') return base.messages[currentNum];
+			return base.messages[+layer.substr(7)];
+		}
+		return base.layers[+layer];
+	}
+
+	function getMessageLayerPageFromElm(elm)
+	{
+		// 从 elm 返回对应表/里屏的消息层页
+		if(elm.page == 'back') return 1; else return 0;
+	}
+
+	function getMessageLayerNumberFromElm(elm)
+	{
+		// 返回 elm 的 layer 属性所示的消息层编号
+		var layer = elm.layer;
+		if(layer === void || layer == 'message') return currentNum;
+		return +layer.substr(7);
+	}
+
+	function getMessageLayerObjectFromElm(elm)
+	{
+		// 返回 elm 的 layer 属性所示的消息层
+		var page = elm.page;
+		var layer = elm.layer;
+		if(page === void && layer === void) return current;
+		var base;
+		if(page == 'back') base = back; else base = fore;
+		if(layer === void || layer == 'message') return base.messages[currentNum];
+		return base.messages[+layer.substr(7)];
+	}
+
+	function getMessageLayerObjectFromPageAndNumber(page, num)
+	{
+		return (page?back:fore).messages[num];
+	}
+
+	//----------------------------------------------------- 层复制相关 --
+
+	function backupLayer(elm, toback)
+	{
+		// 进行层表↔里间复制
+		// toback = true 时为表→里，false 时为里→表
+		if(elm.layer !== void)
+		{
+			// 指定了层
+			getLayerPageFromElm(elm, toback).assignComp(); // 复制对应层内容
+		}
+		else
+		{
+			// 未指定层，复制全部层
+			var base = toback ? back:fore;
+			base.base.assignComp();
+			var layers = base.layers, messages = base.messages;
+			for(var i = layers.count-1; i >= 0; i--) layers[i].assignComp();
+			for(var i = messages.count-1; i >= 0; i--) messages[i].assignComp();
+
+			forEachEventHook('onCopyLayer',
+				function(handler, f) { handler(f.toback); } incontextof this,
+				%[toback:toback]);
+		}
+	}
+
+	function copyLayer(elm)
+	{
+		// 按 elm 在同种层间复制
+		var src = getLayerFromElm(elm, 'src');
+		var dest = getLayerFromElm(elm, 'dest');
+		dest.assign(src);
+	}
+
+	//--------------------------------------------------- 动画相关 --
+
+	function onAnimationStopped(name, segment)
+	{
+		// 动画已停止
+		conductor.trigger('anim:' + name + ':' + segment);
+	}
+
+	function waitAnimation(elm)
+	{
+		// 等待动画停止
+		var layer = getLayerFromElm(elm);
+		var seg = +elm.seg;
+		if(!layer.canWaitAnimStop(seg)) return 0; // 无法等待动画停止
+		conductor.wait(%[
+			'anim:' + layer.name + ':' + seg => function
+			{
+			} incontextof this
+			]);
+		return -2;
+	}
+
+	//--------------------------------------------------- 过渡相关 --
+
+	function onLayerTransitionCompleted(layer, dest, src)
+	{
+		// 层上过渡结束时调用
+		conductor.trigger('trans'); // 发送 'trans'
+	}
+
+	function waitTransition(elm)
+	{
+		// 等待过渡
+		if(transCount == 0) return 0; // 无法等待过渡
+		if((elm.canskip === void || +elm.canskip) && clickSkipEnabled)
+		{
+			// 可跳过时
+			if(skipMode)
+			{
+				// 跳过中
+				stopAllTransitions();
+				return 0; // 停止过渡并立即返回
+			}
+			conductor.wait(%[
+				click : function
+				{
+					updateBeforeCh = 1;
+					stopAllTransitions(); // 停止所有过渡
+				} incontextof this,
+				trans : function
+				{
+					updateBeforeCh = 1;
+				} incontextof this
+				]);
+		}
+		else
+		{
+			conductor.wait(%[
+				trans : function
+				{
+					updateBeforeCh = 1;
+				} incontextof this
+				]);
+		}
+		return -2;
+	}
+
+	function stopAllTransitions()
+	{
+		// 停止所有过渡
+		var layers, messages;
+		fore.base.stopTransition();
+		layers = fore.layers, messages = fore.messages;
+		for(var i = layers.count-1; i >= 0; i--) layers[i].stopTransition();
+		for(var i = messages.count-1; i >= 0; i--) messages[i].stopTransition();
+		back.base.stopTransition();
+		layers = back.layers, messages = back.messages;
+		for(var i = layers.count-1; i >= 0; i--) layers[i].stopTransition();
+		for(var i = messages.count-1; i >= 0; i--) messages[i].stopTransition();
+		transCount = 0; // 以防万一
+	}
+
+	function callExchangeInfo()
+	{
+		// 对除背景层外的所有表层
+		// 调用 exchangeInfo
+		var layers = fore.layers, messages = fore.messages;
+		for(var i = layers.count-1; i >= 0; i--) layers[i].exchangeInfo();
+		for(var i = messages.count-1; i >= 0; i--) messages[i].exchangeInfo();
+	}
+
+	function callAssignTransSrc()
+	{
+		// 对除背景层外的所有表层
+		// 调用 assignTransSrc
+		var layers = fore.layers, messages = fore.messages;
+		for(var i = layers.count-1; i >= 0; i--) layers[i].assignTransSrc();
+		for(var i = messages.count-1; i >= 0; i--) messages[i].assignTransSrc();
+		forEachEventHook('onCopyLayer',
+				function(handler, f) { handler(f.toback); } incontextof this,
+				%[toback:false]);
+	}
+
+	function exchangeForeBack()
+	{
+		// 交换层的里与表
+		var tmp = fore;
+		fore = back;
+		back = tmp;
+		current = (currentPage?back:fore).messages[currentNum]; // 重新设置 current
+		forEachEventHook('onExchangeForeBack',
+				function(handler, f) { handler(); } incontextof this);
+
+		// 强制显示变更
+		fore.base.visible = true;
+		back.base.visible = false;
+	}
+
+	function swapBaseLayer()
+	{
+		// 仅交换背景层
+		var tmp = fore.base;
+		fore.base = back.base;
+		back.base = tmp;
+		current = (currentPage?back:fore).messages[currentNum]; // 重新设置 current
+	}
+
+	function swapCharacterLayer(id)
+	{
+		// 交换立绘层的表与里
+		var fl = fore.layers, bl = back.layers;
+		var tmp = fl[id];
+		fl[id] = bl[id];
+		bl[id] = tmp;
+	}
+
+	function swapMessageLayer(id)
+	{
+		// 交换消息层的表与里
+		var fl = fore.messages, bl = back.messages;
+		var tmp = fl[id];
+		fl[id] = bl[id];
+		bl[id] = tmp;
+		current = (currentPage?back:fore).messages[currentNum]; // 重新设置 current
+	}
+
+	//--------------------------------------------------------- 自动移动相关 --
+
+	function onLayerMoveStop()
+	{
+		// 层上自动移动结束
+		conductor.trigger('move');
+	}
+
+	function waitMove(elm)
+	{
+		// 等待自动移动
+		if(moveCount == 0) return 0; // 无法等待自动移动
+		if((elm.canskip === void || +elm.canskip) && clickSkipEnabled)
+		{
+			// 可跳过时
+			if(skipMode)
+			{
+				// 跳过中
+				stopAllMoves();
+				return 0; // 停止自动移动并立即返回
+			}
+			conductor.wait(%[
+				click : function
+				{
+					updateBeforeCh = 1;
+					stopAllMoves(); // 停止所有自动移动
+				} incontextof this,
+				move : function
+				{
+					updateBeforeCh = 1;
+				} incontextof this
+				]);
+		}
+		else
+		{
+			conductor.wait(%[
+				move : function
+				{
+					updateBeforeCh = 1;
+				} incontextof this
+				]);
+		}
+		return -2;
+	}
+
+	function stopAllMoves()
+	{
+		// 停止所有自动移动
+		var layers, messages;
+		fore.base.stopMove();
+		back.base.stopMove();
+		layers = fore.layers, messages = fore.messages;
+		for(var i = layers.count-1; i >= 0; i--) layers[i].stopMove();
+		for(var i = messages.count-1; i >= 0; i--) messages[i].stopMove();
+		layers = back.layers, messages = back.messages;
+		for(var i = layers.count-1; i >= 0; i--) layers[i].stopMove();
+		for(var i = messages.count-1; i >= 0; i--) messages[i].stopMove();
+		moveCount = 0; // 以防万一
+	}
+
+	//------------------------------------------------ delay/跳过相关 --
+
+	function setDelay(elm)
+	{
+		// delay 标签处理
+		var speed = elm.speed;
+		if(speed == 'nowait')
+		{
+			chSpeed = 0;
+			chUserMode = false;
+		}
+		else if(speed == 'user')
+		{
+			chUserMode = true;
+			setUserSpeed();
+		}
+		else
+		{
+			chSpeed = +speed;
+			chUserMode = false;
+		}
+		if(!skipMode) actualChSpeed = chSpeed;
+	}
+
+	function getCurrentRead()
+	{
+		// 判断当前脚本部分是否已读
+		return autoRecordPageShowing && currentRecordName != "" &&
+				+sflags[currentRecordName] || !autoRecordPageShowing;
+	}
+
+	function setUserSpeed()
+	{
+		// 设置用户选择的文字显示速度
+		// 调用本函数时假定 userChSpeed 已设为新值。
+		// 也可按标签、按区域已读/未读来
+		// 改变显示速度而调用
+		if(chUserMode)
+		{
+			if(getCurrentRead())
+				chSpeed = userCh2ndSpeed==-1?userChSpeed:userCh2ndSpeed; // 已读
+			else
+				chSpeed = userChSpeed; // 未读
+		}
+		if(!skipMode) actualChSpeed = chSpeed;
+	}
+
+	function skipToClick()
+	{
+		// 跳过至点击等待符号
+		skipMode = 1;
+		actualChSpeed = 0;
+	}
+
+	function skipToPage()
+	{
+		// 跳过至换行/翻页等待符号
+		skipMode = 2;
+		actualChSpeed = 0;
+	}
+
+	function skipToStop()
+	{
+		// 跳过至下一停止点
+		onPrimaryClick(); // 模拟点击动作
+		skipMode = 3;
+		actualChSpeed = 0;
+	}
+
+	function skipToStop2()
+	{
+		// 跳过至下一停止点（快进模式）
+		onPrimaryClick();
+		skipMode = 4;
+		actualChSpeed = 0;
+	}
+
+	function cancelSkip()
+	{
+		// 取消跳过
+		if(skipMode == 4) skipKeyRepressed = false;
+		skipMode = 0;
+		actualChSpeed = chSpeed;
+	}
+
+	function enterNoWait()
+	{
+		// nowait 标签处理
+		beforeNoWaitActualChSpeed = actualChSpeed;
+		beforeNoWaitChUserMode = chUserMode;
+		actualChSpeed = 0;
+	}
+
+	function leaveNoWait()
+	{
+		// endnowait 标签处理
+		actualChSpeed = beforeNoWaitActualChSpeed;
+		chUserMode = beforeNoWaitChUserMode;
+	}
+
+	function setAutoWait(elm)
+	{
+		// 设置自动等待
+		autoWCEnabled = +elm.enabled if elm.enabled !== void;
+		autoWCChars = elm.ch if elm.ch !== void;
+		autoWCWaits = [].split(",", elm.time) if elm.time !== void;
+	}
+
+	function cancelAutoMode()
+	{
+		// 取消自动推进模式
+		if(autoMode)
+		{
+			autoMode = false;
+			if(typeof this.autoModeMenuItem !== "undefined")
+				autoModeMenuItem.checked = false;
+			var t = conductor.lastTagName;
+			if(t == 'p'){
+				showPageBreak();
+			}
+			else if(t == 'l'){
+				showLineBreak(%[canskip: false]);
+			}
+		}
+	}
+
+	function enterAutoMode()
+	{
+		// 进入自动推进模式
+		if(typeof this.autoModeMenuItem !== "undefined")
+			autoModeMenuItem.checked = true;
+		if(inStable)
+			onPrimaryClick();
+		autoMode = true;
+	}
+
+	//--------------------------------------------------------- 等待相关 --
+
+	function resetWait()
+	{
+		// 重置时间原点
+		timeOrigin = System.getTickCount();
+	}
+
+	function waitTime(waittime, canskip)
+	{
+		// 等待 waittime
+		if(waittime == 0) return 0;
+		if(canskip)
+		{
+			// 可跳过时
+			if(skipMode)
+			{
+				// 跳过中
+				return 0; // 跳过中直接返回
+			}
+			conductor.waitWithTimeOut(%[
+				click : function
+				{
+					// 无操作
+				} incontextof this,
+
+				timeout : function
+				{
+					// 无操作
+				} incontextof this
+				], waittime);
+		}
+		else
+		{
+			// 不可跳过时
+			conductor.waitWithTimeOut(%[
+				timeout : function
+				{
+					// 无操作
+				} incontextof this
+				], waittime);
+		}
+		return -2; // break
+		
+	}
+
+	function doWait(elm)
+	{
+		// wait 标签处理
+		var waittime;
+		if(elm.mode == 'until')
+		{
+			// until 模式
+			waittime = timeOrigin + +elm.time - System.getTickCount();
+			if(waittime < 0) { lastWaitTime = 0; return 0; } // 时间已过
+			lastWaitTime = waittime;
+			if(waittime < 6) return 0; // 等待时间过短，不等待
+		}
+		else
+		{
+			waittime = +elm.time;
+		}
+		return waitTime(waittime, (elm.canskip === void || +elm.canskip) && clickSkipEnabled);
+	}
+
+	function doWaitCh(elm)
+	{
+		// 等待 +elm.time 计数
+		var t = elm.time;
+		return waitTime(actualChSpeed * (t === void ? 1 : +t),
+			(elm.canskip === void || +elm.canskip) && clickSkipEnabled);
+	}
+
+	//------------------------------------------------------------ 震动相关 --
+
+	function doQuake(elm)
+	{
+		// 按 elm 开始震动
+		if(elm.time !== void)
+		{
+			if(defaultQuakeTimeInChUnit)
+			{
+				if(elm.timemode == 'ms')
+					quakeEndTick = System.getTickCount() + +elm.time;
+				else
+					quakeEndTick = System.getTickCount() + +elm.time * chSpeed;
+			}
+			else
+			{
+				if(elm.timemode == 'delay')
+					quakeEndTick = System.getTickCount() + +elm.time * chSpeed;
+				else
+					quakeEndTick = System.getTickCount() + +elm.time;
+			}
+		}
+		else
+		{
+			quakeEndTick = -1;
+		}
+
+		if(elm.hmax !== void) quakeHorzMax = +elm.hmax; else quakeHorzMax = 10;
+		if(elm.vmax !== void) quakeVertMax = +elm.vmax; else quakeVertMax = 10;
+
+		quakeTimer.enabled = true;
+		quaking = true;
+	}
+
+	function restoreQuake()
+	{
+		// 由 restore 调用；存档时若在震动则恢复震动
+		if(quaking && quakeEndTick == -1)
+			quakeTimer.enabled =true;
+		// MEMO：带 time 属性的 quake 在 restore() 时不恢复，
+		//  但存档标签与 quake 位置可能导致 quaking 值异常。
+		//  quaking 本身似乎不太必要，但为兼容在此对齐。
+		else
+		if(!quakeTimer.enabled)	// 误调用 restoreQuake() 时保护 quaking 值
+			quaking = false;
+	}
+
+    /**
+     * 调整层位置
+     */
+	function setBaseLayerPos(x, y) {
+		(global.Layer.setPos incontextof fore.base)(x,y);
+		(global.Layer.setPos incontextof back.base)(x,y);
+		forEachEventHook('setBaseLayerPos',
+						 function(handler, info) { handler(info.x, info.y); } incontextof this, %[x:x, y:y]);
+	}
+	
+	function stopQuake()
+	{
+		// 停止震动
+		setBaseLayerPos(0, 0);
+		quakeTimer.enabled = false;
+		quaking = false;
+		conductor.trigger('quake');
+	}
+
+	function onQuakeTimerInterval()
+	{
+		// 由 quakeTimer 调用
+		if(quakeEndTick != -1 && System.getTickCount() > quakeEndTick) { stopQuake(); return; }
+		if(historyShowing)
+		{
+			// 显示对话履历层时无法继续震动
+			setBaseLayerPos(0, 0);
+			return;
+		}
+		var x, y;
+		if(quakeHorzMax == quakeVertMax)
+		{
+			// 大致相同
+			x = int(Math.random() * quakeHorzMax - quakeHorzMax);
+			y = int(Math.random() * quakeVertMax - quakeVertMax);
+		}
+		else if(quakeHorzMax < quakeVertMax)
+		{
+			// 纵向震动
+			x = int(Math.random() * quakeHorzMax - quakeHorzMax);
+			y = int((quakePhase ? Math.random() : -Math.random()) * quakeVertMax);
+		}
+		else
+		{
+			// 横向震动
+			x = int((quakePhase ? Math.random() : -Math.random()) * quakeHorzMax);
+			y = int(Math.random() * quakeVertMax - quakeVertMax);
+		}
+		quakePhase = !quakePhase;
+		setBaseLayerPos(x, y);
+	}
+
+	function waitQuake(elm)
+	{
+		// 等待震动结束
+		if(!quaking || quakeEndTick == -1) return 0; // 未在震动则不等待
+		if(elm.canskip !== void && +elm.canskip && clickSkipEnabled)
+		{
+			// 可跳过时
+			if(skipMode)
+			{
+				// 跳过中
+				stopQuake();
+				return 0; // 跳过中停止震动并返回
+			}
+			conductor.wait(%[
+				click : function
+				{
+					stopQuake(); // 停止震动
+				} incontextof this,
+
+				quake : function
+				{
+					// 无操作
+				} incontextof this
+				]);
+		}
+		else
+		{
+			// 不可跳过时
+			conductor.wait(%[
+				quake : function
+				{
+					// 无操作
+				} incontextof this
+				]);
+		}
+		return -2;
+	}
+
+	//------------------------------------------------------------- 点击 --
+
+	function onPrimaryClick()
+	{
+		// 主层上「点击动作」未被任何过滤器拦截时
+		// 由主层调用。
+		clickCount ++;
+		if(!callHook(leftClickHook))
+		{
+			if(messageLayerHiding)
+			{
+				showMessageLayerByUser(); // 显示消息层
+			}
+			else
+			{
+				var st = conductor.status;
+				var runst = conductor.mRun;
+				var stopst = conductor.mStop;
+
+				if(st != stopst && autoMode)
+				{
+					// 自动推进模式
+					cancelAutoMode();
+				}
+				else if(st != stopst && canCancelSkipByClick && skipMode && skipMode != 4)
+				{
+					// 可用点击取消跳过
+					cancelSkip();
+				}
+				else
+				{
+					// 此时未被过滤的消息为清除等待状态，
+					// 向 conductor 发送 'click' 通知解除。
+
+					if(!conductor.trigger('click')) // 非等待状态时会被忽略
+					{
+						// 未找到处理函数等、未处理时
+						if(st == runst && clickSkipEnabled && skipMode == 0)
+						{
+							// 可用点击跳过
+							skipToClick();
+						}
+					}
+				}
+			}
+		}
+	}
+
+	function onPrimaryClickByKey()
+	{
+		// 按键时与点击主层相同，
+		// 并暂时隐藏鼠标光标
+		onPrimaryClick();
+		hideMouseCursor();
+	}
+
+	function waitClick(elm)
+	{
+		// 等待点击
+		conductor.wait(%[
+			click : function
+			{
+			} incontextof this]);
+		return -2;
+	}
+
+	function onMouseDown(x, y)
+	{
+		lastMouseDownX = x;
+		lastMouseDownY = y;
+		super.onMouseDown(...);
+	}
+
+	//------------------------------------------------------- 键盘操作 --
+
+	function processKeys(key, shift)
+	{
+		if(checkProceedingKey(key, shift)) return;
+
+		if(key == #'F')
+		{
+			// 跳到下一选项/未读
+			skipToNextStopByKey();
+			return;
+		}
+
+		if(key == #'B')
+		{
+			// 回退
+			goBackByKey();
+			return;
+		}
+
+		if(key == #'A')
+		{
+			// 自动推进
+			switchAutoModeByKey();
+			return;
+		}
+
+		if(freeSaveDataMode)
+		{
+			if(key == #'S')
+			{
+				// 插入存档
+				if(typeof this.storeMenu != "undefined" && storeMenu.enabled)
+					storeMenu.click();
+				return;
+			}
+
+			if(key == #'L')
+			{
+				// 读取存档
+				if(typeof this.restoreMenu != "undefined" && restoreMenu.enabled)
+					restoreMenu.click();
+				return;
+			}
+		}
+
+		if(key == #'R' || (key == VK_UP && (shift & ssShift)))
+		{
+			// 显示对话履历
+			showHistoryByKey();
+			return;
+		}
+
+		if(key == VK_ESCAPE)
+		{
+			// 隐藏消息
+			if(typeof this.rightClickMenuItem != "undefined" &&
+				rightClickMenuItem.enabled)
+			{
+				rightClickMenuItem.click(); // 模拟点击
+				return;
+			}
+		}
+	}
+
+	function preProcessKeys(key, shift)
+	{
+		return callHook(keyDownHook, key, shift);
+	}
+
+	function internalOnKeyDown(key, shift)
+	{
+		if(!preProcessKeys(key, shift)) processKeys(key, shift);
+	}
+
+	function checkProceedingKey(key, shift)
+	{
+		// 若 key 为推进键（空格或 Return），
+		// 则处理按键并返回 true，否则返回 false
+		if(key == VK_RETURN || key == supportReadingKey)
+		{
+			// 消息队列可能积压按键，故用
+			// getKeyState 检查键是否实际按下
+			var sg = getKeyState;
+			if(sg(VK_RETURN) || sg(supportReadingKey))
+			{
+				// 键已按下
+				if((shift & ssRepeat) && clickSkipEnabled)
+				{
+					// 键重复
+					if(skipMode != 4 && skipKeyRepressed)
+						skipToStop2(); // 尚未进入 skipMode 4 时进入快进模式
+					// 检查 skipKeyRepressed 是为防止
+					// 连续键重复时在 cancelSkip 后又进入跳过
+				}
+				else
+				{
+					skipKeyRepressed = true;
+					onPrimaryClickByKey();
+				}
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	function skipCancelKeyPressing()
+	{
+		// 是否按下了会解除跳过的键或鼠标按钮
+		var sg = getKeyState;
+		return sg(VK_RETURN) || sg(supportReadingKey) || sg(VK_LBUTTON);
+	}
+
+	function skipKeyPressing()
+	{
+		// 是否按下 VK_RETURN 或 supportReadingKey
+		var sg = getKeyState;
+		return sg(VK_RETURN) || sg(supportReadingKey);
+	}
+
+	function goBackByKey()
+	{
+		if(typeof this.goBackMenuItem != "undefined" &&
+			goBackMenuItem.enabled)
+			goBackMenuItem.click(); // 模拟点击
+	}
+
+	function skipToNextStopByKey()
+	{
+		if(typeof this.skipToNextStopMenuItem != "undefined" &&
+			skipToNextStopMenuItem.enabled)
+			skipToNextStopMenuItem.click(); // 模拟点击
+	}
+
+	function showHistoryByKey()
+	{
+		if(typeof this.showHistoryMenuItem != "undefined" &&
+			showHistoryMenuItem.enabled)
+			showHistoryMenuItem.click(); // 模拟点击
+	}
+
+	function switchAutoModeByKey()
+	{
+		if(typeof this.autoModeMenuItem != "undefined" &&
+			autoModeMenuItem.enabled)
+			autoModeMenuItem.click(); // 模拟点击
+	}
+
+	function onKeyDown(key, shift)
+	{
+		if(focusedLayer === null)
+			internalOnKeyDown(key, shift);
+		super.onKeyDown(...);
+	}
+
+	function onMouseWheel(shift, delta, x, y)
+	{
+		// 滚轮旋转
+		super.onMouseWheel(...);
+        // 消息窗口滚轮处理
+        if (inSleep && current.hasWheel()) {
+            current.processWheel(shift, delta, x, y);
+            return;
+        }
+		if(!historyLayer.visible)
+		{
+			if(delta > 0)
+				showHistoryByKey(); // 显示对话履历
+			else if(System.getTickCount() - lastHistoryHiddenTick > 150) 
+					onPrimaryClick(); // 模拟点击
+			// ↑ 比较 tick 是为在隐藏对话履历后立即滚轮时
+			// 一定程度上防止自动推进
+		}
+		else
+		{
+			// 将事件传递给对话履历
+			historyLayer.windowMouseWheel(shift, delta, x, y);
+		}
+	}
+
+	function onMouseDown(x, y, button)
+	{
+		// 全屏时判定画面外点击
+		if (fullScreened)
+		{
+			// x,y 为实际坐标，在主层判定
+			var pl = primaryLayer;
+			var px = pl.cursorX;
+			var py = pl.cursorY;
+
+			if (px < 0 || py < 0 || px >= pl.width || py >= pl.height)
+			{
+				if (button == mbLeft)
+				{
+					onPrimaryClick();
+				}
+				else if (button == mbRight)
+				{
+					onPrimaryRightClick();
+				}
+			}
+		}
+		super.onMouseDown(...);
+	}
+
+	//------------------------------------------------- 点击等待符号处理 --
+
+	function hideClickGlyphs()
+	{
+		// 隐藏点击等待符号
+		lineBreak.visible = false;
+		pageBreak.visible = false;
+		if(conductor == mainConductor)
+		{
+			// 记录点击等待符号状态
+			lastClickGlyphVisible = false;
+		}
+	}
+
+	function storeClickGlyphState(which)
+	{
+		// 暂时保存点击等待符号信息
+		// 从右键子程序或 extraConductor 子程序返回时引用
+		if(conductor == mainConductor)
+		{
+			lastClickGlyphVisible = true;
+			lastClickGlyphMessagePage = currentPage;
+			lastClickGlyphMessageNum = currentNum;
+			lastClickGlyphWhich = which;
+		}
+	}
+
+	function restoreClickGlyphState()
+	{
+		// 根据 lastClickGlyph *** 中暂存的
+		// 点击等待符号信息设置符号
+		if(lastClickGlyphVisible)
+		{
+			var layer = getMessageLayerObjectFromPageAndNumber
+				(lastClickGlyphMessagePage, lastClickGlyphMessageNum);
+			if(layer !== void)
+			{
+				switch(lastClickGlyphWhich)
+				{
+				case 'line':
+					layer.showLineBreakGlyph(lineBreak);
+					break;
+				case 'page':
+					layer.showPageBreakGlyph(pageBreak);
+					break;
+				}
+			}
+		}
+	}
+
+	function canIgnoreL()
+	{
+		// 是否可忽略 L 标签
+		return chNonStopToPageBreak || (getCurrentRead() && ch2ndNonStopToPageBreak);
+	}
+
+	function showLineBreak(elm)
+	{
+		// 在当前消息层显示行等待符号
+		stablePosibility = true;
+		if(canIgnoreL())
+		{
+			// 忽略 l 标签
+			if(elm.canskip === void || !+elm.canskip)
+				return (skipMode==3 || skipMode==4) ? 0 : -4;
+		}
+		if(autoMode)
+		{
+			// 自动推进模式
+			return autoModeLineWait;
+		}
+		if(skipMode == 1) cancelSkip();
+		if(skipMode == 4 && !skipKeyPressing()) cancelSkip();
+		if(skipMode == 4) return -4;
+		if(skipMode) return skipCancelKeyPressing()?-4:0;
+			// 跳过中（若有可取消跳过的键则给予取消跳过的事件处理机会）
+
+		current.showLineBreakGlyph(lineBreak);
+		storeClickGlyphState("line");
+
+		if(!current.nodeVisible)
+		{
+			dm("警告：隐藏的" +
+				(currentPage ? "里" : "表") + "消息层" + currentNum +
+				"进入了行点击等待");
+		}
+
+		// 将 conductor 设为等待 'click'
+		conductor.wait(%[
+			click : function
+			{
+				clickWaiting = false;
+				fore.base.cursor = cursorDefault;
+				notifyRun();
+			} incontextof this
+			]);
+		clickWaiting = true;
+		fore.base.cursor = cursorWaitingClick;
+		notifyStable();
+		return -2;
+	}
+
+	function showPageBreak(elm)
+	{
+		// 在当前消息层显示翻页等待符号
+		stablePosibility = true;
+		if(skipMode == 1 || skipMode == 2) cancelSkip();
+		if(skipMode == 4 && !skipKeyPressing()) cancelSkip();
+		if(skipMode) return -4; // 先处理事件
+		if(autoMode)
+		{
+			// 自动推进模式
+			return autoModePageWait;
+		}
+
+		current.showPageBreakGlyph(pageBreak);
+		storeClickGlyphState("page");
+
+		if(!current.nodeVisible)
+		{
+			dm("警告：隐藏的" +
+				(currentPage ? "里" : "表") + "消息层" + currentNum +
+				"进入了页点击等待");
+		}
+
+		// 将 conductor 设为等待 'click'
+		conductor.wait(%[
+			click : function
+			{
+				clickWaiting = false;
+				fore.base.cursor = cursorDefault;
+				notifyRun();
+			} incontextof this
+			]);
+		clickWaiting = true;
+		fore.base.cursor = cursorWaitingClick;
+		notifyStable();
+		return -2;
+	}
+
+	function showPageBreakAndClear()
+	{
+		// 消息层到达末行自动翻页时调用。
+		// 在当前消息层显示翻页等待符号，
+		// 恢复执行时调用 MessageLayer.clear2
+		stablePosibility = true;
+		if(skipMode == 1 || skipMode == 2) cancelSkip();
+		if(skipMode == 4 && !skipKeyPressing()) cancelSkip();
+		var lasttagname = conductor.lastTagName;
+		if((!autoMode && ((!canIgnoreL() && lasttagname == 'l') || lasttagname == 'p')) || skipMode)
+		{// 先处理事件（标签延后）
+			current.comp.clear2() if currentWithBack;
+			current.clear2();
+			return -5;
+		}
+
+		if(!current.nodeVisible)
+		{
+			dm("警告：隐藏的" +
+				(currentPage ? "里" : "表") + "消息层" + currentNum +
+				"进入了自动换页点击等待");
+		}
+
+		if(autoMode)
+		{
+			conductor.waitWithTimeOut(%[ // 带超时的等待
+				click : function
+				{
+					current.comp.clear2() if currentWithBack;
+					current.clear2(); // 调用 clear2
+					cancelAutoMode();
+				} incontextof this,
+				timeout : function
+				{
+					current.comp.clear2() if currentWithBack;
+					current.clear2(); // 调用 clear2
+				} incontextof this
+				], autoModePageWait <= 0 ? 1 : autoModePageWait);
+			return -3;
+		}
+		else
+		{
+			current.comp.showPageBreakGlyph(pageBreak) if currentWithBack;
+			current.showPageBreakGlyph(pageBreak);
+			storeClickGlyphState("page");
+
+			// 将 conductor 设为等待 'click'
+			conductor.wait(%[
+				click : function
+				{
+					clickWaiting = false;
+					fore.base.cursor = cursorDefault;
+					current.comp.clear2() if currentWithBack;
+					current.clear2(); // 调用 clear2
+					notifyRun();
+				} incontextof this
+				]);
+			clickWaiting = true;
+			fore.base.cursor = cursorWaitingClick;
+			notifyStable();
+			return -3;
+		}
+	}
+
+	//------------------------------------------------------------- BGM 处理 --
+
+	function onBGMFadeCompleted()
+	{
+		// BGM 淡入淡出完成
+		conductor.trigger('bgmfade');
+	}
+
+    // BGM停止处理
+    var bgmStopExp;
+    var bgmStopStorage;
+    var bgmStopTarget;
+
+    function handleBgmStop() {
+        // BGM 停止处理函数
+
+        // 保存参数后清除
+        var exp     = bgmStopExp;
+        var storage = bgmStopStorage;
+        var target  = bgmStopTarget;
+        clearBgmStop();
+        
+        // 处理执行
+        if (exp !== void) {
+            Scripts.eval(exp);
+        }
+        if (storage !== void || target !== void) {
+            process(storage, target);
+        }
+    }
+	
+    function setBgmStop(elm) {
+        // 注册 BGM 停止时处理
+        bgmStopExp     = elm.exp;
+        bgmStopStorage = elm.storage;
+        bgmStopTarget  = elm.target;
+    }
+    
+    function clearBgmStop() {
+        // 解除 BGM 停止时处理
+        bgmStopExp     = void;
+        bgmStopStorage = void;
+        bgmStopTarget  = void;
+    }
+    
+	function onBGMStop()
+	{
+		// BGM 已停止
+		conductor.trigger('bgmstop');
+        if (bgmStopExp !== void || bgmStopStorage !== void || bgmStopTarget !== void) {
+            global.stopBgmTrigger = new AsyncTrigger(handleBgmStop, '');
+            global.stopBgmTrigger.cached = true;
+            global.stopBgmTrigger.trigger();
+        }
+	}
+    // ------------------------------------------
+    
+    var bgmLabelInfos = %[];
+    var bgmLabelInfo;
+
+    function handleBgmLabel() {
+        if (bgmLabelInfo !== void) {
+            if (bgmLabelInfo.exp !== void) {
+                Scripts.eval(bgmLabelInfo.exp);
+            }
+            if (bgmLabelInfo.storage !== void || bgmLabelInfo.target !== void) {
+                process(bgmLabelInfo.storage, bgmLabelInfo.target);
+            }
+        }
+    }
+
+    function onBGMLabel(label) {
+        // BGM 标签经过处理
+        conductor.trigger('bgmlabel_' + label);
+        var obj = bgmLabelInfos[label];
+        if (obj !== void) {
+            bgmLabelInfo = obj;
+            global.labelBgmTrigger = new AsyncTrigger(handleBgmLabel, '');
+            global.labelBgmTrigger.cached = true;
+            global.labelBgmTrigger.trigger();
+        }
+    }
+
+    /**
+     * 注册 BGM 标签处理
+     */
+    function setBgmLabel(elm) {
+        if (elm.name !== void) {
+            var obj = %[];
+            obj.storage = elm.storage;
+            obj.target  = elm.target;
+            obj.exp     = elm.exp;
+            bgmLabelInfos[elm.name] = obj;
+        }
+    }
+
+    /**
+     * 解除 BGM 标签处理
+     */
+    function clearBgmLabel() {
+        bgmLabelInfos = %[];
+        bgmLabelInfo = void;
+    }
+
+    // ----------------------------------------------------------------------
+    
+	function waitBGMFade(elm)
+	{
+		// 等待 BGM 淡入淡出结束
+		if(!bgm.inFading) return 0; // 非淡入淡出中则不等待
+		if(elm.canskip !== void && +elm.canskip && clickSkipEnabled)
+		{
+			// 可跳过时
+			if(skipMode)
+			{
+				// 跳过中
+				bgm.stopFade();
+				return 0; // 跳过中停止淡入淡出并返回
+			}
+			conductor.wait(%[
+				click : function
+				{
+					bgm.stopFade(); // 停止淡入淡出
+				} incontextof this,
+
+				bgmfade : function
+				{
+					// 无操作
+				} incontextof this
+				]);
+		}
+		else
+		{
+			// 不可跳过时
+			conductor.wait(%[
+				bgmfade : function
+				{
+					// 无操作
+				} incontextof this
+				]);
+		}
+		return -2;
+	}
+
+	function waitBGMStop(elm)
+	{
+		// 等待 BGM 播放结束
+		if(!bgm.canWaitStop) return 0; // 无法等待 BGM 播放结束则直接返回
+		if(elm.canskip !== void && +elm.canskip && clickSkipEnabled)
+		{
+			// 可跳过时
+			if(skipMode)
+			{
+				// 跳过中
+				bgm.stop();
+				return 0; // 跳过中停止播放并返回
+			}
+			conductor.wait(%[
+				click : function
+				{
+					bgm.stop(); // 停止播放
+				} incontextof this,
+
+				bgmstop : function
+				{
+					// 无操作
+				} incontextof this
+				]);
+		}
+		else
+		{
+			// 不可跳过时
+			conductor.wait(%[
+				bgmstop : function
+				{
+					// 无操作
+				} incontextof this
+				]);
+		}
+		return -2;
+	}
+
+	//----------------------------------------------------------- 音效处理 --
+
+	function onSESoundBufferFadeCompleted(id)
+	{
+		// 音效淡入淡出结束
+		conductor.trigger('sefade' + id);
+	}
+
+	function onSESoundBufferStop(id)
+	{
+		// 音效播放结束
+		conductor.trigger('sestop' + id);
+	}
+
+	function waitSEFade(elm)
+	{
+		var id = +elm.buf;
+		var buf = se[id];
+		if(!buf.inFading) return 0; // 非淡入淡出中则直接返回
+		if(elm.canskip !== void && +elm.canskip && clickSkipEnabled)
+		{
+			// 可跳过时
+			if(skipMode)
+			{
+				// 跳过中
+				buf.stopFade();
+				return 0; // 跳过中停止淡入淡出并返回
+			}
+			conductor.wait(%[
+				click : function (id)
+				{
+					se[id].stopFade(); // 停止淡入淡出
+				} incontextof this,
+
+				click_arg : id, // 处理函数参数
+
+				'sefade'+id =>
+				function (id)
+				{
+					// 无操作
+				} incontextof this,
+
+				'sefade'+id+'_arg' => id // 处理函数参数
+				]);
+		}
+		else
+		{
+			// 不可跳过时
+			conductor.wait(%[
+				'sefade'+id =>
+					function (id)
+					{
+						// 无操作
+					} incontextof this,
+
+				'sefade'+id+'_arg' => id // 处理函数参数
+				]);
+		}
+		return -2;
+	}
+
+	function waitSEStop(elm)
+	{
+		var id = +elm.buf;
+		var buf = se[id];
+		if(!buf.canWaitStop()) return 0; // 无法等待结束则直接返回
+		if(elm.canskip !== void && +elm.canskip && clickSkipEnabled)
+		{
+			// 可跳过时
+			if(skipMode)
+			{
+				// 跳过中
+				buf.stop();
+				return 0; // 跳过中停止播放并返回
+			}
+			conductor.wait(%[
+				click : function (id)
+				{
+					se[id].stop(); // 停止播放
+				} incontextof this,
+
+				'click_arg' => id, // 处理函数参数
+
+				'sestop'+id =>
+				function (id)
+				{
+					// 无操作
+				} incontextof this,
+
+				'sestop'+id+'_arg' => id // 处理函数参数
+				]);
+		}
+		else
+		{
+			// 不可跳过时
+			conductor.wait(%[
+				'sestop'+id =>
+				function (id)
+				{
+					// 无操作
+				} incontextof this,
+
+				'sestop'+id+'_arg' => id // 处理函数参数
+				]);
+		}
+		return -2;
+	}
+
+	//--------------------------------------------------------- 视频相关 --
+
+	function onMovieStop(id)
+	{
+		// 视频播放结束
+		conductor.trigger('moviestop'+id);
+	}
+
+	function waitMovieStop(elm)
+	{
+		var id = +elm.slot;
+
+		// 等待视频播放结束
+		if(!movies[id].canWaitStop) return 0; // 无法等待视频播放结束则直接返回
+		if(elm.canskip !== void && +elm.canskip && clickSkipEnabled)
+		{
+			// 可跳过时
+			if(skipMode)
+			{
+				// 跳过中
+				movies[id].stop();
+				return 0; // 跳过中停止播放并返回
+			}
+			conductor.wait(%[
+				click : function (id)
+				{
+					movies[id].stop(); // 停止播放
+				} incontextof this,
+
+				'click_arg' => id, // 处理函数参数
+
+				'moviestop'+id =>
+				function (id)
+				{
+					// 无操作
+				} incontextof this,
+
+				'moviestop'+id+'_arg' => id // 处理函数参数
+				]);
+		}
+		else
+		{
+			// 不可跳过时
+			conductor.wait(%[
+				'moviestop'+id =>
+				function (id)
+				{
+					// 无操作
+				} incontextof this,
+
+				'moviestop'+id+'_arg' => id // 处理函数参数
+				]);
+		}
+		return -2;
+	}
+
+	function onMoviePeriod(id,type)
+	{
+		// 视频 period 事件发生
+		if( isLeavePeriodEvent != false )
+		{
+			holdPeriodEventQueue.add( 'movieperiod'+id+'_'+type );
+		}
+		else
+		{
+			conductor.trigger('movieperiod'+id+'_'+type);
+		}
+	}
+
+	function waitMoviePeriod(elm)
+	{
+		isWaitPeriodEvent = true;
+		waitedPeriodEventStorageName = conductor.curStorage;
+	
+		var id = +elm.slot;
+
+		stablePosibility = true;
+
+		if( holdPeriodEventQueue.count > 0 )
+		{
+			var		triggered = false;
+			for( var i = 0; i < holdPeriodEventQueue.count; i++ )
+			{
+				if( elm.for !== void )
+				{
+					if( elm.for == 'loop' )
+					{
+						if( ('movieperiod'+id+'_'+perLoop) == holdPeriodEventQueue[i] )
+							triggered = true;
+					}
+					else if( elm.for == 'period' )
+					{
+						if( ('movieperiod'+id+'_'+perPeriod) == holdPeriodEventQueue[i] )
+							triggered = true;
+					}
+					else if( elm.for == 'prepare' )
+					{
+						if( ('movieperiod'+id+'_'+perPrepare) == holdPeriodEventQueue[i] )
+							triggered = true;
+					}
+					else if( elm.for == 'segLoop' )
+					{
+						if( ('movieperiod'+id+'_'+perSegLoop) == holdPeriodEventQueue[i] )
+							triggered = true;
+					}
+					else
+					{
+						triggered == true;
+					}
+				}
+				else
+				{
+					triggered == true;
+				}
+			}
+			holdPeriodEventQueue.clear();
+			if( triggered == true )
+			{
+				isWaitPeriodEvent = false;
+				return 0;
+			}
+		}
+
+		// 等待视频 period 事件
+		if(!movies[id].canWaitStop) return 0; // 视频未播放中则直接返回
+		if( elm.for !== void )
+		{
+			if( elm.for == 'loop' )
+			{
+				conductor.wait(%[
+					'movieperiod'+id+'_'+perLoop => function (id) { notifyRun(); isWaitPeriodEvent = false;} incontextof this,
+					'movieperiod'+id+'_arg' => id // 处理函数参数
+					]);
+			}
+			else if( elm.for == 'period' )
+			{
+				conductor.wait(%[
+					'movieperiod'+id+'_'+perPeriod => function (id) { notifyRun(); isWaitPeriodEvent = false;} incontextof this,
+					'movieperiod'+id+'_arg' => id // 处理函数参数
+					]);
+			}
+			else if( elm.for == 'prepare' )
+			{
+				conductor.wait(%[
+					'movieperiod'+id+'_'+perPrepare => function (id) { notifyRun(); isWaitPeriodEvent = false;} incontextof this,
+					'movieperiod'+id+'_arg' => id // 处理函数参数
+					]);
+			}
+			else if( elm.for == 'segLoop' )
+			{
+				conductor.wait(%[
+					'movieperiod'+id+'_'+perSegLoop => function (id) { notifyRun(); isWaitPeriodEvent = false;} incontextof this,
+					'movieperiod'+id+'_arg' => id // 处理函数参数
+					]);
+			}
+			else
+			{
+				return 0; // 参数无效
+			}
+		}
+		else
+		{
+			conductor.wait(%[
+				'movieperiod'+id+'_'+perLoop => function (id) { notifyRun(); isWaitPeriodEvent = false;} incontextof this,
+				'movieperiod'+id+'_'+perPeriod => function (id) { notifyRun(); isWaitPeriodEvent = false;} incontextof this,
+				'movieperiod'+id+'_'+perPrepare => function (id) { notifyRun(); isWaitPeriodEvent = false;} incontextof this,
+				'movieperiod'+id+'_'+perSegLoop => function (id) { notifyRun(); isWaitPeriodEvent = false;} incontextof this,
+				'movieperiod'+id+'_arg' => id // 处理函数参数
+				]);
+		}
+		notifyStable();
+		return -2;
+	}
+
+	//------------------------------------------------------- 标签处理函数群 --
+
+	function getHandlers()
+	{
+		return %[ // 字典数组对象
+
+		/*
+			标签处理函数群以名称与对应函数的配对形式列举，
+			函数名 : function(elm)
+			{
+				// 函数体
+			} incontextof this,
+			为格式。若函数名为保留字，则不用「函数名 : 」而
+			用「"函数名" => 」。
+			incontextof this 为使函数在本类
+			对象上下文中正确运行所必需。
+		*/
+
+	//--------------------------------------- 标签处理函数群（消息操作） --
+
+	ch : function(elm)
+	{
+		// 文字显示
+		var acs = actualChSpeed;
+		if(updateBeforeCh)
+		{
+			if(acs) { updateBeforeCh--; return -5; } else { updateBeforeCh--; }
+		}
+		var text = elm.text;
+		if(currentWithBack) current.comp.processCh(text);
+		if(current.processCh(text))
+		{
+			return showPageBreakAndClear();
+		}
+		if(historyWriteEnabled) historyLayer.store(text);
+		if(autoWCEnabled)
+		{
+			// 自动等待
+			var ind;
+			if((ind = autoWCChars.indexOf(text)) != -1)
+			{
+				return int(acs * autoWCWaits[ind]);
+			}
+		}
+		return acs;
+	} incontextof this,
+
+	graph : function(elm)
+	{
+		// 将图形作为文字显示
+		var acs = actualChSpeed;
+		if(updateBeforeCh)
+		{
+			if(acs) { updateBeforeCh--; return -5; } else { updateBeforeCh--; }
+		}
+		if(currentWithBack) current.comp.processGraph(elm);
+		if(current.processGraph(elm))
+		{
+			return showPageBreakAndClear();
+		}
+		if(historyWriteEnabled && elm.alt !== void) historyLayer.store(elm.alt);
+		return acs;
+	} incontextof this,
+
+	hch : function(elm)
+	{
+		// 纵中横
+		var acs = actualChSpeed;
+		if(updateBeforeCh)
+		{
+			if(acs) { updateBeforeCh--; return -5; } else { updateBeforeCh--; }
+		}
+		var text = elm.text;
+		var expand = elm.expand !== void && +elm.expand;
+		if(currentWithBack) current.comp.putHorizonCh(text, expand);
+		if(current.putHorizonCh(text, expand))
+		{
+			return showPageBreakAndClear();
+		}
+		if(historyWriteEnabled) historyLayer.store(text);
+		return acs;
+	} incontextof this,
+
+	r : function(elm)
+	{
+		// 换行
+		if(historyWriteEnabled) historyLayer.reline();
+		if(currentWithBack) current.comp.processReturn();
+		if(current.processReturn())
+		{
+			var ret = showPageBreakAndClear();
+			// 换行不 pending
+			if(ret == -5)
+				ret = -4;
+			else if(ret == -3)
+				ret = -2;
+			return ret;
+		}
+		return actualChSpeed;
+	} incontextof this,
+
+	ruby : function(elm)
+	{
+		// 为下一字符设置注音
+		if(currentWithBack) current.comp.setRuby(elm.text);
+		current.setRuby(elm.text);
+		return 0;
+	} incontextof this,
+
+	font : function(elm)
+	{
+		// 字体设置
+		if(currentWithBack) current.comp.setFont(elm);
+		current.setFont(elm);
+		return 0;
+	} incontextof this,
+
+	deffont : function(elm)
+	{
+		// 默认字体设置
+		if(currentWithBack) current.comp.setDefaultFont(elm);
+		current.setDefaultFont(elm);
+		return 0;
+	} incontextof this,
+
+	resetfont : function(elm)
+	{
+		// 重置字体
+		if(currentWithBack) current.comp.resetFont();
+		current.resetFont();
+		return 0;
+	} incontextof this,
+
+	style : function(elm)
+	{
+		// 样式设置
+		if(currentWithBack) current.comp.setStyle(elm);
+		current.setStyle(elm);
+		return 0;
+	} incontextof this,
+
+	defstyle : function(elm)
+	{
+		// 默认样式设置
+		if(currentWithBack) current.comp.setDefaultStyle(elm);
+		current.setDefaultStyle(elm);
+		return 0;
+	} incontextof this,
+
+	resetstyle : function(elm)
+	{
+		// 重置样式
+		if(currentWithBack) current.comp.resetStyle();
+		current.resetStyle();
+		return 0;
+	} incontextof this,
+
+	link : function(elm)
+	{
+		// 超链接开始
+		if(currentWithBack) current.comp.beginHyperLink(elm);
+		current.beginHyperLink(elm);
+		return 0;
+	} incontextof this,
+
+	endlink : function(elm)
+	{
+		// 超链接结束
+		if(currentWithBack) current.comp.endHyperLink(elm);
+		current.endHyperLink(elm);
+		return 0;
+	} incontextof this,
+
+	button : function(elm)
+	{
+		// 图形按钮
+		if(currentWithBack) current.comp.addButton(elm);
+		current.addButton(elm);
+		return 0;
+	} incontextof this,
+
+	edit : function(elm)
+	{
+		// 单行编辑
+		if(currentWithBack) current.comp.addEdit(elm);
+		current.addEdit(elm);
+		return 0;
+	} incontextof this,
+
+	checkbox : function(elm)
+	{
+		// 单行编辑
+		if(currentWithBack) current.comp.addCheckBox(elm);
+		current.addCheckBox(elm);
+		return 0;
+	} incontextof this,
+
+	commit : function(elm)
+	{
+		// 提交表单元素
+		current.commit();
+		return 0;
+	} incontextof this,
+
+    timeout : function(elm)
+    {
+        // 注册超时处理（仅 current）
+        current.addTimeout(elm);
+        return 0;
+    } incontextof this,
+
+    ctimeout : function(elm)
+    {
+        // 解除超时处理（仅 current）
+        current.clearTimeout();
+        return 0;
+    } incontextof this,
+
+    wheel : function(elm)
+    {
+        // 注册滚轮处理（仅 current）
+        current.addWheel(elm);
+        return 0;
+    } incontextof this,
+
+    cwheel : function(elm)
+    {
+        // 解除滚轮处理（仅 current）
+        current.clearWheel();
+        return 0;
+    } incontextof this,
+                  
+    click : function(elm)
+    {
+        // 注册点击处理（仅 current）
+        current.addClick(elm);
+        return 0;
+    } incontextof this,
+
+    cclick : function(elm)
+    {
+        // 注册点击处理（仅 current）
+        current.clearClick(elm);
+        return 0;
+    } incontextof this,
+
+	l : function(elm)
+	{
+		// 行点击等待
+		return showLineBreak(elm);
+	} incontextof this,
+
+	p : function(elm)
+	{
+		// 翻页点击等待
+		if(historyWriteEnabled) historyLayer.reline();
+		return showPageBreak(elm);
+	} incontextof this,
+
+	current : function(elm)
+	{
+		// 指定操作对象消息层
+		setCurrentMessageLayer(elm);
+		return 0;
+	} incontextof this,
+
+	position : function(elm)
+	{
+		// 设置消息层位置与属性
+		getMessageLayerObjectFromElm(elm).setPosition(elm);
+		return 0;
+	} incontextof this,
+
+	ct : function(elm)
+	{
+		// 重置消息层（清除所有消息层并
+		// 重置 current）
+		if(historyWriteEnabled) historyLayer.repage();
+		clearMessageLayers(true);
+		return 0;
+	} incontextof this,
+
+	cm : function(elm)
+	{
+		// 重置消息层，但不似 ct 那样
+		// 重置 current
+		if(historyWriteEnabled) historyLayer.repage();
+		clearMessageLayers(false);
+		return 0;
+	} incontextof this,
+
+	er : function(elm)
+	{
+		// 清除当前消息层
+		if(historyWriteEnabled) historyLayer.repage();
+		if(currentWithBack) current.comp.clear();
+		current.clear();
+		return 0;
+	} incontextof this,
+
+	indent : function(elm)
+	{
+		// 设置缩进
+		if(currentWithBack) current.comp.setIndent();
+		current.setIndent();
+		if(historyWriteEnabled) historyLayer.beginIndent();
+		return 0;
+	} incontextof this,
+
+	endindent : function(elm)
+	{
+		// 解除缩进
+		if(currentWithBack) current.comp.resetIndent();
+		current.resetIndent();
+		if(historyWriteEnabled) historyLayer.endIndent();
+		return 0;
+	} incontextof this,
+
+	delay : function(elm)
+	{
+		// 指定文字显示速度
+		setDelay(elm);
+		return 0;
+	} incontextof this,
+
+	nowait : function(elm)
+	{
+		// 暂时以 nowait 执行
+		enterNoWait();
+		return 0;
+	} incontextof this,
+
+	endnowait : function(elm)
+	{
+		// 解除 nowait
+		leaveNoWait();
+		return 0;
+	} incontextof this,
+
+	locate : function(elm)
+	{
+		// 指定文字显示位置
+		if(currentWithBack) current.comp.locate(elm.x, elm.y);
+		current.locate(elm.x, elm.y);
+		return 0;
+	} incontextof this,
+
+	glyph : function(elm)
+	{
+		// 指定点击等待符号
+		current.setGlyph(elm);
+		return 0;
+	} incontextof this,
+
+	locklink : function(elm)
+	{
+		// 锁定链接
+		lockMessageLayerSelProcess();
+		return 0;
+	} incontextof this,
+
+	unlocklink : function(elm)
+	{
+		// 解锁链接
+		unlockMessageLayerSelProcess();
+		return 0;
+	} incontextof this,
+
+	//----------------------------------------- 标签处理函数群（系统操作） --
+
+	loadplugin : function(elm)
+	{
+		// 读取插件
+		Plugins.link(elm.module);
+		dm("已加载插件：" + elm.module);
+		return 0;
+	} incontextof this,
+
+	title : function(elm)
+	{
+		// 设置标题
+		setTitle(elm.name);
+		return 0;
+	} incontextof this,
+
+	s : function(elm)
+	{
+		// 执行停止
+		stablePosibility = true;
+		cancelSkip();
+		if(!usingExtraConductor) incRecordLabel(true);
+		inSleep = true;
+		if(recordHistoryOfStore == 2) // 2：每个选项（@s 标签）
+			setToRecordHistory();
+		notifyStable();
+
+        // 开始调用消息层超时
+        current.startTimeout();
+
+		return -1;
+	} incontextof this,
+
+	clickskip : function(elm)
+	{
+		// 设置点击跳过
+		clickSkipEnabled = +elm.enabled;
+		return 0;
+	} incontextof this,
+
+	nextskip : function(elm)
+	{
+		// 设置跳到下一选项/未读
+		nextSkipEnabled = +elm.enabled;
+		return 0;
+	} incontextof this,
+
+	cancelskip : function(elm)
+	{
+		// 解除跳过
+		cancelSkip();
+		return 0;
+	} incontextof this,
+
+	cancelautomode : function(elm)
+	{
+		// 解除「自动推进」
+		cancelAutoMode();
+		return 0;
+	} incontextof this,
+
+	resetwait : function(elm)
+	{
+		// 设置时间原点
+		resetWait();
+		return 0;
+	} incontextof this,
+
+	wait : function(elm)
+	{
+		// 等待
+		return doWait(elm);
+	} incontextof this,
+
+	wc : function(elm)
+	{
+		// 指定字符数的等待
+		return doWaitCh(elm);
+	} incontextof this,
+
+	waitclick : function(elm)
+	{
+		// 等待点击
+		return waitClick(elm);
+	} incontextof this,
+
+	rclick : function(elm)
+	{
+		// 设置右键动作
+		setRightClickOptions(elm);
+		return 0;
+	} incontextof this,
+
+	history : function(elm)
+	{
+		// 设置对话履历层
+		setHistoryOptions(elm);
+		return 0;
+	} incontextof this,
+
+	showhistory : function(elm)
+	{
+		// 显示对话履历层
+		return showHistoryByScenario(elm);
+	} incontextof this,
+
+	hr : function(elm)
+	{
+		// 向对话履历层输出换行
+		if(historyWriteEnabled)
+		{
+			if(elm.repage !== void && +elm.repage)
+				historyLayer.repage();
+			else
+				historyLayer.reline();
+		}
+		return 0;
+	} incontextof this,
+
+	hact : function(elm)
+	{
+		// 向对话履历设置动作
+		if(historyWriteEnabled)
+			historyLayer.setNewAction(elm.exp);
+		return 0;
+	} incontextof this,
+
+	endhact : function(elm)
+	{
+		// 清除对话履历动作
+		if(historyWriteEnabled)
+			historyLayer.clearAction();
+		return 0;
+	} incontextof this,
+
+	hidemessage : function(elm)
+	{
+		// 暂时隐藏消息
+		return hideMessageLayerByScenario(elm);
+	} incontextof this,
+
+	quake : function(elm)
+	{
+		// 摇晃
+		doQuake(elm);
+		return 0;
+	} incontextof this,
+
+	stopquake : function(elm)
+	{
+		// 停止摇晃
+		stopQuake();
+		return 0;
+	} incontextof this,
+
+	wq : function(elm)
+	{
+		// 等待震动停止
+		return waitQuake(elm);
+	} incontextof this,
+
+	autowc : function(elm)
+	{
+		// 自动等待
+		setAutoWait(elm);
+		return 0;
+	} incontextof this,
+
+	cursor : function(elm)
+	{
+		// 更改鼠标光标
+		setCursor(elm);
+		return 0;
+	} incontextof this,
+
+	close : function(elm)
+	{
+		// 关闭窗口
+		closeByScript(elm);
+		return -2;
+	} incontextof this,
+
+	copybookmark : function(elm)
+	{
+		// 复制存档
+		copyBookMark(+elm.from, +elm.to);
+		return 0;
+	} incontextof this,
+
+	erasebookmark : function(elm)
+	{
+		// 删除存档
+		eraseBookMark(+elm.place);
+		return 0;
+	} incontextof this,
+
+	disablestore : function(elm)
+	{
+		// 暂时禁用存档
+		tempDisableStore(elm);
+		return 0;
+	} incontextof this,
+
+	store : function(elm)
+	{
+		// 设置存档禁用/启用
+		setStoreEnabled(+elm.enabled);
+		return 0;
+	} incontextof this,
+
+	load : function(elm)
+	{
+		// 读取存档
+		if(elm.ask !== void && +elm.ask)
+			loadBookMarkWithAsk(+elm.place);
+		else
+			loadBookMark(+elm.place);
+		return -4;
+	} incontextof this,
+
+	save : function(elm)
+	{
+		// 保存存档
+		if(elm.ask !== void && +elm.ask)
+			saveBookMarkWithAsk(+elm.place);
+		else
+			saveBookMark(+elm.place);
+		return -4;
+	} incontextof this,
+
+	startanchor : function(elm)
+	{
+		// 设置「回到开头」禁用/启用
+		setStartAnchorEnabled(elm.enabled === void || +elm.enabled);
+		return 0;
+	} incontextof this,
+
+	gotostart : function(elm)
+	{
+		// 「回到开头」
+		if(elm.ask !== void && +elm.ask)
+			goToStartWithAsk();
+		else
+			goToStart();
+		return -4;
+	} incontextof this,
+
+	goback : function(elm)
+	{
+		// 沿经过记录回退
+		if(elm.ask !== void && +elm.ask)
+			goBackHistory(true);
+		else
+			goBackHistory(false);
+		return -4;
+	} incontextof this,
+
+	record : function(elm)
+	{
+		// 进行经过记录
+		setToRecordHistory();
+		return 0;
+	} incontextof this,
+
+	tempsave : function(elm)
+	{
+		// 将状态保存到内存
+		tempSave(+elm.place);
+		return 0;
+	} incontextof this,
+
+	tempload : function(elm)
+	{
+		// 从内存加载状态
+		tempLoad(+elm.place, elm);
+			//elm.se === void || +elm.se, elm.bgm === void || +elm.bgm,
+			//elm.backlay !== void && +elm.backlay);
+		return 0;
+	} incontextof this,
+
+	mappfont : function(elm)
+	{
+		// 将预渲染字体映射到当前字体
+		mapPrerenderedFont(elm.storage);
+		return 0;
+	} incontextof this,
+
+	locksnapshot : function(elm)
+	{
+		// 锁定画面快照
+		lockSnapshot();
+		return 0;
+	} incontextof this,
+
+	unlocksnapshot : function(elm)
+	{
+		// 解除画面快照锁定
+		unlockSnapshot();
+		return 0;
+	} incontextof this,
+
+	//------------------------------------------- 标签处理函数群（层操作） --
+
+	image : function(elm)
+	{
+		// 图像读取
+		updateBeforeCh = 1;
+		var start = System.getTickCount();
+		getLayerFromElm(elm).loadImages(elm);
+		dm(elm.storage + " 加载耗时 " + (System.getTickCount() - start) + "ms");
+		return 0;
+	} incontextof this,
+
+	img : function(elm)
+	{
+		// 图像读取（同 image）
+		updateBeforeCh = 1;
+		var start = System.getTickCount();
+		getLayerFromElm(elm).loadImages(elm);
+		dm(elm.storage + " 加载耗时 " + (System.getTickCount() - start) + "ms");
+		return 0;
+	} incontextof this,
+
+	pimage : function(elm)
+	{
+		// 部分追加图像读取
+		getLayerFromElm(elm).loadPartialImage(elm);
+		return 0;
+	} incontextof this,
+
+	ptext : function(elm)
+	{
+		// 向背景/立绘层绘制文字
+		getLayerFromElm(elm).drawReconstructibleText(elm);
+		return 0;
+	} incontextof this,
+
+	freeimage : function(elm)
+	{
+		// 清除图像
+		updateBeforeCh = 1;
+		getLayerFromElm(elm).freeImage(elm);
+		return 0;
+	} incontextof this,
+
+	animstart : function(elm)
+	{
+		// 开始动画
+		updateBeforeCh = 1;
+		getLayerFromElm(elm).startAnim(elm);
+		return 0;
+	} incontextof this,
+
+	animstop : function(elm)
+	{
+		// 停止动画
+		updateBeforeCh = 1;
+		getLayerFromElm(elm).stopAnim(+elm.seg);
+		return 0;
+	} incontextof this,
+
+	wa : function(elm)
+	{
+		// 等待动画停止
+		return waitAnimation(elm);
+	} incontextof this,
+
+	mapimage : function(elm)
+	{
+		// 读取可点击地图的区域图
+		getLayerFromElm(elm).loadProvinceImage(elm.storage);
+		return 0;
+	} incontextof this,
+
+	mapaction : function(elm)
+	{
+		// 读取可点击地图的区域动作定义
+		getLayerFromElm(elm).loadProvinceActions(elm.storage);
+		return 0;
+	} incontextof this,
+
+	mapdisable : function(elm)
+	{
+		// 禁用可点击地图
+		getLayerFromElm(elm).clearProvinceActions();
+		return 0;
+	} incontextof this,
+
+	backlay : function(elm)
+	{
+		// 将层复制到里屏
+		updateBeforeCh = 1;
+		backupLayer(elm, true);
+		return 0;
+	} incontextof this,
+
+	forelay : function(elm)
+	{
+		// 将层复制到表屏
+		updateBeforeCh = 1;
+		backupLayer(elm, false);
+		return 0;
+	} incontextof this,
+
+	copylay : function(elm)
+	{
+		// 同类型层之间的复制
+		updateBeforeCh = 1;
+		copyLayer(elm);
+		return 0;
+	} incontextof this,
+
+	layopt : function(elm)
+	{
+		// 设置层选项
+		updateBeforeCh = 1;
+		getLayerFromElm(elm).setOptions(elm);
+		return 0;
+	} incontextof this,
+
+	trans : function(elm)
+	{
+		// 开始过渡
+		getLayerPageFromElm(elm, false).beginTransition(elm);
+		return 0;
+	} incontextof this,
+
+	wt : function(elm)
+	{
+		// 等待过渡
+		return waitTransition(elm);
+	} incontextof this,
+
+	stoptrans : function(elm)
+	{
+		// 停止过渡
+		stopAllTransitions();
+		return 0;
+	} incontextof this,
+
+	move : function(elm)
+	{
+		// 开始自动移动
+		getLayerFromElm(elm).beginMove(elm);
+		return 0;
+	} incontextof this,
+
+	// layer, page, fps, ox, oy
+	framemove : function(elm)
+	{
+		// 开始按帧指定自动移动
+		getLayerFromElm(elm).beginFrameMove(elm);
+		return 0;
+	} incontextof this,
+
+	wm : function(elm)
+	{
+		// 等待自动移动
+		return waitMove(elm);
+	} incontextof this,
+
+	stopmove : function(elm)
+	{
+		// 停止自动移动
+		stopAllMoves();
+		return 0;
+	} incontextof this,
+
+	laycount : function(elm)
+	{
+		updateBeforeCh = 1;
+		allocateCharacterLayers(+elm.layers) if elm.layers !== void;
+		allocateMessageLayers(+elm.messages) if elm.messages !== void;
+		return 0;
+	} incontextof this,
+
+	//------------------------------ 标签处理函数群（音效·BGM·视频操作） --
+
+	playbgm : function(elm)
+	{
+		// 播放 BGM
+		bgm.play(elm);
+        clearBgmStop();
+        clearBgmLabel();
+		return 0;
+	} incontextof this,
+
+	stopbgm : function(elm)
+	{
+		// 停止 BGM
+		bgm.stop();
+		return 0;
+	} incontextof this,
+
+	pausebgm : function(elm)
+	{
+		// 暂停 BGM
+		bgm.pause();
+		return 0;
+	} incontextof this,
+
+	resumebgm : function(elm)
+	{
+		// 恢复 BGM
+		bgm.resume();
+		return 0;
+	} incontextof this,
+
+	fadeinbgm : function(elm)
+	{
+		// BGM 淡入
+		bgm.fadeIn(elm);
+		return 0;
+	} incontextof this,
+
+	fadeoutbgm : function(elm)
+	{
+		// BGM 淡出
+		bgm.fadeOut(elm);
+		return 0;
+	} incontextof this,
+
+	fadepausebgm : function(elm)
+	{
+		// BGM 淡出暂停
+		bgm.fadePause(elm);
+		return 0;
+	} incontextof this,
+
+	fadebgm : function(elm)
+	{
+		// BGM 淡入到指定音量
+		bgm.fade(elm);
+		return 0;
+	} incontextof this,
+
+	xchgbgm : function(elm)
+	{
+		// BGM 切换/交叉淡入淡出
+		bgm.exchange(elm);
+        clearBgmStop();
+        clearBgmLabel();
+		return 0;
+	} incontextof this,
+
+	bgmopt : function(elm)
+	{
+		// 设置 BGM 选项
+		bgm.setOptions(elm);
+		return 0;
+	} incontextof this,
+    setbgmstop : function(elm)
+	{
+		// 注册 BGM 结束回调
+        setBgmStop(elm);
+        return 0;
+	} incontextof this,
+
+    clearbgmstop : function(elm)
+	{
+		// 删除 BGM 结束回调
+        clearBgmStop();
+        return 0;
+	} incontextof this,
+
+    setbgmlabel : function(elm) {
+        // 注册 BGM 标签回调
+        setBgmLabel(elm);
+        return 0;
+    } incontextof this,
+
+    clearbgmlabel : function(elm)
+	{
+        // 删除 BGM 标签回调
+        clearBgmLabel();
+        return 0;
+	} incontextof this,
+
+	wb : function(elm)
+	{
+		// 等待 BGM 淡出结束
+		return waitBGMFade(elm);
+	} incontextof this,
+
+	wl : function(elm)
+	{
+		// 等待 BGM 播放结束
+		return waitBGMStop(elm);
+	} incontextof this,
+
+	playse : function(elm)
+	{
+		// 播放音效
+		se[+elm.buf].play(elm);
+		return 0;
+	} incontextof this,
+
+	stopse : function(elm)
+	{
+		// 停止音效
+		se[+elm.buf].stop();
+		return 0;
+	} incontextof this,
+
+	fadeinse : function(elm)
+	{
+		// 音效淡入播放
+		se[+elm.buf].fadeIn(elm);
+		return 0;
+	} incontextof this,
+
+	fadeoutse : function(elm)
+	{
+		// 音效淡出
+		se[+elm.buf].fadeOut(elm);
+		return 0;
+	} incontextof this,
+
+	fadese : function(elm)
+	{
+		// 音效淡入淡出
+		se[+elm.buf].fade(elm);
+		return 0;
+	} incontextof this,
+
+	seopt : function(elm)
+	{
+		// 设置音效选项
+		se[+elm.buf].setOptions(elm);
+		return 0;
+	} incontextof this,
+
+	wf : function(elm)
+	{
+		// 等待音效淡出结束
+		return waitSEFade(elm);
+	} incontextof this,
+
+	ws : function(elm)
+	{
+		// 等待音效播放结束
+		return waitSEStop(elm);
+	} incontextof this,
+
+	video : function(elm)
+	{
+		// 设置视频选项
+		movies[+elm.slot].setOptions(elm);
+		return 0;
+	} incontextof this,
+
+	playvideo : function(elm)
+	{
+		// 播放视频
+		movies[+elm.slot].play(elm.storage);
+		return 0;
+	} incontextof this,
+
+	stopvideo : function(elm)
+	{
+		// 停止视频
+		movies[+elm.slot].stop();
+		return 0;
+	} incontextof this,
+
+	openvideo : function(elm)
+	{
+		// 准备视频播放
+		movies[+elm.slot].open(elm.storage);
+		return 0;
+	} incontextof this,
+
+	wv : function(elm)
+	{
+		// 等待视频播放结束
+		return waitMovieStop(elm);
+	} incontextof this,
+
+// Start: Add: T.Imoto
+	wp : function(elm)
+	{
+		// 等待视频周期事件
+		return waitMoviePeriod(elm);
+	} incontextof this,
+
+	pausevideo : function(elm)
+	{
+		movies[+elm.slot].pause();
+		return 0;
+	} incontextof this,
+
+	resumevideo : function(elm)
+	{
+		movies[+elm.slot].resume();
+		return 0;
+	} incontextof this,
+
+	preparevideo : function(elm)
+	{
+		movies[+elm.slot].prepare();
+		return 0;
+	} incontextof this,
+
+	rewindvideo : function(elm)
+	{
+		movies[+elm.slot].rewind();
+		return 0;
+	} incontextof this,
+
+	videolayer : function(elm)
+	{
+		movies[+elm.slot].storeLayer( elm.layer, elm.page, elm.channel );
+		movies[+elm.slot].setVideoLayer(getLayerFromElm(elm),elm);
+		return 0;
+	} incontextof this,
+
+	clearvideolayer : function(elm)
+	{
+		movies[+elm.slot].cancelLayer( elm.channel );
+		movies[+elm.slot].setVideoLayer(null,elm);
+		return 0;
+	} incontextof this,
+
+	videosegloop : function(elm)
+	{
+		movies[+elm.slot].setSegment(elm);
+		return 0;
+	} incontextof this,
+
+	cancelvideosegloop : function(elm)
+	{
+		movies[+elm.slot].cancelSegmentLoop();
+		return 0;
+	} incontextof this,
+
+	videoevent : function(elm)
+	{
+		movies[+elm.slot].setPeriod(elm);
+		return 0;
+	} incontextof this,
+
+	cancelvideoevent : function(elm)
+	{
+		movies[+elm.slot].cancelPeriodEvent();
+		return 0;
+	} incontextof this,
+// End: Add: T.Imoto
+
+	//--------------------------------------- 标签处理函数群（变量·TJS 操作） --
+
+	eval : function(elm)
+	{
+		// 求值表达式
+		Scripts.eval(elm.exp);
+		return 0;
+	} incontextof this,
+
+	trace : function(elm)
+	{
+		// 跟踪显示表达式
+		var exp = elm.exp;
+		var result = Scripts.eval(exp);
+		dm("▼[trace] expression=\"" + exp + "\" type of result=" + typeof result + 
+			" result=" + result);
+		return 0;
+	} incontextof this,
+
+	input : function(elm)
+	{
+		// 输入字符串
+		inputString(elm);
+		return 0;
+	} incontextof this,
+
+	clearsysvar : function(elm)
+	{
+		// 清除系统变量
+		clearSystemVariables();
+		return 0;
+	} incontextof this,
+
+	clearvar : function(elm)
+	{
+		// 清除游戏变量
+		clearVariables();
+		return 0;
+	} incontextof this,
+
+	waittrig : function(elm)
+	{
+		// 等待触发
+		return waitTrigger(elm);
+	} incontextof this,
+
+	//----------------------------------------------- 标签处理函数群结束 --
+
+		interrupt : function(elm) { return -2; } incontextof this ];
+	}
+}
+
+
+
+// TJS 脚本到此结束
+"
+END_OF_TJS_SCRIPT
+# "; /*
+
+# 用于 assign 的 perl 脚本，重新生成应复制的变量
+
+open FH, "MainWindow.tjs" or die;
+undef($/);
+$content = <FH>;
+
+$list_store = '';
+$list_restore = '';
+while($content =~ /\/\*C\*\/var\s+(\w+)/gs)
+{
+	$list_store .= "\t\tf.$1 = $1;\n";
+	$list_restore .= "\t\t$1 = f.$1 if f.$1 !== void;\n";
+}
+
+$content =~
+s/\t\t\/\/ \[start_store_vars\]\n.*?\t\t\/\/ \[end_store_vars\]/\t\t\/\/ \[start_store_vars\]\n$list_store\t\t\/\/ \[end_store_vars\]/s;
+$content =~
+s/\t\t\/\/ \[start_restore_vars\]\n.*?\t\t\/\/ \[end_restore_vars\]/\t\t\/\/ \[start_restore_vars\]\n$list_restore\t\t\/\/ \[end_restore_vars\]/s;
+
+open FH, ">MainWindow.tjs" or die;
+print FH $content;
+
+
+# */
+

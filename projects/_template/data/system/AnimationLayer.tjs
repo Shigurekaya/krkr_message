@@ -1,0 +1,1165 @@
+// AnimationLayer.tjs - 执行动画的层
+// Copyright (C)2001-2009, W.Dee and contributors  可自由修改与再分发
+
+
+/*
+-- 两种动画类型 ---------------------------------------------
+
+　KAG 动画有两种实现方式。
+　一种是基于「单元图像」的单元动画：从「基础图像」上裁切「单元图像」
+各部分并依次贴到层上，以此播放动画。
+
+　另一种是自 KAG 3.05 beta 3 起可用的裁剪动画，无需单元图像。
+　image 标签有 clipleft、cliptop、clipwidth、clipheight 四个属性，
+（概念上）通过依次改变这些值，可依次显示大图的一部分。
+适合将多张待显示图像横向排列后依次显示。
+
+　负载方面，裁剪动画更轻。演示场景中若要进行会重写整个层的动画，
+裁剪方式更合适。
+　相反，眨眼、口型等用途，单元动画更灵活、更好用。
+
+
+-- 单元动画的写法 -------------------------------------------
+
+　要进行动画，需要「基础图像」和「单元图像」。
+基础图像是动画的底图；单元图像是排列动画「零件」的图像。
+通过在基础图像上局部复制单元图像来叠加动画。
+
+　基础图像由 image 标签加载（此处的「基础」与 KAG 背景层的 base 含义不同）。
+单元图像在动画定义文件内的 loadcell 标签中加载。
+
+　动画定义文件与基础图像同名、扩展名为 asd 的文本文件。
+按 KAG 语法书写，但标签体系与 KAG 剧本不同。
+
+　不使用动画段的简单动画，可参考 system 文件夹中的 LineBreak、PageBreak。
+使用动画段的示例见吉里吉里源码 environ/win32/kag3/scenario/animtest.ks。
+
+
+-- 段（Segment） -------------------------------------------------------------
+
+　段是以一组基础图像、单元图像、asd 文件同时推进多路动画的机制。
+　每层段号从 0 起。
+　段 0 为特殊段，称默认段：随图像加载自动开始执行。
+system 中的 LineBreak、PageBreak 仅使用默认段，简单动画通常足够。
+
+　口型、眨眼等需在同一图像上多路动画时，须使用多个段。例如眨眼在默认段
+常时播放，口型由剧本控制启停。
+
+　段的动画启动用 KAG 的 animstart，可对任意（非默认）段开始动画。
+
+　animstart 的 loop=true 时，动画须循环播放；不会自动循环，须在 asd 中写明。
+　不循环不会报错，但存档读档后图像可能无法正确还原。
+读档时仅 loop=true 的动画会恢复，且一定从 animstart 指定 asd 的标签开头执行。
+
+　loop=false 时动画会播放，但最终须用 s 标签停止；[s] 停止后须回到与基础图
+相同状态，用于单次动画。
+
+　animstop 停止动画但不等待；实际停止须经过 @home 标签。
+
+　wa 等待指定段的动画结束（含默认段）。仅在 animstart loop=false 或
+animstop 后有效；其他情况 wa 会永远等待。
+
+　存档仅记录哪段、从哪一起始标签开始，不记录播到第几帧。
+　仅循环中的动画在读档后会恢复。
+
+
+-- 裁剪动画的写法 ---------------------------
+
+　裁剪动画不需单元图，准备横向排列的多帧合成一张图。
+　例如 320×240 画面用 8 帧动画，准备 2560×240 图（2560 = 320 × 8）。
+加载时 image 标签须使第一帧可见，例如：
+
+@image storage=anim page=fore layer=0 mode=rect clipleft=0 cliptop=0 clipwidth=320 clipheight=240
+
+　asd 中按横排各帧依次显示编写；不用 loadcell。
+　例如：
+
+@wait time=80
+@clip left=320 top=0
+@wait time=80
+@clip left=640 top=0
+@wait time=80
+@clip left=960 top=0
+@wait time=80
+@clip left=1280 top=0
+@wait time=80
+@clip left=1600 top=0
+@wait time=80
+@clip left=1920 top=0
+@wait time=80
+@clip left=2240 top=0
+@wait time=80
+@s
+
+　帧不必真的横排；纵排亦可，但 png 等压缩时横排压缩率更高。
+
+　裁剪动画的存档不保存该层如何播放的信息。在通过下一「可存档标签」前，
+应对该层另载图像等，使裁剪动画信息失效。
+
+
+-- asd 文件中的标签说明 ------------------------------------------------
+
+
+■ loadcell
+
+·属性
+
+  storage（可省略）          指定要加载的单元图像文件名
+
+·说明
+
+　仅单元动画使用。
+　loadcell 加载单元图像；无单元图则无法动画，asd 开头必须写。
+省略 storage 时加载「基础图文件名 + _a」的图像。
+写在 asd 开头即可，不必写在段入口标签之后。
+
+
+■ loop
+
+·属性
+
+  （无）
+
+·说明
+
+　仅单元动画使用。
+　声明本段数据会循环；声明后仍须在 asd 中写循环逻辑。
+宜写在各段循环入口标签附近；默认段写在 loadcell 之后即可。
+
+■ copy
+
+·属性
+
+  dx                        目标 x
+  dy                        目标 y
+  sx                        源 x
+  sy                        源 y
+  sw                        宽
+  sh                        高
+
+·说明
+
+　仅单元动画使用。从单元图复制到基础图。
+
+■ wait
+
+·属性
+
+  time                      等待时间（ms）
+
+·说明
+
+　等待指定时间。通常与 copy 交替使用。
+
+■ jump, if/endif, eval, iscript/endscript
+
+　与 KAG 剧本相同。多段并行时注意变量不要冲突。
+
+■ s
+
+·属性
+
+  （无）
+
+·说明
+
+　与 KAG 相同，在此停止执行。
+不循环的动画不要写 loop，用本标签停止。
+加载后暂不想播动画时，可在 loadcell 后紧跟 s。
+
+
+
+■ home
+
+·属性
+
+  （无）
+
+·说明
+
+　仅单元动画使用。animstop 时在此停止；不写则 animstop 无法停。
+使用 animstop 时循环中须至少有一处 home。
+
+
+
+■ clip
+
+·属性
+
+  left                      裁剪左边界
+  top                       裁剪上边界
+
+　仅裁剪动画使用。效果同 image 的 clipleft、cliptop；宽高不可改，
+须与 image 指定一致。
+
+*/
+
+
+class AnimationConductor extends BaseConductor
+{
+	var owner;
+	var number; // 本指挥器编号
+	var looping = false;
+	var startLabel = "";
+	var stopping = false; // 是否处于等待停止状态
+	var running = false; // 是否运行中
+
+	function AnimationConductor(owner)
+	{
+		super.BaseConductor(); // 调用父类构造函数
+		ignoreCR = true; // 忽略 CR
+		debugLevel = tkdlNone;
+//		debugLevel = tkdlVerbose;
+		this.owner = owner;
+	}
+
+	function finalize()
+	{
+		owner = void; // 断开对 owner 的引用
+		super.finalize(...);
+	}
+
+	function onStop()
+	{
+		// 停止执行
+		var elm = %[];
+		elm.context = this;
+		owner.s(elm); // 调用 s 标签
+	}
+
+	function onTag(obj)
+	{
+		// 执行标签时
+		var func = owner[obj.tagname];
+		if(func == void)
+		{
+			dm(Storages.extractFileName(curStorage) + "：未知标签：" + obj.tagname);
+			return 0;
+		}
+		obj.context = this;
+		return func(obj);
+	}
+
+	function onScript(script, scriptname, lineofs)
+	{
+		// 执行 iscript 时
+		try
+		{
+			Scripts.exec(script, scriptname, lineofs);
+		}
+		catch(e)
+		{
+			throw new Exception(scriptname + " 第 " + lineofs + " 行开始的"
+				" iscript 块发生错误。"
+				"\n（详情请查看控制台）\n" + e.message);
+		}
+		return true;
+	}
+
+	function assign(src)
+	{
+		// 将 src 的状态复制到此对象
+		super.assign(src);
+		looping = src.looping;
+		startLabel = src.startLabel;
+		stopping = src.stopping;
+		running = src.running;
+	}
+}
+
+
+class AnimationLayer extends KAGLayer
+{
+	var Anim_cellLayer; // 单元层
+	var Anim_segments = []; // 各段的指挥器
+	var Anim_storageName; // 动画数据文件名
+	var Anim_loadParams = void; // 加载时指定的参数
+	var Anim_partialImageInfo = void; // 部分追加加载的参数
+	var Anim_interrupted = false;// 是否中断中
+
+	var Anim_defaultFontInfo = %[];
+
+
+	function AnimationLayer(win, par)
+	{
+		// AnimationLayer 构造函数
+		super.KAGLayer(...); // 调用父类构造函数
+
+		Anim_defaultFontInfo.face = font.face; // 默认字体
+		Anim_defaultFontInfo.height = font.height; // 默认字号
+
+		Anim_segments[0] = new AnimationConductor(this); // 默认指挥器
+		Anim_segments[0].number = 0;
+	}
+
+	function finalize()
+	{
+		clearAnim(); // 清除动画信息
+		invalidate Anim_segments[0]; // 释放默认指挥器
+		Anim_loadParams = void;
+		Anim_partialImageInfo = void;
+		super.finalize(...);
+	}
+
+	function clearImage(process = true)
+	{
+		// 尽可能隐藏并清除层
+		// 必要时由子类重写
+		if(process)
+		{
+			visible = false;
+			setSize(32, 32);
+			setImageSize(32, 32);
+			face = dfAlpha;
+			fillRect(0, 0, 32, 32, 0);
+			type = ltOpaque;
+			face = dfAuto;
+		}
+	}
+
+	function freeImage()
+	{
+		// 释放图像
+		clearAnim();
+		clearImage();
+		Anim_loadParams = void;
+		Anim_partialImageInfo = void;
+	}
+
+	function clearAnim()
+	{
+		// 清除动画信息
+		// 清除动画段
+		// 删除各段（除默认段外）
+		for(var i = Anim_segments.count -1; i>=1; i--)
+		{
+			var seg = Anim_segments[i];
+			invalidate Anim_segments[i] if seg !== void;
+		}
+		Anim_segments.count = 1;
+
+		// 停止默认段
+		Anim_segments[0].stop();
+
+		// 销毁动画单元层
+		invalidate Anim_cellLayer if Anim_cellLayer !== void;
+		Anim_cellLayer = void;
+	}
+
+	function loadAnimInfo(segment, label)
+	{
+		// 向指定段加载动画信息并开始执行
+		// segment=段号 label=起始标签（空字符串则从开头）
+		// 从 Anim_storageName 中的文件加载
+		if(Anim_storageName == '')
+			throw new Exception(
+				(Anim_loadParams !== void ? Anim_loadParams.storage + " 对应的" : "") +
+				"动画信息不存在");
+
+		var seg;
+		if(Anim_segments[segment] === void)
+		{
+			Anim_segments[segment] = seg = new AnimationConductor(this);
+			seg.number = segment;
+				// 为新段创建指挥器
+		}
+		else
+		{
+			// 停止该段
+			(seg = Anim_segments[segment]).stop();
+		}
+
+		seg.startLabel = label;
+		seg.stopping = false;
+		seg.running = true;
+		seg.clearCallStack();
+		seg.interrupted = Anim_interrupted;
+		seg.loadScenario(Anim_storageName);
+		if(label != '') seg.goToLabel(label);
+		seg.startProcess(true);
+	}
+
+	function startAnim(elm)
+	{
+		// 按 elm 开始动画
+		loadAnimInfo(+elm.seg, elm.target);
+	}
+
+	function stopAnim(segment)
+	{
+		// 停止 segment 上的动画
+		var seg = Anim_segments[segment];
+		if(seg === void) return; // 无法停止
+		seg.stopping = true;
+	}
+
+	function canWaitAnimStop(segment)
+	{
+		// 是否可等待 segment 的动画结束
+		var seg = Anim_segments[segment];
+		if(seg === void) return false; // 不可等待
+		if(!seg.running) return false; // 未运行，不可等待
+		if(seg.looping && !seg.stopping) return false; // 循环且非等待停止，不可等待
+		return true;
+	}
+
+	function loadImages(elm)
+	{
+		// loadImages 重写
+		// elm 为加载信息
+		if(elm === void)
+		{
+			freeImage();
+			return;
+		}
+
+		Anim_loadParams = %[];
+		(Dictionary.assign incontextof Anim_loadParams)(elm);
+			// 保存参数
+
+		// 清除动画信息
+		clearAnim();
+
+		// 清除追加图像加载信息
+		Anim_partialImageInfo = void;
+
+		// 加载图像
+		var taginfo = super.loadImages(elm.storage, elm.key);
+
+		// 采用图像标签信息为默认值
+		if(taginfo)
+		{
+			(Dictionary.assign incontextof taginfo)(elm, false);
+			elm = taginfo;
+		}
+
+		// 翻转
+		var ud, lr;
+		if(elm.flipud !== void && +elm.flipud)
+		{
+			// 上下翻转
+			flipUD();
+			ud = true;
+		}
+		else
+		{
+			ud = false;
+		}
+
+		if(elm.fliplr !== void && +elm.fliplr)
+		{
+			// 左右翻转
+			flipLR();
+			lr = true;
+		}
+		else
+		{
+			lr = false;
+		}
+
+		// 裁剪
+		if(elm.clipleft !== void)
+		{
+			// 已指定裁剪
+			width = +elm.clipwidth;
+			height = +elm.clipheight;
+			var cl = elm.clipleft;
+			if(lr) cl = imageWidth - cl - width;
+			var ct = elm.cliptop;
+			if(ud) ct = imageHeight - ct - height;
+			imageLeft = -cl;
+			imageTop = -ct;
+		}
+		else
+		{
+			setSizeToImageSize();
+		}
+
+		// 层模式
+		{
+			var mode = ltAlpha;
+
+			if(elm.mode !== void)
+			{
+				var layertypeinfo = imageTagLayerType[elm.mode];
+				if(layertypeinfo !== void)
+					mode = layertypeinfo.type;
+			}
+
+			type = mode;
+		}
+
+		// 色校正
+		face = dfAuto;
+		applyColorCorrection(this, elm);
+
+		// 可见性、位置、不透明度、索引
+		if ( elm !== void && elm.pos !== void ) {
+			// 按 position 决定位置
+			left= window.scPositionX[elm.pos] - width \ 2;
+			top = window.scHeight - height;
+		}
+		else
+		{
+			if(elm.left !== void) left = +elm.left;
+			if(elm.top !== void) top = +elm.top;
+		}
+		if(elm.visible !== void) visible = +elm.visible;
+		if(elm.opacity !== void) opacity = +elm.opacity;
+		absolute = +elm.index if elm.index !== void;
+
+		// 若有动画信息则加载
+		Anim_storageName =
+			Storages.getPlacedPath(
+				Storages.chopStorageExt(elm.storage) + ".asd");
+		if(Anim_storageName != '')
+		{
+			// 存在动画信息
+			// 加载到默认指挥器
+			loadAnimInfo(0, ''); // 并尝试开始动画
+		}
+	}
+
+	function addPartialImageInfo(elm)
+	{
+		// 向 partialImageInfo 追加 elm
+		// 向 Anim_partialImageInfo 追加信息
+		if(Anim_partialImageInfo === void)
+			Anim_partialImageInfo = [];
+		var info = %[];
+		(Dictionary.assign incontextof info)(elm);
+		Anim_partialImageInfo.add(info);
+	}
+
+	function loadPartialImage(elm)
+	{
+		// 部分追加加载
+		// 遵循层本身的色校正、翻转等设置
+		// （pimage 标签本身无色校正、翻转属性）
+		// pimage 不适合错开时间逐块加载做动画
+		// （此类用途应使用动画功能）
+		 if(elm.tagname === void) elm.tagname = "pimage";
+
+		// 决定色键
+		var key;
+		if(elm.key !== void)
+		{
+			// 指定了 key
+			key = elm.key;
+		}
+		else
+		{
+			// 未指定 key
+			if(Anim_loadParams !== void)
+				key = Anim_loadParams.key; // 使用 loadParams 的 key
+			else
+				key = void;
+		}
+
+		// 获取临时层
+		var temp = window.temporaryLayer;
+
+		// 向临时层加载图像
+		var taginfo = temp.loadImages(elm.storage, key);
+
+		// 采用图像标签信息为默认值
+		if(taginfo)
+		{
+			(Dictionary.assign incontextof taginfo)(elm, false);
+			elm = taginfo;
+		}
+
+		// 层模式
+		{
+			var mode = ltAlpha;
+
+			if(elm.mode !== void)
+			{
+				var layertypeinfo = imageTagLayerType[elm.mode];
+				if(layertypeinfo !== void)
+					mode = layertypeinfo.type;
+			}
+
+			temp.type = mode;
+		}
+
+		// 图像调整
+		var lr = false, ud = false;
+		if(Anim_loadParams !== void)
+		{
+			// 对临时层色校正
+			applyColorCorrection(temp, Anim_loadParams);
+
+			// 翻转
+			if(Anim_loadParams.flipud !== void && +Anim_loadParams.flipud)
+			{
+				// 上下翻转
+				temp.flipUD();
+				ud = true;
+			}
+
+			if(Anim_loadParams.fliplr !== void && +Anim_loadParams.fliplr)
+			{
+				// 左右翻转
+				temp.flipLR();
+				lr = true;
+			}
+		}
+
+		var dx = +elm.dx;
+		var dy = +elm.dy;
+		var sx = +elm.sx;
+		var sy = +elm.sy;
+		var sw = elm.sw === void ? temp.imageWidth : +elm.sw;
+		var sh = elm.sh === void ? temp.imageHeight : +elm.sh;
+		if(ud)
+		{
+			// 上下翻转
+			dy = imageHeight - dy - sh;
+			sy = temp.imageHeight - sy - sh;
+		}
+		if(lr)
+		{
+			// 左右翻转
+			dx = imageWidth - dx - sw;
+			sx = temp.imageWidth - sx - sw;
+		}
+
+		if(elm.mode == 'copy' || elm.mode == 'opaque')
+		{
+			// 复制
+			face = dfAlpha;
+			copyRect(dx, dy, temp, sx, sy, sw, sh);
+		}
+		else
+		{
+			// 叠加
+			var opa = elm.opacity === void ? 255 : +elm.opacity;
+
+			switch(elm.mode)
+			{
+			case '': // default
+			case 'pile':
+			case 'alpha':
+				holdAlpha = false;
+				face = dfAlpha;
+				break;
+			case 'addalpha':
+				holdAlpha = false;
+				face = dfAddAlpha;
+				break;
+			default:
+				holdAlpha = true;
+				face = dfOpaque;
+				break;
+			}
+			operateRect(dx, dy, temp, sx, sy, sw, sh, omAuto, opa);
+
+			face = dfAuto;
+		}
+
+		// 向 Anim_partialImageInfo 追加信息
+		addPartialImageInfo(elm);
+
+		return 0;
+	}
+
+	function drawReconstructibleText(elm)
+	{
+		 // 以（加载时）可还原的形式绘制文本
+		 // x, y = 坐标
+		 // text = 要绘制的字符串
+		 // face = 字体，省略为默认字体名
+		 // size = 字号，省略为默认字号
+		 // color = 颜色（默认 0xffffff）
+		 // italic = 是否斜体（默认 false）
+		 // shadow = 是否带阴影（默认 true）
+		 // edge = 是否描边（默认 false）
+		 // shadowcolor = 阴影色（默认 0）
+		 // edgecolor = 描边色（默认 0）
+		 // bold = 是否粗体（默认 0）
+		 // vertical = 是否竖排（默认 false）
+		 // antialiased = 是否抗锯齿（默认 true）
+		 // angle = 绘制角度（默认竖排 2700，否则 0）
+		 if(elm.tagname === void) elm.tagname = "ptext";
+
+		var vertical = elm.vertical === void ? false : +elm.vertical;
+
+		with(font)
+		{
+			var face = elm.face === void ? Anim_defaultFontInfo.face : elm.face;
+			if(vertical) face = '@' + face;
+			.face = face;
+			.height = elm.size === void ? Anim_defaultFontInfo.height : +elm.size;
+			.angle = elm.angle === void ? vertical ? 2700:0 : +elm.angle;
+			.italic = elm.italic === void ? false : +elm.italic;
+			.bold = elm.bold === void ? false: +elm.bold;
+		}
+
+		var edge = elm.edge === void ? false : +elm.edge;
+		var shadow = elm.shadow === void ? true : +elm.shadow;
+		var color = elm.color === void ? 0xffffff : +elm.color;
+		var antialiased = elm.antialiased === void ? true : +elm.antialiased;
+
+		face = dfAuto;
+
+		var x = +elm.x;
+		var y = +elm.y;
+
+		if(edge)
+		{
+			var bcolor = elm.edgecolor === void ? 0 : +elm.edgecolor;
+			drawText(x, y, elm.text, color, 255, antialiased, 512, bcolor, 1, 0, 0);
+		}
+		else if(shadow)
+		{
+			var bcolor = elm.shadowcolor === void ? 0 : +elm.shadowcolor;
+			drawText(x, y, elm.text, color, 255, antialiased, 255, bcolor, 0, 2, 2);
+		}
+		else
+		{
+			drawText(x, y, elm.text, color, 255, antialiased); // 文字
+		}
+
+		// 向 Anim_partialImageInfo 追加信息
+		addPartialImageInfo(elm);
+
+		return 0;
+	}
+
+	function applyColorCorrection(layer, param)
+	{
+		// 对 layer 进行色校正
+		var orgface = layer.face;
+		var orgholdlpha = layer.holdAlpha;
+		layer.face = dfAuto;
+		if(param.grayscale !== void && +param.grayscale) layer.doGrayScale();
+		layer.adjustGamma(
+			param.rgamma, param.rfloor, param.rceil,
+			param.ggamma, param.gfloor, param.gceil,
+			param.bgamma, param.bfloor, param.bceil);
+		if(param.mcolor !== void)
+		{
+			// 叠色
+			layer.face = dfOpaque;
+			layer.holdAlpha = true;
+			layer.colorRect(0, 0, layer.imageWidth, layer.imageHeight, +param.mcolor,
+				+param.mopacity);
+		}
+		if (param.lightcolor !== void) {
+			// 层合成
+			var mode = ltAlpha;
+			if(param.lighttype !== void)
+			{
+				var layertypeinfo = imageTagLayerType[param.lighttype];
+				if(layertypeinfo !== void)
+					mode = layertypeinfo.type;
+			}
+			layer.holdAlpha = true;
+			layer.fillOperateRect(0,0,layer.imageWidth, layer.imageHeight,
+								  +param.lightcolor,
+								  mode);
+		}
+		if (param.shadow !== void) {
+			// 投影
+			var dx = param.shadowx !== void ? +param.shadowx : 10;
+			var dy = param.shadowy !== void ? +param.shadowy : 10;
+			var blur = param.shadowblur !== void ? +param.shadowblur : 3;
+			var color = param.shadow === true ? 0 : +param.shadow;
+			var opacity = param.shadowopacity !== void ? +param.shadowopacity : 200;
+			layer.doDropShadow(dx, dy, blur, color, opacity);
+		}
+		layer.face = orgface;
+		layer.holdAlpha = orgholdlpha;
+	}
+
+	property interrupted
+	{
+		// 为所有段设置 interrupted
+		getter() { return Anim_interrupted; }
+		setter(x)
+		{
+			if(Anim_interrupted != x)
+			{
+				for(var i = Anim_segments.count -1; i>=0; i--)
+				{
+					Anim_segments[i].interrupted = x;
+				}
+				Anim_interrupted = x;
+			}
+		}
+	}
+
+	function assign(src)
+	{
+		// 复制层信息
+		// 但不复制位置、透明度、尺寸、层内图像位置
+		// （需要时请调用 KAGLayer.assignVisibleState）
+		super.assignImages(src);
+
+		// 复制动画单元层
+		if(src.Anim_cellLayer !== void)
+		{
+			if(Anim_cellLayer === void)
+				Anim_cellLayer = new global.KAGLayer(window, this);
+			Anim_cellLayer.assignImages(src.Anim_cellLayer);
+		}
+		else
+		{
+			invalidate Anim_cellLayer if Anim_cellLayer !== void;
+			Anim_cellLayer = void;
+		}
+
+		// 复制图像加载信息
+		if(src.Anim_loadParams !== void)
+		{
+			Anim_loadParams = %[];
+			(Dictionary.assign incontextof Anim_loadParams)(src.Anim_loadParams);
+		}
+		else
+		{
+			Anim_loadParams = void;
+		}
+
+		// 复制部分追加加载信息
+		if(src.Anim_partialImageInfo !== void)
+		{
+			var destinfo;
+			Anim_partialImageInfo = destinfo = [];
+			var srcinfo = src.Anim_partialImageInfo;
+			var count = srcinfo.count;
+			for(var i = 0; i < count; i++)
+			{
+				var info = %[];
+				(Dictionary.assign incontextof info)(srcinfo[i]);
+				destinfo.add(info);
+			}
+		}
+		else
+		{
+			Anim_partialImageInfo = void;
+		}
+
+		// 复制动画段信息
+
+		// 先清除当前段
+		for(var i = Anim_segments.count -1; i>=0; i--)
+		{
+			var seg = Anim_segments[i];
+			invalidate Anim_segments[i] if seg !== void;
+		}
+
+		var srcanimseg = src.Anim_segments; // 别名
+		var src_animseg_count = srcanimseg.count;
+		var animseg = Anim_segments; // 别名
+
+		for(var i = src_animseg_count-1; i>=0; i--)
+		{
+			var seg = srcanimseg[i];
+			animseg[i] = void;
+			if(seg !== void)
+			{
+				animseg[i] = new AnimationConductor(this);
+				animseg[i].number = i;
+				animseg[i].assign(seg); // assign
+			}
+		}
+
+		animseg.count = src_animseg_count;
+
+		// 其他
+		Anim_interrupted = src.Anim_interrupted;
+		Anim_storageName = src.Anim_storageName;
+	}
+
+	function store()
+	{
+		// 将信息记录到字典数组
+		var dic = super.store();
+
+		// 加载参数
+		if(Anim_loadParams !== void)
+		{
+			dic.loadParams = %[];
+			(Dictionary.assign incontextof dic.loadParams)(Anim_loadParams);
+		}
+		else
+		{
+			dic.loadParams = void;
+		}
+
+		// 部分追加加载信息
+		if(Anim_partialImageInfo !== void)
+		{
+			var dest;
+			dic.partialImageInfo = dest = [];
+			var src = Anim_partialImageInfo;
+			var count = src.count;
+			for(var i = 0; i < count; i++)
+			{
+				var info = %[];
+				(Dictionary.assign incontextof info)(src[i]);
+				dest.add(info);
+			}
+		}
+		else
+		{
+			dic.partialImageInfo = void;
+		}
+
+		// 记录动画段信息
+		dic.segments = [];
+		var animseg = Anim_segments; // 别名
+		var animsegcount = animseg.count;
+		for(var i = 1; i<animsegcount; i++)
+		{
+			var seg = animseg[i];
+			if(seg !== void)
+			{
+				if(seg.looping && !seg.stopping && seg.running)
+				{
+					// 循环中且未停止、非等待停止时
+					var dat = %[];
+					dat.label = seg.startLabel;
+					dic.segments[i] = dat;
+				}
+			}
+		}
+
+		return dic;
+	}
+
+	function restore(dic)
+	{
+		// 从 dic 读取信息
+		loadImages(dic.loadParams);
+		if(dic.loadParams !== void)
+		{
+			// 恢复动画段信息
+			var dicsegments = dic.segments;
+			if(dicsegments !== void)
+			{
+				var dicsegmentscount = dicsegments.count;
+				for(var i = 1; i < dicsegmentscount; i++)
+				{
+					var seg = dicsegments[i];
+					if(seg !== void)
+						loadAnimInfo(i, seg.label, true);
+				}
+			}
+		}
+
+		// 恢复部分追加加载信息
+		if(dic.partialImageInfo !== void)
+		{
+			var src = dic.partialImageInfo;
+			var count = src.count;
+			for(var i = 0; i < count; i++)
+			{
+				var o = src[i];
+				var tagname = o.tagname;
+				dm(tagname);
+				var handler = global.AnimationLayer.Anim_reconstructHandlers[tagname];
+				dm(handler);
+				if(handler !== void)
+					(handler incontextof this)(o);
+			}
+		}
+		else
+		{
+			Anim_partialImageInfo = void;
+		}
+
+		super.restore(dic);
+	}
+
+	/*标签处理器*/function loadcell(elm)
+	{
+		// 向单元层加载单元图像
+
+		// 确保单元层存在
+		if(Anim_cellLayer === void)
+			Anim_cellLayer = new global.KAGLayer(window, this); // 创建层
+
+		// 决定色键
+		var key;
+		if(elm.key !== void)
+		{
+			// 指定了 key
+			key = elm.key;
+		}
+		else
+		{
+			// 未指定 key
+			key = Anim_loadParams.key; // 使用 loadParams 的 key
+		}
+
+		// 决定资源名
+		var storage;
+		if(elm.storage !== void)
+		{
+			// 指定了 storage
+			storage = elm.storage;
+		}
+		else
+		{
+			// 未指定 storage
+			storage = Storages.chopStorageExt(Anim_loadParams.storage) + "_a";
+				// 使用 loadParams 的 storage
+		}
+
+		// 向单元层加载图像
+		Anim_cellLayer.loadImages(storage, key);
+
+		// 对单元层色校正
+		applyColorCorrection(Anim_cellLayer, Anim_loadParams);
+
+		// 翻转
+		if(Anim_loadParams.flipud !== void && +Anim_loadParams.flipud)
+		{
+			// 上下翻转
+			Anim_cellLayer.flipUD();
+		}
+		if(Anim_loadParams.fliplr !== void && +Anim_loadParams.fliplr)
+		{
+			// 左右翻转
+			Anim_cellLayer.flipLR();
+		}
+
+		return 0;
+	}
+
+	/*标签处理器*/function copy(elm)
+	{
+		var lp = Anim_loadParams;
+		if(lp === void) return -1;
+		var f;
+		f = lp.flipud;
+		var dx = +elm.dx;
+		var dy = +elm.dy;
+		var sx = +elm.sx;
+		var sy = +elm.sy;
+		var sw = +elm.sw;
+		var sh = +elm.sh;
+		var cl = Anim_cellLayer;
+		if(f !== void && +f)
+		{
+			// 上下翻转
+			dy = imageHeight - dy - sh;
+			sy = cl.imageHeight - sy - sh;
+		}
+		f = lp.fliplr;
+		if(f !== void && +f)
+		{
+			// 左右翻转
+			dx = imageWidth - dx - sw;
+			sx = cl.imageWidth - sx - sw;
+		}
+
+		face = dfAuto;
+		copyRect(dx, dy, cl, sx, sy, sw, sh);
+
+		return 0;
+	}
+
+	/*标签处理器*/function s(elm)
+	{
+		// 停止
+		elm.context.running = false;
+		window.onAnimationStopped(name, elm.context.number);
+		return -1; // 停止
+	}
+
+	/*标签处理器*/function loop(elm)
+	{
+		// 声明将循环
+		elm.context.looping = true;
+		return 0;
+	}
+
+	/*标签处理器*/function home(elm)
+	{
+		// 归位点
+		return elm.context.stopping?-1:0; // 按 stopping 决定是否停止
+	}
+
+	/*标签处理器*/function clip(elm)
+	{
+		// 更改 cliprect
+		setImagePos(-elm.left, -elm.top);
+		return 0;
+	}
+
+	/*标签处理器*/function wait(elm)
+	{
+		return elm.time; // 等待指定时间
+	}
+
+	/*标签处理器*/function eval(elm)
+	{
+		Scripts.eval(elm.exp); // 将 elm.exp 作为表达式执行
+		return 0;
+	}
+}
+
+
+// 读档时重建 pimage、ptext 等可还原信息用的处理器
+// （标签名与对应处理器）
+AnimationLayer.Anim_reconstructHandlers =
+	%[
+		pimage	:	AnimationLayer.loadPartialImage,
+		ptext	:	AnimationLayer.drawReconstructibleText
+	];
+
+
+class ClickGlyphLayer extends AnimationLayer
+{
+	// 点击等待标记层
+	var loadedImage; // 当前加载的图像
+	var loadedKey; // 当前加载的色键
+
+	function ClickGlyphLayer(win, par)
+	{
+		// 构造函数
+		super.AnimationLayer(win, par);
+		hitType = htMask;
+		hitThreshold = 256; // 鼠标消息完全透传
+	}
+
+	function finalize()
+	{
+		// finalize()
+		super.finalize(...);
+	}
+
+	function loadImages(storage, key)
+	{
+		// loadImage 重写
+		if(loadedImage !== storage || loadedKey !== key)
+		{
+			super.loadImages(%[storage : storage, key : key]);
+			loadedImage = storage;
+			loadedKey = key;
+		}
+	}
+
+	property visible
+	{
+		// visible 重写
+		getter()
+		{
+			return super.visible;
+		}
+		setter(x)
+		{
+			super.visible = x;
+			// 隐藏时如同停止动画
+			if(x)
+				interrupted = false;
+			else
+				interrupted = true;
+		}
+	}
+}
+
+

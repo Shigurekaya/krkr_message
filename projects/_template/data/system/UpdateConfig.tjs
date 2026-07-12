@@ -1,0 +1,93 @@
+// UpdateConfig.tjs - 从旧 Config.tjs 继承设置的脚本
+// Copyright (C)2001-2009, W.Dee and contributors  可自由修改与再分发
+
+// Config.~new 是新版 Config.tjs 模板。
+// 当 Config.tjs 中的版本信息与 KAG 版本不一致时，将调用本脚本。
+
+if(Storages.isExistentStorage("Config.~new"))
+{
+	// 存在 Config.~new
+
+	// 读取 Config.tjs
+	var settings = %[]; // 存放配置项的字典
+	var oldconfig = [].load("Config.tjs");
+	var pattern = /^;\s*(.*?)\s*=(.*)$/; // 识别配置行的正则
+	var pattern_adds = /^\/\/\[start-(.*?)-additionals\]$/;
+	for(var i = 0; i < oldconfig.count; i++)
+	{
+		var matched = pattern.match(oldconfig[i]);
+		if(matched.count) settings[matched[1]] = matched[2];
+		matched = pattern_adds.match(oldconfig[i]);
+		if(matched.count)
+		{
+			var end_mark = "//[end-" + matched[1] + "-additionals]";
+			i++;
+			var content = '';
+			while(oldconfig[i] != end_mark && i < oldconfig.count)
+			{
+				content += oldconfig[i] + "\n";
+				i++;
+			}
+			settings["additional" + matched[1]] = content;
+		}
+	}
+
+	// 写入版本信息
+	settings['global.config_version'] = " \"" + kagVersion + "\"; // 请勿删除此行";
+
+	// 读取 Config.~new 并继承设置
+	var newconfig = [].load("Config.~new");
+	var lines = '';
+	for(var i = 0; i < newconfig.count; i++)
+	{
+		var matched = pattern.match(newconfig[i]);
+		var matched_adds = pattern_adds.match(newconfig[i]);
+		if(matched.count)
+		{
+			var setting_name = matched[1];
+			var setting = settings[setting_name];
+			if(setting !== void)
+				lines += ";" + setting_name + " =" + setting + "\n";
+			else
+				lines += newconfig[i] + "\n";
+		}
+		else if(matched_adds.count)
+		{
+			var setting_name = "additional" + matched_adds[1];
+			var end_mark = "//[end-" + matched_adds[1] + "-additionals]";
+			var setting = settings[setting_name];
+			if(setting !== void)
+			{
+				lines += "//[start-" + matched_adds[1] + "-additionals]\n" +
+					setting + end_mark + "\n";
+				i++;
+				while(newconfig[i] != end_mark && i < newconfig.count) i++;
+			}
+			else
+			{
+				lines += newconfig[i] + "\n";
+			}
+		}
+		else
+		{
+			lines += newconfig[i] + "\n";
+		}
+	}
+
+	// 显示 Pad 编辑器
+	global.configPad = new Pad();
+	global.configPad.text = lines;
+	global.configPad.color = 0;
+	global.configPad.title = "Config.tjs（请核对后保存）";
+	global.configPad.fileName = Storages.getLocalName(Storages.getPlacedPath("Config.tjs"));
+	global.configPad.visible = true;
+
+	// 通知用户
+	System.inform("已从旧版 Config.tjs 继承设置内容。\n"
+		"若“Config.tjs”窗口中显示的内容无误，请在该窗口中\n"
+		"右键选择“保存”，保存 Config.tjs。\n"
+		"Config.~new 文件可以删除。");
+
+	// 重新加载新 config
+	Scripts.exec(lines);
+}

@@ -1,0 +1,688 @@
+// Config.tjs - KAG 配置
+// Copyright (C) 2001-2007 W.Dee and contributors  可自由修改与再分发
+;global.config_version = "3.32 stable rev. 2"; // 请勿删除此行
+
+// 本文件中可配置的项，全部采用
+// ;配置名 = 值;
+// 的形式。
+// 除「附加配置」外，每个配置项须单独占一行。
+
+
+//------------------------------------------------------- 全局配置 -----
+
+
+// ◆ 标题
+// 窗口标题栏（caption）以及
+// 任务栏上显示的文字。
+;System.title = "GAL 框架";
+
+
+// ◆ 剧本解析模式
+// 若希望按剧本文件中的换行来排版，请将 ignoreCR 设为 false。
+// 设为 false 时，KAG 剧本中的换行，在行末未写 \ 或 [p] 的情况下，
+// 将直接作为消息层上的换行处理。
+// 设为 true 时，除非写入 [r] 标签，否则不会换行。
+// 若需兼容 KAG2.x，请设为 false。
+;global.ignoreCR = true;
+
+
+// ◆ 图像缓存限制
+// 以 MB 为单位指定图像缓存的上限。
+// 指定 gcsAuto 时，将自动决定。
+;System.graphicCacheLimit = gcsAuto; // 图像缓存上限 = 自动
+
+
+// ◆ global 附加配置
+// 若有附加配置项，请写在
+// [start-global-additionals] 与 [end-global-additionals] 所包围的
+// 区域内。
+// （请勿编辑或删除 [start-global-additionals] 与 [end-global-additionals] 行）
+
+//[start-global-additionals]
+
+//[end-global-additionals]
+
+
+
+
+//-------------------------------------------- 窗口与行为配置 -----
+
+function KAGWindow_config()
+{
+// ◆ 画面尺寸
+// scWidth 指定画面宽度，scHeight 指定画面高度，单位为像素。
+// 若设为 640x480、800x600 等常见分辨率以外的尺寸，
+// 有可能无法进入全屏模式。
+;scWidth = 640;
+;scHeight = 480;
+
+
+// ◆ 只读模式
+// readOnlyMode = true 时，将不进行任何磁盘写入操作。
+// 从 CD-ROM 等介质运行时请指定此项。
+// 当然，此模式下无法保存存档等数据。
+;readOnlyMode = false;
+
+
+// ◆ 自由存档
+// 指定存档的保存形式。
+// 设为 false 时，通过菜单栏「读取存档」「保存存档」的
+// 子菜单项来保存或读取存档数据。
+// 此时可保存的存档槽位数量由 numBookMarks 限制。
+// 设为 true 时为自由存档模式：「读取存档」将打开
+// 「打开」对话框，「保存存档」将打开「另存为」对话框，
+// 以独立文件形式保存存档。
+// 此模式下存档数量不限，且便于用资源管理器等工具管理。
+;freeSaveDataMode = false;
+
+
+// ◆ 是否保存缩略图
+// 设为 false 时，存档扩展名为 .kdt，不保存缩略图。
+// 设为 true 时，存档扩展名为 .bmp，可在资源管理器或
+// 「打开」对话框的「缩略图」视图中显示保存时的画面预览。
+;saveThumbnail = false;
+
+
+// ◆ 缩略图保存尺寸
+// 指定缩略图的宽度。若 saveThumbnail 未设为 true，则本项无效。
+// 宽度以像素为单位。高度将按 scWidth 与 scHeight 的比例自动计算。
+;thumbnailWidth = 133;
+
+// ◆ 缩略图保存模式
+// 指定缩略图的保存模式。若 saveThumbnail 未设为 true，则本项无效。
+// 设为 8 时，以 256 色位图保存。
+// 设为 24 时，以 24 位真彩色位图保存。
+// 256 色位图文件更小，但画质较差。
+;thumbnailDepth = 8;
+
+
+// ◆ 数据名前缀
+// 以此处指定的名称作为前缀，创建存档相关文件。
+// 即使为自由存档模式，也会影响保存系统变量与系统设置的文件。
+;dataName = "data";
+
+
+// ◆ 数据 ID
+// 为防止 KAG 误读其他作品的存档，请用 "" 括起作品固有的 ID（任意字符串均可）。
+// 在自由存档模式下尤为重要；非自由存档模式下相对次要。
+// 也可通过以下方式获取不重复的唯一 ID：
+// http://kikyou.info/uuidgen/uuidgen.php （复制粘贴生成的 ID）
+// 或启动吉里吉里，点击「不选择」，按 Shift+F4 打开控制台，
+// 在下方输入栏输入
+//       System.createUUID()
+//       （不要包含行首的 //）
+// 后按 Enter 键获取。
+// （例："371a6289-a084-ee18-2885-66314a0aa19d"）
+;saveDataID = "00000000-0000-0000-0000-000000000000";
+
+
+// ◆ 保存模式
+// 设为 "c" 时，存档将被加密。
+// 设为 "z" 时，存档将被压缩。
+// 不可同时指定 "c" 与 "z"。压缩后的存档不易直接阅读，因此压缩亦兼有加密效果。
+// 设为 "" 时，存档不加密也不压缩。
+;saveDataMode = "";
+
+
+// ◆ 是否在存档中保存宏信息
+// 指定是否将宏信息写入存档。设为 true 时，KAG 的宏信息会随存档保存，
+// 读取存档时将还原保存时的宏状态。
+// 设为 false 时，宏信息不写入存档，读取存档后当前宏定义不变。
+// 若每回在作品开头重新定义宏，旧宏信息可能被读档覆盖，妨碍开发，
+// 此类用途建议设为 false。
+;saveMacros = true;
+
+
+
+// ◆ 文字显示速度（毫秒/字）
+;chSpeeds.fast = 10; // 「快速」文字显示速度
+;chSpeeds.normal = 30; // 「普通」文字显示速度
+;chSpeeds.slow = 50; // 「慢速」文字显示速度
+
+
+// ◆ 自动播放间隔 — 页末等待（毫秒）
+;autoModePageWaits.fast = 400; // 「较短」
+;autoModePageWaits.faster = 700; // 「稍短」
+;autoModePageWaits.medium = 1000; // 「普通」
+;autoModePageWaits.slower = 1300; // 「稍长」
+;autoModePageWaits.slow = 2000; // 「较长」
+
+
+// ◆ 自动播放间隔 — [l] 行末等待（毫秒）
+;autoModeLineWaits.fast = 180; // 「较短」
+;autoModeLineWaits.faster = 240; // 「稍短」
+;autoModeLineWaits.medium = 300; // 「普通」
+;autoModeLineWaits.slower = 360; // 「稍长」
+;autoModeLineWaits.slow = 500; // 「较长」
+
+
+// ◆ 鼠标光标
+// 指定鼠标光标。须为以 cr 开头的鼠标光标常量（参见吉里吉里 2 SDK 帮助），
+// 或鼠标光标文件名。也可指定动画光标。
+// 使用光标常量时，无需像 cursor 标签那样在开头加 &。
+// 使用光标文件名时，请用 ""（双引号）括起。
+;cursorDefault = crArrow; // 通常时的鼠标光标
+;cursorPointed = crHandPoint; // 指向链接等时
+;cursorWaitingClick = crArrow; // 等待点击时
+;cursorDraggable = crSizeAll; // 消息层可拖拽时
+
+
+// ◆ 标签已读记录
+// 指定是否自动记录「已读」标签。
+// 本项不为 false 且为 true 时，每读完一个标签，系统变量 (sf) 中
+// trail_剧本文件名_标签名
+// 形式的变量将加 1。
+// 例如 first.ks 的 *start 标签，变量名为 trail_first_start。
+// 尚未经过的位置为未定义（视为 0）。
+// 「读完」指从标签起至该标签结束，剧本全部执行完毕。
+// 「标签结束」指以下情况，此时该标签视为「已读」：
+//
+// ・到达 [s] 标签或剧本末尾
+// ・出现下一个标签
+// ・通过 jump 标签跳转
+// ・通过 link 或 button 跳转到链接目标
+//    （注意：即使文字未显示完毕，跳转亦视为「已读」；参见 link/button 的 countpage 属性）
+// ・通过 return 标签返回（call 跳出时不视为结束）
+;autoRecordPageShowing = true;
+
+
+// ◆ 回退记录（经过记录）
+// 指定是否自动进行回退记录。与标签已读记录不同。
+// 启用后，可通过「系统 > 回退」回到最近一次记录的位置。
+// 设为 0 时不自动记录（仍可用 record 标签手动记录）。
+// 设为 1 时，每经过可保存的标签自动记录。
+// 设为 2 时，每个选项（s 标签停止处）记录一次。
+;recordHistoryOfStore = 0;
+
+
+// ◆ 回退记录最大数量
+// 指定回退记录的最大条数。最多可回退此处指定的次数。
+// 数值越大，存档数据也越大。
+;maxHistoryOfStore = 5;
+
+
+// ◆ quake 的 time 属性单位
+// 设为 true 时，quake 的 time 属性以 delay 所定的文字显示速度为基准。
+// 设为 false 时，以 ms（毫秒）为单位。兼容 KAG 2.x 请设为 true。
+;defaultQuakeTimeInChUnit = false;
+
+
+// ◆ 可用音效缓冲数量
+// 指定可用音效缓冲的最大数量，即可同时播放的音效路数。
+// 若不使用音效，可设为 0。
+;numSEBuffers = 3;
+
+
+// ◆ 视频对象数量
+// 指定可用视频对象的最大数量，即可同时播放的视频数。
+;numMovies = 1;
+
+
+// ◆ 初始前景层（立绘层）数量
+// 不需要时可设为 0。
+// 数量过多会降低速度并占用内存，请勿无谓设大。
+// 也可在剧本内用 laycount 标签修改。
+;numCharacterLayers = 3;
+
+
+// ◆ 前景层水平锚点位置
+// +---------+
+// |         |
+// | |  |  | |
+// | |  |  | |
+// +---------+
+// 为 image 或 img 标签的 pos 属性所指定的位置名（如 left、left_center 等）
+// 设定对应的中心 x 坐标。格式为 ;scPositionX.位置名 = 中心坐标;
+;scPositionX.left = 160;
+;scPositionX.left_center = 240;
+;scPositionX.center = 320;
+;scPositionX.right_center = 400;
+;scPositionX.right = 480;
+
+
+// 简写别名
+// （使 pos 属性中的 left、left_center、center、right_center、right
+//  也可分别写作 l、lc、c、rc、r）
+;scPositionX.l = scPositionX.left;
+;scPositionX.lc = scPositionX.left_center;
+;scPositionX.c = scPositionX.center;
+;scPositionX.rc = scPositionX.right_center;
+;scPositionX.r = scPositionX.right;
+
+
+// ◆ 初始消息层数量
+// 与前景层不同，不可设为 0。请只分配必要数量。
+// 也可在剧本内用 laycount 标签修改。
+;numMessageLayers = 2;
+
+
+// ◆ 启动时是否显示消息层
+// 设为 true 时，消息层 0 初始为显示状态。
+// 设为 false 时，启动时所有消息层均为隐藏。
+;initialMessageLayerVisible = true;
+
+
+// ◆ 可用存档槽位数量
+// 菜单中显示、供玩家选择的存档槽位数。
+// 不影响 save/load 标签可使用的槽位数量。
+// 若不在菜单中管理存档（改由游戏内 UI 等），请将 numBookMarks 设为所需数量，
+// 并将 restoreMenu.visible 与 storeMenu.visible 设为 false。
+;numBookMarks = 10;
+
+
+// ◆ 存档菜单是否显示日期
+// 设为 true 时，存档菜单项旁以 YY/MM/DD HH:MM 格式显示保存时间。
+;showBookMarkDate = true;
+
+
+// ◆ 字体选择器是否仅显示等宽字体
+// 设为 true 时，字体选择窗口仅列出等宽字体。
+;showFixedPitchOnlyInFontSelector = false;
+
+
+// ◆ 「帮助 > 目录」所打开的文件
+// 此处路径为 KAG 存储路径（如 others/readme.txt）。
+// MainWindow 会优先从存储解析；若不存在则回退到 exe 同目录。
+;helpFile = "others/readme.txt";
+
+
+// ◆ 「帮助 > 关于本软件」窗口尺寸
+// 选择该菜单项时，将在该尺寸的窗口内执行 about.ks。
+;aboutWidth = 320; // 宽
+;aboutHeight = 200; // 高
+
+
+// ◆ 窗口与行为附加配置
+// 若有附加配置项，请写在
+// [start-window-additionals] 与 [end-window-additionals] 所包围的区域内。
+// （请勿编辑或删除起止标记行）
+
+//[start-window-additionals]
+
+//[end-window-additionals]
+
+}
+
+
+//---------------------------------------------------- 菜单配置 -----
+
+function Menu_visible_config()
+{
+// 菜单项的显示/隐藏
+// 设为 true 则显示，false 则隐藏。
+// 菜单项文字请修改 Menus.tjs。
+
+
+// ◆ 是否显示菜单栏
+// 隐藏后将无法访问任何菜单项。
+;menu.visible = true;
+
+
+// ◆ 「系统 > 清除对话框」
+// 隐藏此项后，鼠标右键清除对话框仍然有效。
+;rightClickMenuItem.visible = true;
+
+
+// ◆ 「系统 > 显示对话履历」
+;showHistoryMenuItem.visible = true;
+
+
+// ◆ 「系统 > 跳过至下个选项/未读处」或「跳过至下个选项」
+;skipToNextStopMenuItem.visible = true;
+
+
+// ◆ 「系统 > 自动播放」
+;autoModeMenuItem.visible = true;
+
+
+// ◆ 「系统 > 自动播放间隔」
+;autoModeWaitMenu.visible = true;
+
+
+// ◆ 「系统 > 回退」
+;goBackMenuItem.visible = true;
+
+
+// ◆ 「系统 > 回到开头」
+;goToStartMenuItem.visible = true;
+
+
+// ◆ 「文字显示」
+;characterMenu.visible = true;
+
+
+// ◆ 「文字显示 > 显示速度 > 直达页末」
+// 玩家勾选此项后，将忽略 [l] 标签。
+;chNonStopToPageBreakItem.visible = true;
+
+
+// ◆ 「文字显示 > 已读部分」
+;ch2ndSpeedMenu.visible = true;
+
+
+// ◆ 「文字显示 > 已读部分 > 直达页末」
+;ch2ndNonStopToPageBreakItem.visible = true;
+
+
+// ◆ 「文字显示 > 抗锯齿」
+;chAntialiasMenuItem.visible = true;
+
+
+// ◆ 「文字显示 > 字体」
+;chChangeFontMenuItem.visible = true;
+
+
+// ◆ 「读取存档」
+;restoreMenu.visible = true;
+
+
+// ◆ 「保存存档」
+;storeMenu.visible = true;
+
+
+// ◆ 「画面」
+;displayMenu.visible = true;
+
+
+// ◆ 「帮助」
+;helpMenu.visible = true;
+
+
+// ◆ 「帮助 > 目录 ...」
+;helpIndexMenuItem.visible = true;
+
+
+// ◆ 「帮助 > 关于本软件 ...」
+;helpAboutMenuItem.visible = true;
+
+
+// ◆ 「调试」
+;debugMenu.visible = false;
+
+
+// ◆ 菜单附加配置
+// 若有附加配置项，请写在
+// [start-menu-additionals] 与 [end-menu-additionals] 所包围的区域内。
+// （请勿编辑或删除起止标记行）
+
+//[start-menu-additionals]
+
+//[end-menu-additionals]
+
+}
+
+//-------------------------------------------- 消息层配置 -----
+
+
+function MessageLayer_config()
+{
+// ◆ 消息层显示模式
+// 指定消息层的混合/显示模式。
+// ltAddAlpha 自 KAG3 3.23 beta 5 起可用，比 ltAlpha 略快。
+// ltAlpha 与旧版 KAG 兼容。
+// 若使用 ltAddAlpha，frameGraphic 指定的对话框边框图也须为 ltAddAlpha 专用
+// （不会自动判别）。可用图像格式转换工具制作。
+;layerType = ltAddAlpha;
+
+// ◆ 对话框边框图
+// 指定对话框边框图像的文件名。
+// 设为 "" 则不使用边框图。若指定了边框图，再用 position 标签改变消息层尺寸，
+// 可能出现显示异常。
+;frameGraphic = "";  // 相当于 position 标签的 frame 属性
+
+
+// ◆ 消息层颜色与不透明度
+// frameColor 以 0xRRGGBB 形式（RR、GG、BB 各为两位十六进制）指定消息层颜色。
+// frameOpacity 以 0～255 指定不透明度。
+// 若已指定边框图，则本组设置无效。
+;frameColor = 0x000000; // 相当于 position 标签的 color 属性
+;frameOpacity = 128;  // 相当于 position 标签的 opacity 属性
+
+
+// ◆ 四边边距
+// 以像素指定边距。若使用边框图，须在边框显示范围内设置。
+// 对应 position 标签的 marginl、margint、marginr、marginb 属性。
+;marginL = 8; // 左边距
+;marginT = 8; // 上边距
+;marginR = 8; // 右边距
+;marginB = 8; // 下边距
+
+
+// ◆ 初始位置
+// 分别对应 position 标签的 left、top、width、height 属性。
+;ml = 16;  // 左端位置
+;mt = 16;  // 上端位置
+;mw = 640-32;   // 宽
+;mh = 480-32;   // 高
+
+
+// ◆ 自动换行/换页
+// 设为 true 时，在行末自动换行、在页末自动换页。
+// 设为 false 时，不进行上述处理，禁则处理等亦无效。
+;defaultAutoReturn = true; 
+
+
+// ◆ 行末禁则余量
+// 禁则处理时在行尾预留的字数。
+// （竖排模式下视为行底字数）
+;marginRCh = 2;
+
+
+// ◆ 字号
+// 默认文字大小（高度），单位为像素。
+;defaultFontSize = 24;  // 相当于 deffont 标签的 size 属性
+
+
+// ◆ 行距
+// 行距，单位为像素。
+;defaultLineSpacing = 6; // 相当于 defstyle 标签的 linespacing 属性
+
+// ◆ 字距
+// 字距，单位为像素。默认为 0，可设正或负偏移。
+// 负值紧缩字距，正值增大字距。
+;defaultPitch = 0; // 相当于 defstyle 标签的 pitch 属性
+
+
+// ◆ 默认字体
+// 指定默认字体名。
+// 本设置会写入系统变量并在下次启动时继承；若修改 userFace 并希望立即生效，
+// 请删除系统变量文件 ?????sc.* 中的 "chdefaultFace" => 行，
+// 或删除整个系统变量文件。
+// 可用逗号分隔多个字体，按先后顺序优先使用系统中存在的字体。
+;userFace = "Microsoft YaHei, SimHei, 微软雅黑, MS Gothic"; // 相当于 deffont 标签的 face 属性
+
+
+// ◆ 文字颜色
+// 默认文字颜色，0xRRGGBB 格式。
+;defaultChColor = 0xffffff;  // 相当于 deffont 标签的 color 属性
+
+
+// ◆ 是否粗体
+// true 为粗体，false 为否。
+;defaultBold = true; // 相当于 deffont 标签的 bold 属性
+
+
+// ◆ 注音字号
+// 注音（ruby）字号，单位为像素。
+;defaultRubySize = 10; // 相当于 deffont 标签的 rubysize 属性
+
+
+// ◆ 注音显示偏移
+// 设为负数时，注音向正文靠近相应像素。
+;defaultRubyOffset = -2; // 相当于 deffont 标签的 rubyoffset 属性
+
+
+// ◆ 是否抗锯齿
+// true 启用，false 关闭。
+;defaultAntialiased = true;
+
+
+// ◆ 阴影颜色
+// 阴影颜色，0xRRGGBB 格式。
+;defaultShadowColor = 0x000000;  // 相当于 deffont 标签的 shadowcolor 属性
+
+// ◆ 描边颜色
+// 描边颜色，0xRRGGBB 格式。
+;defaultEdgeColor = 0x000000;  // 相当于 deffont 标签的 edgecolor 属性
+
+
+// ◆ 是否绘制阴影
+// true 绘制，false 不绘制。
+;defaultShadow = true;  // 相当于 deffont 标签的 shadow 属性
+
+
+// ◆ 是否描边
+// true 描边，false 不描边。KAG3 起不可同时描边与阴影；若指定描边则优先描边。
+;defaultEdge = false;  // 相当于 deffont 标签的 edge 属性
+
+
+// ◆ 点击等待标记（glyph）图像
+// 制作方法见 AnimationLayer.tjs。不要写扩展名。
+// 若需指定色键，请在剧本中用 glyph 标签设置。
+
+// 行末点击等待标记
+;lineBreakGlyph = "LineBreak";  // 相当于 glyph 标签的 line 属性
+
+
+// 页末点击等待标记
+;pageBreakGlyph = "PageBreak";  // 相当于 glyph 标签的 page 属性
+
+
+// ◆ 点击等待标记是否固定位置
+// false 时，标记显示在当前文字位置。
+// true 时，显示在 glyphFixedLeft、glyphFixedTop 指定的位置。
+;glyphFixedPosition = false;  // 相当于 glyph 标签的 fix 属性
+
+
+// ◆ 固定位置时的坐标
+// glyphFixedLeft 为左端，glyphFixedTop 为上端。
+;glyphFixedLeft = 0;  // 相当于 glyph 标签的 left 属性
+;glyphFixedTop = 0;  // 相当于 glyph 标签的 top 属性
+
+
+// ◆ 链接高亮色
+// 选中链接时半透明矩形的默认颜色。
+;defaultLinkColor = 0x0080ff;  // 相当于 link 标签的 color 属性
+
+
+// ◆ 链接高亮不透明度
+// 选中链接时半透明矩形的不透明度。
+;defaultLinkOpacity = 64;
+
+
+// ◆ 竖排模式
+// 若消息层默认竖排，请设为 true（而非 false）。
+;vertical = false;
+
+
+// ◆ 消息层是否可鼠标拖拽
+// 设为 true 时，在 margin 外且边框图不透明度 ≥ 64 的区域，
+// 玩家可拖拽移动消息层。
+;draggable = false;  // 相当于 position 标签的 draggable 属性
+
+
+// ◆ 消息层附加配置
+// 若有附加配置项，请写在
+// [start-messagelayer-additionals] 与 [end-messagelayer-additionals] 所包围的区域内。
+// （请勿编辑或删除起止标记行）
+
+//[start-messagelayer-additionals]
+
+//[end-messagelayer-additionals]
+
+}
+
+//-------------------------------------------------------- BGM 配置 -----
+
+
+function BGM_config()
+{
+// BGM 相关配置。
+
+// ◆ 是否交叉淡入淡出（双缓冲）
+// doubleBuffered 指定是否使用两个音频缓冲。
+// 设为 true 时准备两个缓冲，可进行 BGM 交叉淡入淡出。
+// 使用 MIDI 缓冲且无需多路同时播放时，或使用 CDDA 缓冲时，请设为 false。
+;doubleBuffered = true;
+
+
+// ◆ BGM 附加配置
+// 若有附加配置项，请写在
+// [start-bgm-additionals] 与 [end-bgm-additionals] 所包围的区域内。
+// （请勿编辑或删除起止标记行）
+
+//[start-bgm-additionals]
+
+//[end-bgm-additionals]
+
+}
+
+//---------------------------------------------- 对话履历配置 -----
+
+
+function HistoryLayer_config()
+{
+// 对话履历相关配置。
+
+
+// ◆ 字体名
+;fontName = "Microsoft YaHei, SimHei, 微软雅黑, MS Gothic";
+
+
+// ◆ 是否粗体
+;fontBold = true;
+
+
+// ◆ 字号（像素）
+;fontHeight = 24;
+
+
+// ◆ 行高
+;lineHeight = 26;
+
+
+// ◆ 竖排时为 true
+;verticalView = false;
+
+
+// ◆ 是否按页浏览
+// 启用后，cm、ct、er 标签或 repage 为 true 的 hr 标签
+// 将在对话履历中分页。
+;everypage = false;
+
+
+// ◆ 是否自动换行
+;autoReturn = true;
+
+
+// ◆ 履历保留上限
+// 若「按页浏览」为 true，以 maxPages 为单位；
+// 若为 false，以 maxLines 为单位。
+;maxPages = 100;
+;maxLines = 2000;
+
+
+// ◆ 存档是否包含对话履历
+// 设为 true 时，存档会保存对话履历，但存档体积增大。
+;storeState = false;
+
+
+// ◆ 对话履历附加配置
+// 若有附加配置项，请写在
+// [start-historylayer-additionals] 与 [end-historylayer-additionals] 所包围的区域内。
+// （请勿编辑或删除起止标记行）
+
+//[start-historylayer-additionals]
+
+//[end-historylayer-additionals]
+
+}
+
+
+
+
+
+// ---------
+// 此文件以下无可配置项
+
+

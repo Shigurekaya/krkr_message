@@ -1,0 +1,2954 @@
+//;# MessageLayer.tjs - 消息层
+//;# Copyright (C)2001-2009, W.Dee and contributors  可自由修改与再分发
+//;<<'END_OF_TJS_SCRIPT';
+
+// 这个脚本同时也是有效的 perl5 脚本，
+// 为了更新 assign/store/restore 中实际会被复制的变量列表，使用 perl 进行处理，
+// 通过 perl MessgeLayer.tjs
+// 来执行更新
+// （从处理内容上来说，TJS2 也完全可以写出来，不过可惜的是
+//   TJS2 并没有像 perl 那样的运行环境，或者说根本没做出来）
+
+class LinkButtonLayer extends ButtonLayer
+{
+	// 作为图形按钮使用的层
+	var linkNum; // 链接编号
+	var onenter; // 鼠标进入时执行的内容
+	var onleave; // 鼠标离开时执行的内容
+	var _eventTransparent = false;
+
+	function LinkButtonLayer(win, par)
+	{
+		// 构造函数
+		super.ButtonLayer(...);
+		focusable = false; // 不接收焦点
+		hint = "";
+	}
+
+	function finalize()
+	{
+		super.finalize(...);
+	}
+
+	function onClick()
+	{
+		super.onClick(...);
+	}
+
+	function onExecute(x, y, button, shift)
+	{
+		if(enabled && button == mbLeft && !parent.selProcessLock) parent.onButtonClick(linkNum);
+		if(this isvalid) super.onExecute(...);
+	}
+
+	function onMouseEnter()
+	{
+		parent.keyLink = linkNum;
+		if(!parent.selProcessLock && onenter !== void) Scripts.eval(onenter);
+		super.onMouseEnter(...);
+	}
+
+	function onMouseLeave()
+	{
+		if(!parent.selProcessLock && onleave !== void) Scripts.eval(onleave);
+		super.onMouseLeave(...);
+	}
+
+	function assign(src)
+	{
+		super.assign(src);
+		linkNum = src.linkNum;
+		onenter = src.onenter;
+		onleave = src.onleave;
+		hint = src.hint;
+		eventTransparent = src.eventTransparent;
+	}
+
+	property eventTransparent
+	{
+		// 是否透传事件
+		setter(x)
+		{
+			if(_eventTransparent != x)
+			{
+				_eventTransparent = x;
+				hitType = x ? htProvince : htMask; 
+					// 按钮图无区域图，
+					// hitType 为 htProvince 时
+					// 鼠标事件必定透传
+			}
+		}
+		getter()
+		{
+			return _eventTransparent;
+		}
+	}
+}
+
+class LinkCheckBoxLayer extends CheckBoxLayer
+{
+	// 作为消息层「链接」管理的
+	// 复选框
+	var linkNum; // 链接编号
+	var exp; // 表达式
+	var vertical; // 竖排模式
+
+	function LinkCheckBoxLayer(win, par)
+	{
+		// 构造函数
+		super.CheckBoxLayer(...);
+		joinFocusChain = false; // 不参与焦点链
+		hint = "";
+	}
+
+	function finalize()
+	{
+		super.finalize(...);
+	}
+
+	function assign(src)
+	{
+		super.assign(src);
+		linkNum = src.linkNum;
+		vertical = src.vertical;
+		hint = src.hint;
+		exp = src.exp;
+	}
+
+	function onKeyDown(key, shift, process)
+	{
+		// 竖排时左右键互换
+		if(vertical)
+		{
+			if(key == VK_LEFT) key = VK_RIGHT;
+			else if(key == VK_RIGHT) key = VK_LEFT;
+		}
+		super.onKeyDown(key, shift, process);
+	}
+
+	function onSearchPrevFocusable(layer)
+	{
+		super.onSearchPrevFocusable(parent.findPrevFocusable(this, layer));
+	}
+
+	function onSearchNextFocusable(layer)
+	{
+		super.onSearchNextFocusable(parent.findNextFocusable(this, layer));
+	}
+
+	function onFocus(prevfocused, direction)
+	{
+		parent.keyLink = linkNum;
+		super.onFocus(...);
+	}
+
+	function commit()
+	{
+		kag.inputTemp = checked;
+		Scripts.eval(("(" + exp + ") = kag.inputTemp"));
+	}
+}
+
+
+class LinkEditLayer extends EditLayer
+{
+	// 作为消息层「链接」管理的
+	// 单行编辑层
+	var linkNum; // 链接编号
+	var exp; // 表达式
+
+	function LinkEditLayer(win, par)
+	{
+		// 构造函数
+		super.EditLayer(...);
+		joinFocusChain = false; // 不参与焦点链
+		hint = "";
+	}
+
+	function finalize()
+	{
+		super.finalize(...);
+	}
+
+	function assign(src)
+	{
+		super.assign(src);
+		linkNum = src.linkNum;
+		exp = src.exp;
+	}
+
+	function onKeyDown(key, shift, process)
+	{
+		// 竖排时左右键互换
+		if(Edit_vertical)
+		{
+			if(key == VK_LEFT) key = VK_RIGHT;
+			else if(key == VK_RIGHT) key = VK_LEFT;
+		}
+		super.onKeyDown(key, shift, process);
+	}
+
+	function onSearchPrevFocusable(layer)
+	{
+		super.onSearchPrevFocusable(parent.findPrevFocusable(this, layer));
+	}
+
+	function onSearchNextFocusable(layer)
+	{
+		super.onSearchNextFocusable(parent.findNextFocusable(this, layer));
+	}
+
+	function onFocus(prevfocused, direction)
+	{
+		parent.keyLink = linkNum;
+		super.onFocus(...);
+	}
+
+	function commit()
+	{
+		kag.inputTemp = text;
+		Scripts.eval(("(" + exp + ") = kag.inputTemp"));
+	}
+}
+
+class MessageLayer extends KAGLayer
+{
+	var wwFollowing = "%),:;]}｡｣ﾞﾟ。，、．：；゛゜ヽヾゝ"
+                "ゞ々’”）〕］｝〉》」』】°′″℃¢％‰"; // 行首禁则字符
+	var wwFollowingWeak="!.?､･ｧｨｩｪｫｬｭｮｯｰ・？！ーぁぃぅぇぉっゃゅょゎァィ"
+                "ゥェォッャュョヮヵヶ"; // 行首(弱)禁则字符
+	var wwLeading="\\$([{｢‘“（〔［｛〈《「『【￥＄£"; // 行末禁則文字
+
+	wwFollowing += wwFollowingWeak;
+
+	var id; // 标识符
+	var comp; // 对应的表/里消息层
+
+
+	// 以下带 /*C*/ 的变量在 assign 时自动复制。
+	// 带 /*S*/ 的变量在 store/restore 时自动复制。
+	// 修改、删除或增删这些变量名时，须再次以
+	// perl 脚本执行本文件。
+	// （由文件末尾的 perl 脚本处理）
+
+	var layerType = ltAddAlpha; // 层类型
+	/*CS*/var frameGraphic = ""; // 边框图像文件名
+	/*CS*/var frameKey = clNone; // 边框图像色键
+	/*CS*/var frameColor = 0x000000; // 边框颜色
+	/*CS*/var frameOpacity = 128; // 边框不透明度
+	/*CS*/var marginL = 8; // 左边距
+	/*CS*/var marginT = 8; // 上边距
+	/*CS*/var marginR = 8; // 右边距
+	/*CS*/var marginB = 8; // 下边距
+	/*CS*/var marginRCh = 2; // 右端（竖排时为下端）禁则处理用边距
+	/*C*/var x;
+	/*C*/var y; // 当前显示位置
+	/*C*/var relinexpos; // 应换行的最右（竖排时为最下）位置
+	/*C*/var isLastLine; // 正在绘制页末行
+	/*C*/var indentxpos; // 缩进左（竖排时为上）位置
+	var links = []; // 链接
+	/*C*/var linkFilled; // 是否已填充链接区域图
+	/*C*/var numLinks = 0; // 层内链接数
+
+	var lastLink = -1; // 最后选中的链接编号
+	var keyLink = -1; // 键盘选中的链接编号
+	var inLink = -1; // 是否正在绘制链接
+	var highlightLayer; // 用于高亮链接的层
+	/*C*/var selProcessLock = false; // 防止 process 后操作链接的标志
+	/*C*/var storedSelProcessLock = false; // storeSelProcessLock 时的状态
+
+	/*CS*/var defaultLinkColor = 0x0080ff; // 默认链接色
+	/*CS*/var defaultLinkOpacity = 64; // 默认链接不透明度
+
+	/*CS*/var defaultFontSize = 24; // 默认字号
+	/*C*/var fontSize; // 字号
+	/*C*/var _fontSize; // 临时字号
+	/*CS*/var defaultLineSize = 0; // 默认行高
+	/*C*/var reserveLineSize = 0; // 「预留」行高
+	/*C*/var lineSize; // 行高
+	/*CS*/var defaultRubySize = 10; // 默认注音高度
+	/*C*/var rubySize; // 注音高度
+	/*C*/var _rubySize; // 临时注音高度
+	/*CS*/var defaultRubyOffset = -2; // 默认注音偏移
+	/*C*/var rubyOffset; // 注音偏移
+	/*C*/var _rubyOffset; // 临时注音偏移
+
+	/*CS*/var defaultLineSpacing = 6; // 默认行距
+	/*C*/var lineSpacing; // 行距
+	/*CS*/var defaultPitch = 0; // 默认字距
+	/*C*/var pitch; // 字距
+	/*CS*/var defaultShadow = true; // 默认是否加阴影
+	/*C*/var shadow; // 是否加阴影
+	/*CS*/var defaultEdge = false; // 默认是否描边
+	/*C*/var edge; // 是否描边
+	/*CS*/var defaultShadowColor = 0x000000; // 默认阴影色
+	/*C*/var shadowColor; // 阴影色
+	/*CS*/var defaultEdgeColor = 0x0080ff; // 默认描边色
+	/*C*/var edgeColor; // 描边色
+	/*CS*/var defaultBold = true; // 默认是否粗体
+	/*C*/var bold; // 是否粗体
+	/*CS*/var defaultFace = "user"; // 默认字体
+	/*C*/var userFace = "ＭＳ Ｐ明朝"; // 用户所选字体
+	/*C*/var fontFace; // 字体
+	/*CS*/var defaultChColor = 0xffffff; // 默认文字色
+	/*C*/var chColor; // 文字色
+	/*C*/var defaultAntialiased = true; // 默认是否抗锯齿
+	/*C*/var antialiased; // 是否抗锯齿
+	/*CS*/var vertical = false; // 竖排模式时为 true
+	/*C*/var currentRuby = ""; // 下一字符的注音
+	/*C*/var lastDrawnCh = ""; // 最后绘制的字符
+
+	/*CS*/var edgeExtent = 1; // 描边粗细
+	/*CS*/var edgeEmphasis = 512; // 描边强调度
+	/*CS*/var shadowOffsetX = 2; // 阴影 X 偏移
+	/*CS*/var shadowOffsetY = 2; // 阴影 Y 偏移
+
+	/*C*/var sizeChanged = false; // 字号变更时为 true
+
+	/*C*/var nextClearFlag = false; // 到达底端时，下次显示字符是否清除层
+
+	var lineLayer; // 行绘制用层
+	/*C*/var lineLayerBase; // 基线（横排：下划线位置 / 竖排：中央位置）
+	/*C*/var lineLayerPos; // lineLayer 内字符显示位置
+	/*C*/var lineLayerLength; // lineLayer 内字符宽度
+	/*C*/var lineLayerOriginX; // 显示偏移 X
+	/*C*/var lineLayerOriginY; // 显示偏移 Y
+	var lineLayerLinks = []; // lineLayer 管理的链接
+
+	/*C*/var align=-1; // -1=左/上对齐  0=居中   1=右/下对齐
+	/*CS*/var defaultAutoReturn = true; // 默认是否自动换行
+	/*C*/var autoReturn = true; // 是否自动换行/换页
+
+	/*CS*/var lineBreakGlyph = "linebreak"; // 行等待标记名
+	/*CS*/var lineBreakGlyphKey = clNone; // 行等待标记色键
+	/*CS*/var pageBreakGlyph = "pagebreak"; // 页等待标记名
+	/*CS*/var pageBreakGlyphKey = clNone; // 页等待标记色键
+	/*CS*/var glyphFixedPosition = false; // 是否在固定位置显示标记
+	/*CS*/var glyphFixedLeft = 0; // 该位置
+	/*CS*/var glyphFixedTop = 0;
+
+	/*CS*/var draggable = false; // 消息层是否可拖动
+	var dragging = false; // 是否拖动中
+	var dragOriginX, dragOriginY; // 拖动时抓取的坐标
+
+	/*C*/var selClickLock = false; // 防止连点误操作的标志
+	/*C*/var lastMouseX;
+	/*C*/var lastMouseY; // 显示链接时最后的鼠标位置
+
+	var ml, mt, mw, mh; // 初始层尺寸（config 用）
+
+	var invisibleByUser = false; // 是否被用户临时隐藏
+	var visibleBeforeUserInvisible  = false;
+
+	var lastMouseDownX; // 最后一次鼠标点击的 X
+	var lastMouseDownY; // 最后一次鼠标点击的 Y
+
+	// 链接类型
+	var ltNormal = 1;
+	var ltButton = 2;
+	var ltEdit = 3;
+	var ltCheckBox = 4;
+
+    // 超时处理用
+    var timeoutTimer;
+    var timeoutTime;
+    var timeoutStorage;
+    var timeoutTarget;
+    var timeoutExp;
+    
+    function clearTimeout() {
+        stopTimeout();
+        timeoutTime    = void;
+        timeoutStorage = void;
+        timeoutTarget  = void;
+        timeoutExp     = void;
+    }
+
+    function timeoutHandler() {
+        if (!selProcessLock) {
+            Scripts.eval(timeoutExp) if timeoutExp != '';
+            if (timeoutStorage != '' || timeoutTarget != '') {
+                window.lockMessageLayerSelProcess(); // 锁定选择
+                window.process(timeoutStorage, timeoutTarget);
+                clearTimeout();
+            }
+        }
+    }
+
+    function addTimeout(elm) {
+        timeoutTime    = elm.time;
+        timeoutStorage = elm.storage;
+        timeoutTarget  = elm.target;
+        timeoutExp = createSoundExpression(elm.exp, elm.se, elm.sebuf);
+        setSelProcessLock(false); // 解除选择锁定
+        //comp.setSelProcessLock(false); // 解除选择锁定
+    }
+
+    function stopTimeout() {
+        if (timeoutTimer !== void) {
+            invalidate timeoutTimer;
+            timeoutTimer = void;
+        }
+    }
+    
+    function startTimeout() {
+        if (timeoutTime > 0 && (timeoutStorage !== void || timeoutTarget !== void || timeoutExp !== void)) {
+            timeoutTimer = new Timer(timeoutHandler, '');
+            timeoutTimer.capacity = 1;
+            timeoutTimer.interval = timeoutTime;
+            timeoutTimer.enabled  = true;
+        }
+    }
+
+    var clickExp;
+    var clickStorage;
+    var clickTarget;
+
+    function clearClick() {
+        clickStorage = void;
+        clickTarget  = void;
+        clickExp     = void;
+    }
+
+    function addClick(elm) {
+        clickStorage = elm.storage;
+        clickTarget  = elm.target;
+        clickExp = createSoundExpression(elm.exp, elm.se, elm.sebuf);
+        focusable = true; // 允许接收焦点
+        setSelProcessLock(false); // 解除选择锁定
+        //comp.setSelProcessLock(false); // 解除选择锁定
+        selClickLock = false;
+    }
+
+    function hasClick() {
+        return clickExp !== void || clickStorage !== void || clickTarget !== void;
+    }
+    
+    function processClick() {
+        Scripts.eval(clickExp) if clickExp != '';
+        if(clickStorage != '' || clickTarget != '') {
+            window.lockMessageLayerSelProcess(); // 锁定选择
+            if (window.getKeyState(VK_RETURN) || window.getKeyState(VK_SPACE) || window.getKeyState(VK_CONTROL))
+                window.hideMouseCursor();
+            // 键盘操作时隐藏鼠标光标
+            window.process(clickStorage, clickTarget);
+            clearClick();
+        }
+        selClickLock = false;
+    }
+    
+    var wheelExp;
+    var wheelFunc;
+    var wheelStorage;
+    var wheelTarget;
+
+    function clearWheel() {
+        wheelStorage = void;
+        wheelTarget  = void;
+        wheelExp     = void;
+        wheelFunc    = void;
+    }
+
+    function addWheel(elm) {
+        wheelStorage = elm.storage;
+        wheelTarget  = elm.target;
+        wheelFunc    = elm.func;
+        wheelExp = createSoundExpression(elm.exp, elm.se, elm.sebuf);
+        focusable = true; // 允许接收焦点
+        setSelProcessLock(false); // 解除选择锁定
+        //comp.setSelProcessLock(false); // 解除选择锁定
+    }
+
+    function hasWheel() {
+        return wheelFunc !== void || wheelExp !== void || wheelStorage !== void || wheelTarget !== void;
+    }
+    
+    function processWheel(shift, delta, x, y) {
+        if (!selProcessLock) {
+            Scripts.eval(wheelFunc)(shift, delta, x, y) if wheelFunc != void;
+            Scripts.eval(wheelExp) if wheelExp != '';
+            if(wheelStorage != '' || wheelTarget != '') {
+                window.lockMessageLayerSelProcess(); // 锁定选择
+                window.process(wheelStorage, wheelTarget);
+                clearWheel();
+            }
+        }
+    }
+    
+	function MessageLayer(owner, parent, name, id, do_config)
+	{
+		// MessageLayer 构造函数
+		// owner : 所属 KAG 窗口
+		// parent : 父层
+		// name 名称
+		// id : 标识符
+		// left, top, width, height : 初始位置
+		// do_config : 是否进行 configuration
+		super.KAGLayer(...);
+
+
+		this.id = id;
+		this.name = name;
+
+		imageModified = true;
+
+		// 配置
+		if(do_config)
+		{
+			(MessageLayer_config incontextof this)();
+			(MessageLayer_config_override incontextof this)()
+				if typeof global.MessageLayer_config_override != "undefined";
+
+			// 初始尺寸在 mw、mh 中
+			setPos(ml, mt);
+			setImageSize(mw, mh);
+			setSize(mw, mh);
+		}
+		else
+		{
+			// 不进行 config 时
+			// 尺寸使用默认
+			setPos(0, 0);
+			setImageSize(parent.width, parent.height);
+			setSize(parent.width, parent.height);
+		}
+
+		// 删除 config 用临时变量
+		delete ml; delete mt; delete mw; delete mh;
+
+		// 设置层类型
+		type = layerType;
+
+		// 初始化命中判定
+		hitType = htMask;
+		hitThreshold = 0; // 鼠标消息全域不透传
+
+		// 分配行绘制用浮动层
+		lineLayer = new global.KAGLayer(window, this);
+		lineLayer.hitType = htMask;
+		lineLayer.hitThreshold = 256; // 鼠标消息全域透传
+		lineLayer.face = dfAuto;
+		lineLayer.type = layerType;
+		lineLayer.name = "行绘制用浮动消息层";
+
+		// 用于高亮链接的层
+		highlightLayer = new global.KAGLayer(window, this);
+		highlightLayer.type = layerType;
+		highlightLayer.face = dfAuto;
+		highlightLayer.hitType = htProvince;
+			// 用区域图进行命中判定
+	}
+
+	function finalize()
+	{
+		// invalidateLinkObjects(); // 释放链接绑定对象
+		invalidateLinkObjects();
+		invalidate highlightLayer;
+		invalidate lineLayer;
+
+
+		super.finalize();
+	}
+
+	function setCompLayer(lay) { comp = lay; }
+
+	function clearLayer()
+	{
+		// 清除层
+		window.updateBeforeCh = 1;
+
+		cancelDrag();
+
+		if(imageModified)
+		{
+			if(frameGraphic == "")
+			{
+				// 未指定边框图时
+				face = dfAuto;
+				if(type == ltAddAlpha)
+				{
+					fillRect(0, 0, imageWidth, imageHeight, (frameOpacity << 24) +
+						((int)((((frameColor&0xff0000)>>16) * frameOpacity) / 255)<<16 ) +
+						((int)((((frameColor&0x00ff00)>> 8) * frameOpacity) / 255)<< 8 ) +
+						((int)((((frameColor&0x0000ff)    ) * frameOpacity) / 255)     ) );
+				}
+				else
+				{
+					fillRect(0, 0, imageWidth, imageHeight, (frameOpacity << 24) + frameColor);
+				}
+			}
+			else
+			{
+				loadImages(frameGraphic, frameKey);
+				setSizeToImageSize();
+			}
+
+			face = dfProvince;
+			colorRect(0, 0, imageWidth, imageHeight, 0); // 同时清除区域
+			face = dfAuto;
+		}
+
+		imageModified = false;
+
+		invalidateLinkObjects(); // 释放链接关联对象
+
+		focusable = false;
+		links.clear();
+		numLinks = 0;
+		inLink = -1;
+		highlightLink(lastLink, false); // 取消高亮
+		highlightLayer.visible = false;
+		lastLink = -1;
+		keyLink = -1;
+		linkFilled = false;
+		lastDrawnCh = ""; // 最后绘制的字符
+		isLastLine = false; // 是否为最后一行
+		selClickLock = true;
+		lastMouseX = cursorX;
+		lastMouseY = cursorY;
+		initLineLayer();
+	}
+
+	function setPosition(elm)
+	{
+		// 按 elm 设置消息层选项
+		// 此标签名为 position 是沿袭了相当早期的 KAG 命名(^^;
+		left = elm.left if elm.left !== void;
+		top = elm.top if elm.top !== void;
+		imageWidth = elm.width if elm.width !== void;
+		imageHeight = elm.height if elm.height !== void;
+		setSizeToImageSize();
+
+		frameGraphic = elm.frame if elm.frame !== void;
+		frameKey = elm.framekey if elm.framekey !== void;
+		frameColor = +elm.color if elm.color !== void;
+		frameOpacity = +elm.opacity if elm.opacity !== void;
+		imageModified = true; // 强制清除消息层
+		marginL = +elm.marginl if elm.marginl !== void;
+		marginT = +elm.margint if elm.margint !== void;
+		marginR = +elm.marginr if elm.marginr !== void;
+		marginB = +elm.marginb if elm.marginb !== void;
+		vertical = +elm.vertical if elm.vertical !== void;
+		draggable = +elm.draggable if elm.draggable !== void;
+		visible = +elm.visible if elm.visible !== void;
+
+		clear();
+	}
+
+	function clear()
+	{
+		// 清除消息层
+		clearLayer();
+
+		// 显示位置回到初始位置
+		if(vertical)
+		{
+			x = imageWidth - marginR;
+			y = marginT;
+		}
+		else
+		{
+			x = marginL;
+			y = marginT;
+		}
+
+		// 其他重置
+		indentxpos = 0;
+		resetFont();
+		resetStyle();
+		decideSizeChange();
+		initLineLayer();
+		currentRuby = "";
+
+        clearTimeout();
+        clearClick();
+        clearWheel();
+	}
+
+	function clear2()
+	{
+		// 清除消息层，但不重置字体等
+		// 消息到达下端后自动进入翻页等待→清除消息层时调用
+
+		clearLayer();
+
+		// 显示位置回到初始位置
+		if(vertical)
+		{
+			y = marginT + indentxpos;
+			x = imageWidth - marginR;
+		}
+		else
+		{
+			y = marginT;
+			x = marginL + indentxpos;
+		}
+		initLineLayer();
+	}
+
+	function resetFont()
+	{
+		// 重置字体
+		sizeChanged = true;
+
+		// 写回各默认设置
+		if(!vertical)
+		{
+			lineLayer.font.face = fontFace = defaultFace == 'user' ? userFace : defaultFace;
+			lineLayer.font.angle = 0;
+		}
+		else
+		{
+			lineLayer.font.face = '@' + (fontFace = defaultFace == 'user' ? userFace : defaultFace);
+			lineLayer.font.angle = 2700;
+		}
+
+		lineLayer.font.bold = bold = defaultBold;
+		lineLayer.font.italic=false;
+		_fontSize = defaultFontSize;
+		antialiased = defaultAntialiased;
+
+		chColor = defaultChColor;
+		_rubySize = defaultRubySize;
+		_rubyOffset = defaultRubyOffset;
+		shadow = defaultShadow;
+		edge = defaultEdge;
+		shadowColor = defaultShadowColor;
+		edgeColor = defaultEdgeColor;
+
+		// 计算换行位置
+		if(!vertical)
+			relinexpos = imageWidth - marginR - marginRCh * _fontSize;
+		else
+			relinexpos = imageHeight - marginB - marginRCh * _fontSize;
+	}
+
+	function setFont(elm)
+	{
+		// 设置字体
+		sizeChanged = true;
+
+		if(!vertical)
+		{
+			var elmface = elm.face;
+			if(elmface == 'default')
+			{
+				lineLayer.font.angle = 0;
+				lineLayer.font.face = fontFace =  defaultFace;
+			}
+			else if(elmface == 'user')
+			{
+				lineLayer.font.angle = 0;
+				lineLayer.font.face = fontFace = userFace;
+			}
+			else if(elmface !== void)
+			{
+				lineLayer.font.angle = 0;
+				lineLayer.font.face = fontFace = elmface;
+			}
+		}
+		else
+		{
+			var elmface = elm.face;
+			if(elmface == 'default')
+			{
+				var f = '@' + (fontFace = defaultFace);
+				lineLayer.font.angle = 2700;
+				lineLayer.font.face = f;
+			}
+			else if(elmface == 'user')
+			{
+				var f = '@' + (fontFace = userFace);
+				lineLayer.font.angle = 2700;
+				lineLayer.font.face = f;
+			}
+			else if(elmface !== void)
+			{
+				var f = '@' + (fontFace = elmface);
+				lineLayer.font.angle = 2700;
+				lineLayer.font.face = f;
+			}
+		}
+
+		if(elm.antialiased == 'default')
+			antialiased = defaultAntialiased;
+		else if(elm.antialiased !== void)
+			antialiased = +elm.antialiased;
+
+		if(elm.bold == 'default')
+			lineLayer.font.bold = defaultBold;
+		else if(elm.bold !== void)
+			lineLayer.font.bold = +elm.bold;
+
+		if(elm.italic == 'default')
+			lineLayer.font.italic = false;
+		else if(elm.italic !== void)
+			lineLayer.font.italic = +elm.italic;
+
+		if(elm.size == 'default')
+			_fontSize = defaultFontSize;
+		else if(elm.size !== void)
+			_fontSize = +elm.size;
+		
+		if(elm.color == 'default')
+			chColor = defaultChColor;
+		else if(elm.color !== void)
+			chColor = +elm.color;
+
+		if(elm.rubysize == 'default')
+			_rubySize = defaultRubySize;
+		else if(elm.rubysize !== void)
+			_rubySize = +elm.rubysize;
+
+		if(elm.rubyoffset == 'default')
+			_rubyOffset = defaultRubyOffset;
+		else if(elm.rubyoffset !== void)
+			_rubyOffset = +elm.rubyoffset;
+
+		if(elm.shadow == 'default')
+			shadow = defaultShadow;
+		else if(elm.shadow !== void)
+			shadow = +elm.shadow;
+
+		if(elm.shadowcolor == 'default')
+			shadowColor = defaultShadowColor;
+		else if(elm.shadowcolor !== void)
+			shadowColor = +elm.shadowcolor;
+
+		if(elm.edge == 'default')
+			edge = defaultEdge;
+		else if(elm.edge !== void)
+			edge = +elm.edge;
+
+		if(elm.edgecolor == 'default')
+			edgeColor = defaultEdgeColor;
+		else if(elm.edgecolor !== void)
+			edgeColor = +elm.edgecolor;
+
+		if(!vertical)
+			relinexpos = int(imageWidth-marginR-marginRCh*_fontSize);
+		else
+			relinexpos = int(imageHeight-marginB-marginRCh*_fontSize);
+	}
+
+	function setDefaultFont(elm)
+	{
+		// 设置默认字体
+		defaultFace = elm.face if elm.face !== void;
+		defaultAntialiased = +elm.antialiased if elm.antialiased !== void;
+		defaultBold = +elm.bold if elm.bold !== void;
+		defaultFontSize = +elm.size if elm.size !== void;
+		defaultChColor = +elm.color if elm.color !== void;
+		defaultRubySize = +elm.rubysize if elm.rubysize !== void;
+		defaultRubyOffset = +elm.rubyoffset if elm.rubyoffset !== void;
+		defaultShadow = +elm.shadow if elm.shadow !== void;
+		defaultShadowColor = +elm.shadowcolor if elm.shadowcolor !== void;
+		defaultEdge = +elm.edge if elm.edge !== void;
+		defaultEdgeColor = +elm.edgecolor if elm.edgecolor !== void;
+	}
+
+	function resetStyle()
+	{
+		// 重置样式
+		reserveLineSize = defaultLineSize;
+		lineSpacing = defaultLineSpacing;
+		pitch = defaultPitch;
+		resetLineSize();
+		align = -1;
+		autoReturn = defaultAutoReturn;
+		adjustAlign();
+	}
+
+	function setStyle(elm)
+	{
+		// 设置样式
+		if(elm.linespacing == 'default')
+			lineSpacing = defaultLineSpacing;
+		else if(elm.linespacing !== void)
+			lineSpacing = +elm.linespacing;
+
+		if(elm.pitch == 'default')
+			pitch = defaultPitch;
+		else if(elm.pitch !== void)
+			pitch = +elm.pitch;
+
+		if(elm.linesize == 'default')
+		{
+			reserveLineSize = defaultLineSize;
+		}
+		else if(elm.linesize !== void)
+		{
+			reserveLineSize = +elm.linesize;
+			resetLineSize();
+			sizeChanged  =true;
+		}
+
+		if(elm.align == 'default')
+		{
+			fixLineLayer();
+			align = -1;
+			adjustAlign();
+		}
+		else if(elm.align !== void)
+		{
+			fixLineLayer();
+			if(elm.align == 'left' || elm.align == 'top')
+				align = -1;
+			else if(elm.align == 'center')
+				align = 0;
+			else if(elm.align == 'right' || elm.align == 'bottom')
+				align = 1;
+			adjustAlign();
+		}
+		
+		if(elm.autoreturn == 'default')
+			autoReturn = defaultAutoReturn;
+		else if(elm.autoreturn !== void)
+			autoReturn = +elm.autoreturn;
+	}
+
+	function setDefaultStyle(elm)
+	{
+		// 设置默认样式
+		defaultLineSpacing = +elm.linespacing if elm.linespacing !== void;
+		defaultPitch = +elm.pitch if elm.pitch !== void;
+		defaultLineSize = +elm.linesize if elm.linesize !== void;
+		defaultAutoReturn = +elm.autoreturn if elm.autoreturn !== void;
+	}
+
+
+	function resetLineSize()
+	{
+		// 重置行高
+		lineSize = reserveLineSize > fontSize ? reserveLineSize : fontSize;
+	}
+
+	function decideSizeChange()
+	{
+		// 确定暂存的字体·样式变更
+		if(!sizeChanged) return;
+		lineLayer.font.height = - _fontSize;
+		fontSize = _fontSize;
+		rubySize = _rubySize;
+		rubyOffset = _rubyOffset;
+		sizeChanged = false;
+	}
+
+	function getLineLayerBaseLine()
+	{
+		// 计算并返回字符显示用基线
+		// 横排时为字符下端，纵排时为字符中线
+		if(!vertical)
+			return -getLineLayerTopOffset() + lineSpacing + lineSize;
+		else
+			// 纵排
+			// 中线（自层左端起算的位置）
+			return 4 + (lineSize>>1);
+	}
+
+	function initLineLayer()
+	{
+		// 初始化 lineLayer
+		var ll = lineLayer;
+		resetLineSize();
+		lineLayerLinks.count = 0;
+		lineLayerOriginX = x;
+		lineLayerOriginY = y;
+		if(!vertical)
+			ll.imageWidth = imageWidth + 8;
+		else
+			ll.imageHeight = imageHeight + 8;
+		ll.setSizeToImageSize();
+		changeLineSize(/*forceresize=*/true);
+		lineLayerLength = 0;
+		lineLayerPos = 4;
+		ll.visible = false;
+		ll.face = dfAuto;
+		var lliw = ll.imageWidth;
+		var llih = ll.imageHeight;
+		ll.fillRect(0, 0, lliw, llih, 0);
+			// 完全透明
+		ll.face = dfProvince;
+		ll.fillRect(0, 0, lliw, llih, 0);
+		ll.face = dfAuto;
+			// 清除区域
+	}
+
+	function fixLineLayer()
+	{
+		// 将 lineLayer 固定到当前显示位置
+		var ll = lineLayer;
+		if(ll.visible == false) return;
+
+		var llox = lineLayerOriginX + getLineLayerLeftOffset();
+		var lloy = lineLayerOriginY + getLineLayerTopOffset();
+
+		face = dfAuto;
+		operateRect(
+			llox,
+			lloy,
+			ll, 0, 0, ll.imageWidth, ll.imageHeight);
+
+		face = dfProvince;
+		var i;
+		var lll = lineLayerLinks;
+		var lllcount = lll.count;
+		for(i = 0; i<lllcount; i++)
+		{
+			var lll_i = lineLayerLinks[i];
+			var n = lll_i.number;
+			var l = lll_i.line;
+			var linkn = links[n];
+			var x = linkn.x[l] += llox;
+			var y = linkn.y[l] += lloy;
+			var w = linkn.w[l];
+			var h = linkn.h[l];
+			linkn.fixed[l] = true; // 已固定
+			colorRect(x, y, w, h, n+1); // 涂满本层对应区域
+		}
+
+		ll.visible = false;
+	}
+
+
+	function changeLineSize(forceresize = false)
+	{
+		// 行高变更时调整行绘制用层尺寸
+
+		if(inLink!=-1) endLinkLine();
+		decideSizeChange();
+
+		var newlinesize = lineSize;
+		if(fontSize>lineSize) newlinesize = fontSize; // 拡張
+
+		var newlinelayersize = newlinesize + lineSpacing;
+		if(rubySize + rubyOffset > lineSpacing)
+		{
+			// 注音与上一行重叠
+			newlinelayersize += rubySize+rubyOffset - lineSpacing;
+		}
+
+		newlinelayersize += 8; // 描边/阴影绘制余量
+		if(!vertical)
+		{
+			// 横排时
+			if(forceresize || lineLayer.imageHeight<newlinelayersize)
+			{
+				// 行距扩展
+				lineSize = newlinesize;
+				var oldsize = lineLayer.imageHeight;
+				lineLayer.imageHeight = newlinelayersize;
+				lineLayer.setSizeToImageSize();
+				lineLayerBase = getLineLayerBaseLine();
+				// 内容移动
+				if(!forceresize)
+				{
+					var d = lineLayer.imageHeight - oldsize;
+					lineLayer.face = dfAuto;
+					lineLayer.copyRect(0, d, lineLayer,
+						0, 0, lineLayer.imageWidth, oldsize);
+					lineLayer.fillRect(0, 0, lineLayer.imageWidth, d, 0);
+
+					lineLayer.face = dfProvince;
+					lineLayer.copyRect(0, d, lineLayer,
+						0, 0, lineLayer.imageWidth, oldsize);
+					lineLayer.colorRect(0, 0, lineLayer.imageWidth, d, 0);
+					lineLayer.face = dfAuto;
+				}
+				var i;
+				for(i = 0; i<lineLayerLinks.count; i++)
+				{
+					var n = lineLayerLinks[i].number;
+					var l = lineLayerLinks[i].line;
+					links[n].y[l] += lineLayer.imageHeight - oldsize;
+				}
+				// 位置移动 
+				lineLayer.setPos(lineLayerOriginX + getLineLayerLeftOffset(),
+							lineLayerOriginY + getLineLayerTopOffset());
+			}
+		}
+		else
+		{
+			// 纵排时
+			if(forceresize || lineLayer.imageWidth < newlinelayersize)
+			{
+				// 行距扩展
+				lineSize = newlinesize;
+				var oldbase = lineLayerBase;
+				var oldsize = lineLayer.imageWidth;
+				lineLayer.imageWidth = newlinelayersize;
+				lineLayer.setSizeToImageSize();
+				lineLayerBase = getLineLayerBaseLine();
+				// 内容移动
+				if(!forceresize)
+				{
+					lineLayer.face = dfAuto;
+					// 用 oldbaseline、lineLayerBase 移动显示内容
+					lineLayer.copyRect(
+						lineLayerBase - oldbase, 0,
+						lineLayer,
+						0,0,lineLayer.imageWidth, lineLayer.imageHeight);
+					// 清除左端与右端
+					lineLayer.fillRect(0, 0,
+						lineLayerBase - oldbase, lineLayer.imageHeight, 0);
+					lineLayer.fillRect(
+						lineLayerBase - oldbase+oldsize, 0,
+						lineLayer.imageWidth - (lineLayerBase - oldbase + oldsize),
+						lineLayer.imageHeight, 0);
+
+					lineLayer.face = dfProvince;
+					lineLayer.copyRect(
+						lineLayerBase - oldbase, 0,
+						lineLayer,
+						0, 0, lineLayer.imageWidth, lineLayer.imageHeight);
+					lineLayer.colorRect(0, 0,
+						lineLayerBase - oldbase, lineLayer.imageHeight, 0);
+					lineLayer.colorRect(
+						lineLayerBase - oldbase+oldsize, 0,
+						lineLayer.imageWidth - (lineLayerBase - oldbase + oldsize),
+						lineLayer.imageHeight, 0);
+					lineLayer.face = dfAuto;
+				}
+				var i;
+				for(i = 0; i < lineLayerLinks.count; i++)
+				{
+					var n = lineLayerLinks[i].number;
+					var l = lineLayerLinks[i].line;
+					links[n].x[l] += lineLayerBase - oldbase;
+				}
+				// 位置移动 
+				lineLayer.setPos(lineLayerOriginX + getLineLayerLeftOffset(),
+							lineLayerOriginY + getLineLayerTopOffset());
+			}
+		}
+	}
+
+	function getLineLayerLeftOffset()
+	{
+		// 获取行绘制用层内的左偏移
+		if(!vertical)
+		{
+			if(align == -1)
+				return -4;
+			else if(align == 0)
+				return ((imageWidth - marginR - marginL - lineLayerLength)>>1) - 4;
+			else if(align == 1)
+				return imageWidth - marginR - marginL - lineLayerLength - 4;
+		}
+		else
+		{
+			return -lineSize - lineSpacing - 4;
+		}
+	}
+
+	function getLineLayerTopOffset()
+	{
+		// 获取行绘制用层内的上偏移
+		if(!vertical)
+		{
+			return -(lineLayer.imageHeight - 4 - lineSize - lineSpacing);
+		}
+		else
+		{
+			if(align == -1)
+				return -4;
+			else if(align == 0)
+				return ((imageHeight - marginB - marginT - lineLayerLength)>>1) - 4;
+			else if(align == 1)
+				return imageHeight - marginB - marginT - lineLayerLength - 4;
+			return -4;
+		}
+	}
+
+	function adjustAlign()
+	{
+		lineLayer.setPos(lineLayerOriginX + getLineLayerLeftOffset(),
+			lineLayerOriginY + getLineLayerTopOffset());
+	}
+
+
+	function reline()
+	{
+		// 换行
+		// 越页返回 true，可换行不越页返回 false
+		var condition;
+		if(vertical)
+		{
+			condition= lineLayerOriginX + getLineLayerLeftOffset() - lineSpacing -
+				lineSize <= marginL;
+		}
+		else
+		{
+			condition= lineLayerBase + lineLayerOriginY + getLineLayerTopOffset() +
+				 lineSize >= imageHeight-marginB;
+		}
+
+		if(condition)
+		{
+			// 越页!
+			return true;
+		}
+		else
+		{
+			if(inLink != -1) endLinkLine();
+
+			decideSizeChange();
+
+			fixLineLayer();
+
+			if(vertical)
+			{
+				y = marginT + indentxpos;
+				x -= lineSize + lineSpacing;
+			}
+			else
+			{
+				y += lineSize + lineSpacing;
+				x = marginL + indentxpos;
+			}
+
+			var condition;
+			if(vertical)
+				condition= x - lineSize*2 <= marginL;
+			else
+				condition= y + lineSize*2 >= imageHeight-marginB;
+
+			if(condition)
+			{
+				// 页内最后一行
+				isLastLine=true;
+			}
+
+			initLineLayer();
+
+//			if(inLink!=-1) beginLinkLine();
+		}
+		return false;
+	}
+
+	function processCh(ch)
+	{
+		// 绘制字符 ch
+		// 若换行且越到页末返回 true，否则 false
+		var vert = vertical;
+
+		if((vert ?  y >= relinexpos  : x >= relinexpos ) && autoReturn)
+		{
+			if(((lastDrawnCh=="" || wwLeading.indexOf(lastDrawnCh)==-1) &&
+				wwFollowing.indexOf(ch)==-1) ||
+				(lastDrawnCh!="" && wwFollowingWeak.indexOf(lastDrawnCh)!=-1 &&
+					wwFollowingWeak.indexOf(ch)!=-1))
+			{
+				// 上次绘制的不是行末禁则字符
+				// 且即将绘制的不是行首禁则字符
+				// 时
+				// 或弱禁则字符未连续时
+				if(reline()) return autoReturn;
+			}
+			else if(vert ? ( y>imageHeight ) : (x>imageWidth))
+			{
+				// 即将绘制的不是强禁则字符，
+				// 且确定会越过右端
+				// （此情况不考虑边距）
+				if(reline()) return autoReturn;
+			}
+		}
+
+		changeLineSize() if sizeChanged;
+
+		var inlink = inLink != -1;
+
+		beginLinkLine() if inlink;
+
+ 		var ll = lineLayer;
+ 		var llfont = ll.font;
+
+		var cw = llfont.getTextWidth(ch);
+
+		var dx , dy;
+
+		if(vert)
+			dx = int(lineLayerBase+(fontSize>>1)), dy = int(lineLayerPos);
+		else
+			dx = int(lineLayerPos), dy = int(lineLayerBase-fontSize);
+
+
+		if(edge)
+			ll.drawText(dx, dy, ch, chColor, 255, antialiased, edgeEmphasis, edgeColor, edgeExtent, 0, 0); // 文字
+		else if(shadow)
+			ll.drawText(dx, dy, ch, chColor, 255, antialiased, 255, shadowColor, 0, shadowOffsetX, shadowOffsetY); // 文字
+		else
+			ll.drawText(dx, dy, ch, chColor, 255, antialiased); // 文字
+
+		if(currentRuby != "")
+		{
+			// 有注音
+			var cw = llfont.getTextWidth(ch);
+			var orgsize = llfont.height;
+			llfont.height = rubySize;
+			var rw = llfont.getTextWidth(currentRuby);
+			var rx,ry;
+			if(!vert)
+			{
+				rx = int(dx + (cw>>1) - (rw>>1));
+				ry = int(dy - rubySize - rubyOffset);
+			}
+			else
+			{
+				rx = int(dx + rubySize + rubyOffset);
+				ry = int(dy + (cw>>1) - (rw>>1));
+			}
+
+			if(edge)
+				ll.drawText(rx, ry, currentRuby, chColor, 255, antialiased, edgeEmphasis, edgeColor, edgeExtent, 0, 0); // 文字
+			else if(shadow)
+				ll.drawText(rx, ry, currentRuby, chColor, 255, antialiased, 255, shadowColor, 0, shadowOffsetX, shadowOffsetY); // 文字
+			else
+				ll.drawText(rx, ry, currentRuby, chColor, 255, antialiased); // 文字
+
+			llfont.height = orgsize;
+			currentRuby = '';
+		}
+
+		ll.visible = true;
+
+		if(inlink)
+		{
+			// 超链接中
+			ll.face = dfProvince;
+			if(!vert)
+				ll.fillRect(lineLayerPos, lineLayerBase - fontSize,
+					cw, fontSize, numLinks + 1);
+			else
+				ll.fillRect(lineLayerBase - (fontSize>>1), lineLayerPos,
+					fontSize, cw, numLinks + 1);
+
+			// 同时涂满区域图
+			ll.face = dfAuto;
+			linkFilled = true;
+		}
+
+		cw += pitch;
+
+		if(vert) y += cw; else x += cw;
+
+		lineLayerPos += cw;
+		lineLayerLength += cw;
+
+		lastDrawnCh = ch;
+
+		adjustAlign() if(align >= 0);
+
+		return false;
+	}
+
+	function putGraph(storage, key, ischar)
+	{
+		// 绘制图片 storage
+
+		// 准备临时层
+		var lay = window.temporaryLayer;
+
+		lay.type = ltTransparent;
+		lay.face = dfAuto;
+		lay.loadImages(storage, key); // 读取图片
+		var lw, lh;
+		lw = lay.imageWidth;
+		lh = lay.imageHeight;
+
+		var cw;
+		if(vertical)
+		{
+			if(lw > lineSize) lineSize = lw; // 拡張
+			cw = lh;
+		}
+		else
+		{
+			if(lh > lineSize) lineSize = lh; // 拡張
+			cw = lw;
+		}
+
+		changeLineSize();
+
+		if(inLink != -1) beginLinkLine();
+
+		var repage = false;
+
+		if(autoReturn)
+		{
+			// 到达换行位置？
+			if(vertical ? ( y > relinexpos ) : (x > relinexpos) )
+			{
+				repage = reline();
+			}
+		}
+
+		if(repage) return true; // 不绘制字符
+
+
+		// 描画
+		var cx,cy;
+		if(vertical)
+		{
+			cx = lineLayerBase - (lw>>1);
+			cy = lineLayerPos;
+		}
+		else
+		{
+			cx = lineLayerPos;
+			cy = lineLayerBase - lh;
+		}
+
+		if(ischar && (shadow || edge) )
+		{
+			lay.face = dfOpaque;
+			lay.holdAlpha = true;
+				// 用阴影/描边色涂满主体
+
+			if(edge)
+			{
+				// 描边
+				lay.fillRect(0, 0, lw, lh, edgeColor);
+				lineLayer.operateRect(cx+1, cy, lay, 0, 0, lw, lh);
+				lineLayer.operateRect(cx, cy+1, lay, 0, 0, lw, lh);
+				lineLayer.operateRect(cx-1, cy, lay, 0, 0, lw, lh);
+				lineLayer.operateRect(cx, cy-1, lay, 0, 0, lw, lh);
+			}
+			else if(shadow)
+			{
+				// 阴影
+				lay.fillRect(0, 0, lw, lh, shadowColor);
+				lineLayer.operateRect(cx+2, cy+2, lay, 0, 0, lw, lh);
+			}
+
+		}
+
+		if(ischar)
+		{
+			lay.face = dfOpaque;
+			lay.holdAlpha = true;
+			lay.fillRect(0, 0, lw, lh, chColor);
+				// 用字色涂满主体
+		}
+
+		lineLayer.operateRect(cx, cy, lay, 0, 0, lw, lh); // 描画
+
+		// 绘制结束
+		lastDrawnCh="";
+
+		if(inLink!=-1)
+		{
+			// 超链接中
+			lineLayer.face = dfProvince;
+			if(vertical)
+				lineLayer.fillRect(lineLayerBase - (fontSize>>1), lineLayerPos,
+					fontSize, cw, numLinks+1);
+			else
+				lineLayer.fillRect(lineLayerPos, lineLayerBase - fontSize,
+					cw, fontSize, numLinks+1);
+			face = dfAuto;
+			lineLayer.face = dfBoth;
+			// 同时涂满区域图
+			linkFilled=true;
+		}
+
+		if(vertical) y+=cw; else x+=cw;
+
+		lineLayerPos += cw;
+		lineLayerLength += cw;
+
+		lineLayer.visible = true;
+
+		if(align >= 0) adjustAlign();
+
+		return false;
+	}
+
+	function putHorizonCh(text, expand = false)
+	{
+		// 绘制纵中横
+		if(!vertical) throw new Exception("非竖排模式无法使用此功能");
+
+		// 重新设置字体
+		var ll = lineLayer;
+		var lf = ll.font;
+		var orgfont = lf.face;
+		var organgle = lf.angle;
+		lf.face = orgfont.substring(1); // 去掉开头的 @ 标记
+		lf.angle = 0;
+
+		// 获取待绘字符的宽度
+		var cw = lf.getTextWidth(text);
+		var ch = fontSize;
+
+		// 扩展 linesize
+		if(expand)
+		{
+			if(cw > lineSize) lineSize = cw; // 拡張
+			changeLineSize();
+		}
+
+		// 链接中时开始链接
+		if(inLink != -1) beginLinkLine();
+
+		// 换行/翻页处理
+		var repage = false;
+		if(autoReturn)
+		{
+			// 到达换行位置？
+			if(y > relinexpos) repage = reline();
+		}
+		if(repage)
+		{
+			// 返回前恢复字体
+			lf.face = orgfont;
+			lf.angle = organgle;
+			return true; // 不绘制字符
+		}
+
+		// 描画
+		var dx = lineLayerBase - (cw>>1);
+		var dy = lineLayerPos;
+
+		if(edge)
+			ll.drawText(dx, dy, text, chColor, 255, antialiased, 512, edgeColor, 1, 0, 0); // 文字
+		else if(shadow)
+			ll.drawText(dx, dy, text, chColor, 255, antialiased, 255, shadowColor, 0, shadowOffsetX, shadowOffsetY); // 文字
+		else
+			ll.drawText(dx, dy, text, chColor, 255, antialiased); // 文字
+
+		// 绘制结束
+		lastDrawnCh="";
+
+		// 恢复字体
+		lf.face = orgfont;
+		lf.angle = organgle;
+
+		// 超链接处理
+		if(inLink!=-1)
+		{
+			// 超链接中
+			ll.face = dfProvince;
+			ll.fillRect(lineLayerBase - (fontSize>>1), lineLayerPos,
+				fontSize, cw, numLinks+1);
+			face = dfAuto;
+			ll.face = dfAuto;
+			linkFilled=true;
+		}
+
+		// 位置更新
+		y += ch;
+		lineLayerPos += ch;
+		lineLayerLength += ch;
+
+		lineLayer.visible = true;
+
+		// 修正对齐
+		if(align >= 0) adjustAlign();
+
+		// 返回
+		return false;
+	}
+
+
+	function invalidateLinkObjects()
+	{
+		// 若链接项已分配对象则使其失效
+		for(var i = links.count-1; i>=0; i--)
+		{
+			if(links[i].type != ltNormal)
+				invalidate links[i].object;
+			links[i].type = 0;
+		}
+	}
+
+	function beginLinkLine()
+	{
+		// 开始链接
+		// 在链接开始标签之后、实际发生字符绘制等时调用（换行时也会调用）
+		if(linkFilled) return;
+		var sx, sy;
+		if(!vertical)
+		{
+			sx = lineLayerPos;
+			sy = lineLayerBase - fontSize;
+		}
+		else
+		{
+			sx = lineLayerBase - (fontSize>>1);
+			sy = lineLayerPos;
+		}
+		var n = links[numLinks].lineCount - 1;
+		links[numLinks].fixed[n] = false; // 未固定
+		links[numLinks].x[n] = sx;
+		links[numLinks].y[n] = sy;
+
+		lineLayerLinks[lineLayerLinks.count] = %[number : numLinks, line : n];
+		linkFilled = false;
+	}
+
+	function endLinkLine()
+	{
+		// 链接中行结束时调用
+		if(!linkFilled) return;
+		linkFilled = false;
+		var w, h;
+		var linkn = links[numLinks];
+		var linenum = links[numLinks].lineCount-1;
+		if(!vertical)
+		{
+			w = lineLayerPos - linkn.x[linenum];
+			if(lineLayer.font.italic) w += fontSize>>2; // 斜体时略留余量
+			if(w <= 0) return;
+			h = fontSize;
+		}
+		else
+		{
+			w = fontSize;
+			h = lineLayerPos - linkn.y[linenum];
+			if(lineLayer.font.italic) h += fontSize>>2;
+			if(h <= 0) return;
+		}
+		linkn.w[linenum] = w;
+		linkn.h[linenum] = h;
+		linkn.lineCount ++;
+	}
+
+	function createSoundExpression(exp, storage, buf)
+	{
+		// 创建播放音效的表达式
+		// 若 exp 已有表达式则用逗号连接
+		// 此规格日后可能变更
+		if(storage === void) return exp;
+		if(buf === void) buf = 0;
+		var seexp = "(kag.se["+buf+"].play(%[storage:\"" + storage.escape() +"\"]))";
+		if(exp !== void)
+			exp = seexp + ",("+exp+")";
+		else
+			exp = seexp;
+		return exp;
+	}
+
+	function beginHyperLink(elm)
+	{
+		// 开始普通链接
+		links[numLinks] = %[ // 创建字典数组
+			type :		ltNormal,
+			storage :	elm.storage,
+			target :	elm.target,
+			exp :		createSoundExpression(elm.exp, elm.clickse, elm.clicksebuf),
+			countPage :	(elm.countpage === void) ? true : +elm.countpage,
+			hint :		elm.hint,
+			color :		(elm.color === void) ? defaultLinkColor : +elm.color,
+			opacity :	(elm.opacity === void) ? defaultLinkOpacity : +elm.opacity,
+			onenter :	createSoundExpression(elm.onenter, elm.enterse, elm.entersebuf),
+			onleave :	createSoundExpression(elm.onleave, elm.leavese, elm.leavesebuf),
+			x :			[],
+			y :			[],
+			w :			[],
+			h :			[],
+			fixed :		[],
+			lineCount :	1
+			];
+		inLink = 0;
+	}
+
+	function endHyperLink()
+	{
+		inLink = -1;
+		endLinkLine();
+		links[numLinks].lineCount--;
+		numLinks++;
+		focusable = true; // 可接收焦点
+		lastMouseX = cursorX;
+		lastMouseY = cursorY;
+		selClickLock = true;
+		setSelProcessLock(false); // 解除选择锁定
+	}
+
+	function findLink(x,y)
+	{
+		// 查找 x、y 位置的链接，找到则返回其编号
+
+		if(selClickLock) return -1;
+
+		var i=0;
+		// 用区域图判定
+		if(lineLayer.visible)
+		{
+			if(lineLayer.left <= x && lineLayer.top <= y  &&
+				lineLayer.imageWidth + lineLayer.left > x &&
+				lineLayer.imageHeight + lineLayer.top > y)
+			{
+				i = lineLayer.getProvincePixel(x - lineLayer.left, y - lineLayer.top);
+			}
+		}
+		if(i == 0) i = getProvincePixel(x, y);
+		if(i == -1) return -1;
+		if(i != 0) return i - 1;
+		return -1;
+	}
+
+	function addButton(elm)
+	{
+		// 放置图形按钮
+		var object = new LinkButtonLayer(window, this);
+		object.loadImages(elm.graphic, elm.graphickey);
+		object.linkNum = numLinks;
+		object.setPos(x, y);
+		object.hint = elm.hint;
+		object.visible = true;
+		object.onenter = createSoundExpression(elm.onenter, elm.enterse, elm.entersebuf);
+		object.onleave = createSoundExpression(elm.onleave, elm.leavese, elm.leavesebuf);
+		object.hitThreshold =
+			(elm.recthit === void || +elm.recthit) ? 0 : 64;
+
+		links[numLinks] = %[
+			type :			ltButton,
+			graphic :		elm.graphic,
+			graphickey :	elm.graphickey,
+			storage :		elm.storage,
+			target :		elm.target,
+			exp :			createSoundExpression(elm.exp, elm.clickse, elm.clicksebuf),
+			countPage :		(elm.countpage === void) ? true : +elm.countpage,
+			object :		object,
+			onenter :		object.onenter,
+			onleave :		object.onleave,
+			x :				[x],
+			y :				[y],
+			w :				[object.width],
+			h :				[object.height],
+			fixed :			[true],
+			lineCount :		1
+			];
+
+		numLinks++;
+		focusable = true; // 可接收焦点
+		setSelProcessLock(false); // 解除选择锁定
+	}
+
+	function addEdit(elm)
+	{
+		// 放置单行编辑框
+		changeLineSize() if sizeChanged;
+		var object = new LinkEditLayer(window, this, vertical);
+		var of = object.font;
+		var lf = lineLayer.font;
+		of.face = lf.face;
+		of.angle = lf.angle;
+		of.bold = lf.bold;
+		of.italic = lf.italic;
+		of.height = lf.height;
+		object.linkNum = numLinks;
+		object.text = Scripts.eval(elm.name);
+		object.exp = elm.name;
+		object.antialiased = antialiased;
+		object.color = elm.bgcolor if elm.bgcolor !== void; // 注意不是 color
+		object.textColor = elm.color if elm.color !== void; // 注意不是 textColor
+		object.maxChars = elm.maxchars if elm.maxchars !== void;
+		object.bgOpacity = elm.opacity if elm.opacity !== void;
+
+		var len = elm.length === void ? 200: +elm.length;
+		if(vertical)
+		{
+			object.setPos(lineLayer.left + lineLayerBase - ((lf.height + 6)>>1),
+				lineLayer.top + lineLayerPos);
+			object.height = len;
+			object.width = lf.height + 6;
+			y += len;
+		}
+		else
+		{
+			object.setPos(lineLayer.left + lineLayerPos,
+					lineLayer.top + lineLayerBase - fontSize - 3);
+			object.width = elm.length === void ? 200: +elm.length;
+			object.height = lf.height + 6;
+			x += len;
+		}
+		object.visible = true;
+		lineLayerPos += len;
+		lineLayerLength += len;
+
+		links[numLinks] = %[
+			type :			ltEdit,
+			exp :			elm.name,
+			object :		object,
+			x :				[object.left],
+			y :				[object.top],
+			w :				[object.width],
+			h :				[object.height],
+			fixed :			[true],
+			lineCount :		1
+			];
+
+		numLinks ++;
+		focusable = true;
+		setSelProcessLock(false); // 解除选择锁定
+	}
+
+	function addCheckBox(elm)
+	{
+		var object = new LinkCheckBoxLayer(window, this, vertical);
+		object.linkNum = numLinks;
+		object.vertical = vertical;
+		object.checked = Scripts.eval(elm.name);
+		object.exp = elm.name;
+		object.color = elm.bgcolor if elm.bgcolor !== void; // 注意不是 color
+		object.glyphColor = elm.color if elm.color !== void; // 注意不是 glyphColor
+		object.bgOpacity = elm.opacity if elm.opacity !== void;
+
+		var cw;
+		var lw = object.width;
+		var lh = object.height;
+		if(vertical)
+		{
+			if(lw > lineSize) lineSize = lw; else lw = object.width = lineSize; // 拡張
+			cw = lh;
+		}
+		else
+		{
+			if(lh > lineSize) lineSize = lh; else lh = object.height = lineSize; // 拡張
+			cw = lw;
+		}
+
+		changeLineSize();
+
+		var cx,cy;
+		if(vertical)
+		{
+			cx = lineLayerBase - (lw>>1);
+			cy = lineLayerPos;
+		}
+		else
+		{
+			cx = lineLayerPos;
+			cy = lineLayerBase - lh;
+		}
+
+		object.setPos(cx + lineLayerOriginX + getLineLayerLeftOffset(),
+					cy + lineLayerOriginY + getLineLayerTopOffset());
+
+		if(vertical) y+=cw; else x+=cw;
+		lineLayerPos += cw;
+		lineLayerLength += cw;
+
+		object.visible = true;
+
+		links[numLinks] = %[
+			type :			ltCheckBox,
+			exp :			elm.name,
+			object :		object,
+			x :				[object.left],
+			y :				[object.top],
+			w :				[object.width],
+			h :				[object.height],
+			fixed :			[true], // 已固定!!!
+			lineCount :		1
+			];
+
+		numLinks ++;
+		focusable = true;
+		setSelProcessLock(false); // 解除选择锁定
+	}
+
+	function highlightLink(n, b = false)
+	{
+		// 第 n 个链接
+		// b : true  : 高亮
+		// b : false : 取消高亮
+		if(selProcessLock) return;
+		if(b)
+		{
+			if(n < 0 || n >= numLinks) return;
+			var linkn = links[n];
+			if(linkn === void) return;
+			if(linkn.type != ltNormal) return;
+			var xofs = lineLayerOriginX + getLineLayerLeftOffset();
+			var yofs = lineLayerOriginY + getLineLayerTopOffset();
+
+			if(linkn.onenter != '') Scripts.eval(linkn.onenter);
+
+			// 高亮
+			if(!vertical)
+			{
+				// 横
+				// 为避免全屏刷新
+				// 取得最小与最大位置
+				var min = linkn.y[0];
+				if(!linkn.fixed[0]) min += yofs; // 未固定时补偿
+				var max = linkn.y[0] + linkn.h[0];
+				if(!linkn.fixed[0]) max += yofs;
+
+				var i;
+				for(i = 0; i < linkn.lineCount; i++)
+				{
+					var m;
+					m = linkn.y[i];
+					if(!linkn.fixed[i]) m += yofs;
+					if(min > m) min = m;
+					m = linkn.y[i] + linkn.h[i];
+					if(!linkn.fixed[i]) m += yofs;
+					if(max < m) max = m;
+				}
+
+				highlightLayer.setPos(0, min);
+				highlightLayer.setImageSize(imageWidth, max - min);
+				highlightLayer.setSizeToImageSize();
+			}
+			else
+			{
+				// 纵
+				var min = linkn.x[0];
+				if(!linkn.fixed[0]) min += xofs;
+				var max = linkn.x[0] + linkn.w[0];
+				if(!linkn.fixed[0]) max += xofs;
+
+				var i;
+				for(i = 0; i < linkn.lineCount; i++)
+				{
+					var m;
+					m = linkn.x[i];
+					if(!linkn.fixed[i]) m += xofs;
+					if(min > m) min = m;
+					m = linkn.x[i] + linkn.w[i];
+					if(!linkn.fixed[i]) m += xofs;
+					if(max < m) max = m;
+				}
+
+				highlightLayer.setPos(min, 0);
+				highlightLayer.setImageSize(max - min, imageHeight);
+				highlightLayer.setSizeToImageSize();
+			}
+
+			highlightLayer.fillRect(0, 0,
+				highlightLayer.imageWidth,
+				highlightLayer.imageHeight, 0);
+			highlightLayer.face = dfProvince;
+			highlightLayer.fillRect(0, 0,
+				highlightLayer.imageWidth,
+				highlightLayer.imageHeight, 0);
+			highlightLayer.face = dfAuto;
+
+			var i;
+			for(i = 0; i < linkn.lineCount; i++)
+			{
+				var x = linkn.x[i];
+				var y = linkn.y[i];
+				if(!linkn.fixed[i]) x += xofs, y += yofs;
+
+				highlightLayer.colorRect(
+					x - highlightLayer.left,
+					y - highlightLayer.top,
+					linkn.w[i], linkn.h[i], linkn.color, linkn.opacity);
+			}
+
+			highlightLayer.visible = true;
+
+			cursor = window.cursorPointed;
+
+			if(parent.isPrimary && comp !== void && left == comp.left && top == comp.top &&
+				width == comp.width && height == comp.height)
+			{
+				// 里页层同样设置
+				var tl = highlightLayer;
+				var bl = comp.highlightLayer;
+				bl.assignImages(tl);
+				bl.setPos(tl.left, tl.top, tl.width, tl.height);
+				bl.visible = true;
+			}
+
+			// 设置提示
+			hint = links[n].hint;
+		}
+		else
+		{
+			if(n >= 0 && n < numLinks)
+			{
+				if(links[n] !== void && links[n].type == ltNormal)
+				{
+					if(links[n].onleave != '') Scripts.eval(links[n].onleave);
+				}
+			}
+
+			highlightLayer.visible = false;
+			cursor = crDefault;
+
+			if(/*parent.isPrimary && */comp !== void)
+				comp.highlightLayer.visible = false;
+
+			showParentHint = false;
+		}
+	}
+
+	function processLink(n)
+	{
+        // 停止超时处理
+        stopTimeout();
+
+		// 处理链接编号 n
+		var ln = links[n];
+		if(ln === void) return;
+
+		// 隐藏里屏高亮
+		if(comp !== void) comp.highlightLayer.visible = false;
+
+		// 执行
+		Scripts.eval(ln.exp) if ln.exp != '';
+
+		if(ln.storage != '' || ln.target != '')
+		{
+			window.lockMessageLayerSelProcess(); // 锁定选择
+			if(window.getKeyState(VK_RETURN) || window.getKeyState(VK_SPACE))
+				window.hideMouseCursor();
+					// 键盘操作时隐藏鼠标光标
+			window.process(ln.storage, ln.target, ln.countPage);
+		}
+	}
+
+	function onButtonClick(num)
+	{
+		// 图形按钮编号 num 被点击
+		processLink(num);
+	}
+
+
+	function setSelProcessLock(b)
+	{
+		// 设置选择锁定
+		// 一旦选定选项后，禁止再选其他选项
+		if(selProcessLock != b)
+		{
+			selProcessLock = b;
+			var lks = links;
+			for(var i = 0; i < numLinks; i++)
+			{
+				var item = lks[i];
+				var type = item.type;
+				if(type == ltButton) item.object.eventTransparent = b;
+				else if(type == ltEdit || type == ltCheckBox) item.object.enabled = !b;
+			}
+		}
+        if (selProcessLock) {
+            focusable = false;
+        } else {
+            if (numLinks > 0 || hasWheel() || hasClick()) {
+                focusable = true;
+            }
+        }
+	}
+
+	function storeSelProcessLock()
+	{
+		// 进入右键子例程前调用，退避当前 selProcessLock 状态
+		storedSelProcessLock = selProcessLock;
+	}
+
+	function restoreSelProcessLock()
+	{
+		// 退出右键例程时调用，恢复进入前的 selProcessLock 状态
+		setSelProcessLock(storedSelProcessLock);
+	}
+
+	function commit()
+	{
+		// 提交表单元素内容
+		var lks = links;
+		for(var i = 0; i < numLinks; i++)
+		{
+			var item = lks[i];
+			var type = item.type;
+			if(type == ltEdit || type == ltCheckBox) item.object.commit();
+		}
+	}
+
+	function isDragPos(x, y)
+	{
+		// x、y 坐标是否可拖拽抓取
+		if(!draggable) return false;
+		if(x >= marginL && y >= marginT && x < imageWidth - marginR && y < imageHeight - marginB)
+			return false;
+		if(x<0 || y<0 || x>=imageWidth || y>=imageHeight) return false;
+		return getMaskPixel(x, y) >= 64;
+	}
+
+	function internalHitTest(x, y)
+	{
+		// onHitTest 事件处理（内部函数）
+ 
+		if(isDragPos(x, y))
+		{
+			cursor = window.cursorDraggable;
+			showParentHint = true;
+			return true; // 不透传
+		}
+
+		if(selProcessLock) return false; // 透传
+
+		if(selClickLock)
+		{
+			// 判断鼠标是否自上次点击位置移动了一定距离
+			// 防止连点误选选项
+			if(lastMouseX-3 > x || lastMouseX+3 < x ||
+				lastMouseY-3 > y || lastMouseY+3 < y)
+			{
+				selClickLock = false;
+			}
+		}
+
+		var n;
+		n = findLink(x, y);
+		if(n == -1)
+		{
+			return hasClick(); // 无点击处理则透传
+		}
+		else
+		{
+			cursor = window.cursorPointed;
+			return true; // 不透传
+		}
+	}
+
+	function onHitTest(x, y, b)
+	{
+		// onHitTest 事件处理
+		var b = internalHitTest(x - imageLeft, y - imageTop);
+		return super.onHitTest(x, y, b);
+	}
+
+	function internalOnMouseDown(x, y, button)
+	{
+		// onMouseDown 事件处理（内部函数）
+		if(button == mbLeft && !selProcessLock)
+		{
+			if(!selClickLock)
+			{
+				var n = findLink(x, y);
+
+				if(n != -1)
+				{
+					processLink(n);
+					return;
+                } else if (hasClick()) {
+                    processClick();
+                    return;
+				}
+			}
+		}
+
+		if(isDragPos(x, y))
+		{
+			// 可拖拽位置
+			if(window.inStable)
+			{
+				dragOriginX = x;
+				dragOriginY = y;
+				dragging = true; // 开始拖拽
+			}
+		}
+	}
+
+	function onMouseDown(x, y, button)
+	{
+		lastMouseDownX = x;
+		lastMouseDownY = y;
+
+		internalOnMouseDown(x - imageLeft, y - imageTop, button);
+
+		super.onMouseDown(...);
+	}
+
+	function onMouseUp(x, y, button)
+	{
+		dragging = false;
+
+		super.onMouseUp(...);
+	}
+
+	function cancelDrag()
+	{
+		// 取消拖拽
+		dragging = false;
+	}
+
+	function internalMouseMove(x, y)
+	{
+		// 由 onMouseMove 等调用
+		if(dragging)
+		{
+			// 拖拽中
+			var px = parent.cursorX;
+			var py = parent.cursorY;
+			if(px < 0) px = 0;
+			if(py < 0) py = 0;
+			if(px >= parent.width) px = parent.width -1;
+			if(py >= parent.height) py = parent.height -1;
+			var l = px - dragOriginX;
+			var t = py - dragOriginY;
+			setPos(l, t);
+			return;
+		}
+
+
+		if(selProcessLock)
+		{
+			// 选择锁定中不处理
+			if(cursor == window.cursorPointed) cursor = crDefault; // 姑且……
+			return;
+		}
+
+		var n = findLink(x, y); // 检查 x、y 处是否有链接
+
+		if(n != lastLink)
+		{
+			if(lastLink != -1)
+			{
+				highlightLink(lastLink, false);
+			}
+			if(n != -1)
+			{
+				highlightLink(n, true);
+			}
+			lastLink = n;
+			keyLink = lastLink;
+		}
+	}
+	
+
+	function onMouseMove(x, y)
+	{
+		// onMouseMove 事件处理
+		super.onMouseMove(...);
+
+		internalMouseMove(x - imageLeft, y - imageTop);
+	}
+
+	function onMouseLeave()
+	{
+		// onMouseLeave 事件处理
+		if(lastLink != -1)
+		{
+			highlightLink(lastLink, false);
+			lastLink = -1;
+		}
+		super.onMouseLeave(...);
+	}
+
+	function setFocusToLink(n, force = false)
+	{
+		// 将鼠标光标移到链接编号 n 处，或赋予焦点
+		// force=false 时仅键盘操作才移动光标
+		// force=true 时无论键盘状态都移动光标并设置焦点
+		var linkn = links[n];
+		if(linkn === void) return;
+		var left = linkn.x[0];
+		var top = linkn.y[0];
+		var width = linkn.w[0];
+		var height = linkn.h[0];
+		var x, y;
+		if(linkn.type == ltEdit)
+		{
+			// 光标碍事，放到边缘
+			if(vertical)
+			{
+				x = left + (width>>1);
+				y = top;
+			}
+			else
+			{
+				x = left;
+				y = top + (height>>1);
+			}
+		}
+		else
+		{
+			x = left + (width>>1);
+			y = top + (height>>1);
+		}
+		if(!linkn.fixed[0])
+		{
+			// unfixed
+			x += lineLayerOriginX + getLineLayerLeftOffset();
+			y += lineLayerOriginY + getLineLayerTopOffset();
+		}
+
+		// 仅键盘操作时移动光标，检查对应键是否按下
+		var sgks = window.getKeyState;
+		var process = force || sgks(VK_LEFT) || sgks(VK_UP) || sgks(VK_RIGHT) ||
+			sgks(VK_DOWN) || sgks(VK_TAB);
+		if(process)
+		{
+			selClickLock = false;
+			cursorX = x;
+			cursorY = y;
+			if(force) keyLink = n; // 姑且重设
+		}
+		if(linkn.type == ltEdit || linkn.type == ltCheckBox)
+		{
+			var obj = linkn.object;
+			if(force) obj.focus();
+			return obj;
+		}
+		if(force) focus();
+		return void;
+	}
+
+	function onKeyDown(key, shift)
+	{
+		// 按键按下
+		if(window.preProcessKeys(key, shift)) return;
+
+		if(!focusable || (!numLinks && !hasClick())) { return super.onKeyDown(...); }
+
+		var l, r;
+		if(vertical)
+		{
+			l=VK_RIGHT;
+			r=VK_LEFT;
+		}
+		else
+		{
+			l=VK_LEFT;
+			r=VK_RIGHT;
+		}
+
+		if(!selProcessLock && ((key == VK_UP && !(shift & ssShift)) || key == l ||
+			(key == VK_TAB && (shift & ssShift))))
+		{
+			selClickLock = false;
+			if(keyLink == -1 || keyLink == 0)
+			{
+				var l = focusPrev();
+				if(l !== null) return;
+				keyLink = numLinks - 1;
+			}
+			else
+			{
+				keyLink--;
+			}
+			var obj = setFocusToLink(keyLink);
+			if(obj !== void) obj.focus();
+		}
+		else if(!selProcessLock && (key == VK_DOWN || key == r || (key == VK_TAB && !(shift & ssShift))))
+		{
+			selClickLock = false;
+			if(keyLink == -1 || keyLink == numLinks -1)
+			{
+				var l = focusNext();
+				if(l !== null) return;
+				keyLink = 0;
+			}
+			else
+			{
+				keyLink ++;
+			}
+			var obj = setFocusToLink(keyLink);
+			if(obj !== void) obj.focus();
+		}
+		else if(key == VK_SPACE || key == VK_RETURN)
+		{
+			if(selProcessLock || keyLink == -1) {
+                if (hasClick()) {
+                    processClick();
+				} else {
+					window.checkProceedingKey(key, shift);
+				}
+			} else
+				processLink(keyLink);
+		}
+		else
+		{
+			window.processKeys(key, shift); // 交给 window 处理
+		}
+	}
+
+	function findPrevFocusable(control, layer)
+	{
+		if(control.linkNum != 0) return this; else return prevFocusable;
+	}
+
+	function findNextFocusable(control, layer)
+	{
+		if(control.linkNum != numLinks -1) return this; else return layer;
+	}
+
+	function onBeforeFocus(layer, blured, direction)
+	{
+		// 获得焦点前调用
+		// 将光标移到首个链接
+
+		if(!selProcessLock)
+		{
+			// 仅键盘操作时移动光标，检查对应键是否按下
+			var sgks = window.getKeyState;
+			var process = sgks(VK_LEFT) || sgks(VK_UP) || sgks(VK_RIGHT) ||
+				sgks(VK_DOWN) || sgks(VK_TAB);
+
+			if(process && (blured == null || blured.parent != this))
+			{
+				if(direction)
+				{
+					// forward
+					keyLink = 0;
+				}
+				else
+				{
+					// backward
+					keyLink = numLinks-1;
+				}
+				var obj = setFocusToLink(keyLink);
+				if(obj !== void)
+				{
+					super.onBeforeFocus(obj, blured, direction);
+					return;
+				}
+			}
+
+			if(blured != null && blured.parent == this)
+			{
+				if(direction)
+				{
+					if(keyLink == -1 || keyLink == numLinks -1)
+						keyLink = 0;
+					else
+						keyLink++;
+				}
+				else
+				{
+					if(keyLink == -1 || keyLink == 0)
+						keyLink = numLinks - 1;
+					else
+						keyLink--;
+				}
+
+				var obj = setFocusToLink(keyLink);
+				if(obj !== void)
+				{
+					super.onBeforeFocus(obj, blured, direction);
+					return;
+				}
+			}
+		}
+
+		super.onBeforeFocus(...);
+	}
+
+	function locate(newx, newy)
+	{
+		var dx = +newx + marginL - x;
+		var dy = +newy + marginT - y;
+
+		if(newx !== void)
+			x = +newx + marginL;
+
+		if(newy !== void)
+			y = +newy + marginT;
+
+		if(!vertical && newy === void)
+		{
+			// 仅改横坐标
+			lineLayerPos += dx;
+			lineLayerLength += dx;
+		}
+		else if(vertical && newx === void)
+		{
+			// 仅改纵坐标
+			lineLayerPos += dy;
+			lineLayerLength += dy;
+		}
+		else
+		{
+			if(newx === void || newy === void)
+			{
+				if(vertical) y = marginT; else x = marginL;
+			}
+			if(inLink!=-1) endLinkLine();
+			fixLineLayer();
+			decideSizeChange();
+			initLineLayer();
+		}
+	}
+
+	function processReturn()
+	{
+		// 处理换行
+		if(reline())
+		{
+			return autoReturn;
+		}
+		return false;
+	}
+
+	function processGraph(elm)
+	{
+		// 按 elm 显示行内图片
+		var key = adjustColorKey(elm.key);
+		var char = true;
+		char = +elm.char if elm.char !== void;
+		if(putGraph(elm.storage, key, char)) return autoReturn;
+		return false;
+	}
+
+	function setRuby(text)
+	{
+		// 为下一字符设置注音
+		currentRuby = text;
+	}
+
+	function showBreakGlyph(glyphobj, storage, key)
+	{
+		// 在画面上显示行等待/翻页等待符号
+		glyphobj.parent = this; // 父设为自己
+		glyphobj.loadImages(storage, key); // 读取图片
+		glyphobj.bringToFront(); // 置于最前
+
+		if(glyphFixedPosition)
+		{
+			glyphobj.setPos(glyphFixedLeft, glyphFixedTop);
+		}
+		else
+		{
+			if(!vertical)
+			{
+				glyphobj.setPos(lineLayerPos + lineLayerOriginX + getLineLayerLeftOffset(),
+					y + lineSize + lineSpacing - glyphobj.height);
+			}
+			else
+			{
+				glyphobj.setPos(x - lineSpacing-  (lineSize>>1) - (glyphobj.width>>1),
+					lineLayerPos + lineLayerOriginY + getLineLayerTopOffset());
+			}
+		}
+		glyphobj.visible = true;
+	}
+
+	function showLineBreakGlyph(glyphobj)
+	{
+		// 显示行等待符号
+		showBreakGlyph(glyphobj, lineBreakGlyph, lineBreakGlyphKey);
+	}
+
+	function showPageBreakGlyph(glyphobj)
+	{
+		// 显示翻页等待符号
+		showBreakGlyph(glyphobj, pageBreakGlyph, pageBreakGlyphKey);
+	}
+
+	function setGlyph(elm)
+	{
+		// 设置点击等待符号
+		if(elm.line !== void)
+		{
+			lineBreakGlyph = elm.line;
+			lineBreakGlyphKey = elm.linekey;
+		}
+		if(elm.page !== void)
+		{
+			pageBreakGlyph = elm.page;
+			pageBreakGlyphKey = elm.pagekey;
+		}
+		glyphFixedPosition = +elm.fix if elm.fix !== void;
+		glyphFixedLeft = +elm.left if elm.left !== void;
+		glyphFixedTop = +elm.top if elm.top !== void;
+	}
+
+	function setIndent()
+	{
+		// 将缩进设为当前位置
+		if(vertical) indentxpos = y - marginT; else indentxpos = x - marginL;
+	}
+
+	function resetIndent()
+	{
+		// 解除缩进
+		indentxpos = 0;
+	}
+
+	function assignComp()
+	{
+		// 复制配对层的内容
+		assign(comp);
+	}
+
+	function beginTransition(elm)
+	{
+		// 按 elm 执行过渡
+		super.beginTransition(elm, comp);
+	}
+
+	function internalAssign(src, copyvisiblestate)
+	{
+		// 复制层信息
+		// （复制信息量很大，会稍费时间）
+
+		// 复制本层自身的图像、位置、透明度等
+		assignImages(src);
+		if(copyvisiblestate)
+			assignVisibleState(src); // assignImages 不复制可见/不可见等信息
+
+		focusable = src.focusable;
+
+		// 复制 links
+		{
+			invalidateLinkObjects(); // 姑且使所有对象失效
+			var tl = links, sl = src.links;
+			tl.count = sl.count;
+			for(var i = sl.count-1; i>=0; i--)
+			{
+				if(sl[i] === void) continue;
+				var tl_d = (tl[i] = %[]);
+				var sl_d = sl[i];
+				(Dictionary.assign incontextof tl_d)(sl_d);
+				// 但 x、y、w、h、fixed 各成员须实际 assign 内容
+				(tl_d.x = []).assign(sl_d.x);
+				(tl_d.y = []).assign(sl_d.y);
+				(tl_d.w = []).assign(sl_d.w);
+				(tl_d.h = []).assign(sl_d.h);
+				(tl_d.fixed = []).assign(sl_d.fixed);
+
+				// 按类型
+				var type = tl_d.type;
+				if(type == ltButton)
+				{
+					// 按钮
+					var sl_d_object = sl_d.object;
+					var object = new LinkButtonLayer(window, this);
+						// 重新创建 object
+					object.assign(sl_d_object);
+					tl_d.object = object;
+				}
+				else if(type == ltEdit)
+				{
+					// 单行编辑框
+					var sl_d_object = sl_d.object;
+					var object = new LinkEditLayer(window, this);
+						// 重新创建 object
+					object.assign(sl_d_object);
+					tl_d.object = object;
+				}
+				else if(type == ltCheckBox)
+				{
+					// 复选框
+					var sl_d_object = sl_d.object;
+					var object = new LinkCheckBoxLayer(window, this);
+						// 重新创建 object
+					object.assign(sl_d_object);
+					tl_d.object = object;
+				}
+			}
+		}
+
+
+		// 复制 lineLayerLinks
+		{
+			var tl = lineLayerLinks, sl = src.lineLayerLinks;
+			tl.count = sl.count;
+			for(var i = sl.count-1; i>=0; i--)
+			{
+				(Dictionary.assign incontextof (tl[i] = %[]))(sl[i]);
+			}
+		}
+
+		// 复制 lineLayer 的位置、尺寸、图像、字体信息
+		{
+			var tl = lineLayer, sl = src.lineLayer;
+			tl.assignImages(sl);
+			tl.assignVisibleState(sl);
+			var tf = tl.font, sf = sl.font;
+			tf.face = sf.face;
+			tf.angle = sf.angle;
+			tf.bold = sf.bold;
+			tf.italic = sf.italic;
+			tf.height = sf.height;
+		}
+
+		// 其他
+		highlightLayer.visible = false;
+		keyLink = -1;
+		imageModified = true;
+
+		// 复制其他信息
+		// [start_assign_vars] 与 [end_assign_vars] 之间
+		// 由 perl 自动生成，请勿删除此标记或编辑两标记之间内容。
+		// [start_assign_vars]
+		frameGraphic = src.frameGraphic;
+		frameKey = src.frameKey;
+		frameColor = src.frameColor;
+		frameOpacity = src.frameOpacity;
+		marginL = src.marginL;
+		marginT = src.marginT;
+		marginR = src.marginR;
+		marginB = src.marginB;
+		marginRCh = src.marginRCh;
+		x = src.x;
+		y = src.y;
+		relinexpos = src.relinexpos;
+		isLastLine = src.isLastLine;
+		indentxpos = src.indentxpos;
+		linkFilled = src.linkFilled;
+		numLinks = src.numLinks;
+		selProcessLock = src.selProcessLock;
+		storedSelProcessLock = src.storedSelProcessLock;
+		defaultLinkColor = src.defaultLinkColor;
+		defaultLinkOpacity = src.defaultLinkOpacity;
+		defaultFontSize = src.defaultFontSize;
+		fontSize = src.fontSize;
+		_fontSize = src._fontSize;
+		defaultLineSize = src.defaultLineSize;
+		reserveLineSize = src.reserveLineSize;
+		lineSize = src.lineSize;
+		defaultRubySize = src.defaultRubySize;
+		rubySize = src.rubySize;
+		_rubySize = src._rubySize;
+		defaultRubyOffset = src.defaultRubyOffset;
+		rubyOffset = src.rubyOffset;
+		_rubyOffset = src._rubyOffset;
+		defaultLineSpacing = src.defaultLineSpacing;
+		lineSpacing = src.lineSpacing;
+		defaultPitch = src.defaultPitch;
+		pitch = src.pitch;
+		defaultShadow = src.defaultShadow;
+		shadow = src.shadow;
+		defaultEdge = src.defaultEdge;
+		edge = src.edge;
+		defaultShadowColor = src.defaultShadowColor;
+		shadowColor = src.shadowColor;
+		defaultEdgeColor = src.defaultEdgeColor;
+		edgeColor = src.edgeColor;
+		defaultBold = src.defaultBold;
+		bold = src.bold;
+		defaultFace = src.defaultFace;
+		userFace = src.userFace;
+		fontFace = src.fontFace;
+		defaultChColor = src.defaultChColor;
+		chColor = src.chColor;
+		defaultAntialiased = src.defaultAntialiased;
+		antialiased = src.antialiased;
+		vertical = src.vertical;
+		currentRuby = src.currentRuby;
+		lastDrawnCh = src.lastDrawnCh;
+		edgeExtent = src.edgeExtent;
+		edgeEmphasis = src.edgeEmphasis;
+		shadowOffsetX = src.shadowOffsetX;
+		shadowOffsetY = src.shadowOffsetY;
+		sizeChanged = src.sizeChanged;
+		nextClearFlag = src.nextClearFlag;
+		lineLayerBase = src.lineLayerBase;
+		lineLayerPos = src.lineLayerPos;
+		lineLayerLength = src.lineLayerLength;
+		lineLayerOriginX = src.lineLayerOriginX;
+		lineLayerOriginY = src.lineLayerOriginY;
+		align = src.align;
+		defaultAutoReturn = src.defaultAutoReturn;
+		autoReturn = src.autoReturn;
+		lineBreakGlyph = src.lineBreakGlyph;
+		lineBreakGlyphKey = src.lineBreakGlyphKey;
+		pageBreakGlyph = src.pageBreakGlyph;
+		pageBreakGlyphKey = src.pageBreakGlyphKey;
+		glyphFixedPosition = src.glyphFixedPosition;
+		glyphFixedLeft = src.glyphFixedLeft;
+		glyphFixedTop = src.glyphFixedTop;
+		draggable = src.draggable;
+		selClickLock = src.selClickLock;
+		lastMouseX = src.lastMouseX;
+		lastMouseY = src.lastMouseY;
+		// [end_assign_vars]
+	}
+
+	function assign(src)
+	{
+		internalAssign(src, true);
+	}
+
+	function store()
+	{
+		// 将当前状态记入字典数组并返回
+		// [start_store_vars] 与 [end_store_vars] 之间
+		// (略)
+		var dic = super.store();
+		// [start_store_vars]
+		dic.frameGraphic = frameGraphic;
+		dic.frameKey = frameKey;
+		dic.frameColor = frameColor;
+		dic.frameOpacity = frameOpacity;
+		dic.marginL = marginL;
+		dic.marginT = marginT;
+		dic.marginR = marginR;
+		dic.marginB = marginB;
+		dic.marginRCh = marginRCh;
+		dic.defaultLinkColor = defaultLinkColor;
+		dic.defaultLinkOpacity = defaultLinkOpacity;
+		dic.defaultFontSize = defaultFontSize;
+		dic.defaultLineSize = defaultLineSize;
+		dic.defaultRubySize = defaultRubySize;
+		dic.defaultRubyOffset = defaultRubyOffset;
+		dic.defaultLineSpacing = defaultLineSpacing;
+		dic.defaultPitch = defaultPitch;
+		dic.defaultShadow = defaultShadow;
+		dic.defaultEdge = defaultEdge;
+		dic.defaultShadowColor = defaultShadowColor;
+		dic.defaultEdgeColor = defaultEdgeColor;
+		dic.defaultBold = defaultBold;
+		dic.defaultFace = defaultFace;
+		dic.defaultChColor = defaultChColor;
+		dic.vertical = vertical;
+		dic.edgeExtent = edgeExtent;
+		dic.edgeEmphasis = edgeEmphasis;
+		dic.shadowOffsetX = shadowOffsetX;
+		dic.shadowOffsetY = shadowOffsetY;
+		dic.defaultAutoReturn = defaultAutoReturn;
+		dic.lineBreakGlyph = lineBreakGlyph;
+		dic.lineBreakGlyphKey = lineBreakGlyphKey;
+		dic.pageBreakGlyph = pageBreakGlyph;
+		dic.pageBreakGlyphKey = pageBreakGlyphKey;
+		dic.glyphFixedPosition = glyphFixedPosition;
+		dic.glyphFixedLeft = glyphFixedLeft;
+		dic.glyphFixedTop = glyphFixedTop;
+		dic.draggable = draggable;
+		// [end_store_vars]
+		return dic;
+	}
+
+	function restore(dic)
+	{
+		imageModified = true;
+		// 从 dic 读出状态
+		// [start_restore_vars] 与 [end_restore_vars] 之间
+		// (略)
+		// [start_restore_vars]
+		frameGraphic = dic.frameGraphic if dic.frameGraphic !== void;
+		frameKey = dic.frameKey if dic.frameKey !== void;
+		frameColor = dic.frameColor if dic.frameColor !== void;
+		frameOpacity = dic.frameOpacity if dic.frameOpacity !== void;
+		marginL = dic.marginL if dic.marginL !== void;
+		marginT = dic.marginT if dic.marginT !== void;
+		marginR = dic.marginR if dic.marginR !== void;
+		marginB = dic.marginB if dic.marginB !== void;
+		marginRCh = dic.marginRCh if dic.marginRCh !== void;
+		defaultLinkColor = dic.defaultLinkColor if dic.defaultLinkColor !== void;
+		defaultLinkOpacity = dic.defaultLinkOpacity if dic.defaultLinkOpacity !== void;
+		defaultFontSize = dic.defaultFontSize if dic.defaultFontSize !== void;
+		defaultLineSize = dic.defaultLineSize if dic.defaultLineSize !== void;
+		defaultRubySize = dic.defaultRubySize if dic.defaultRubySize !== void;
+		defaultRubyOffset = dic.defaultRubyOffset if dic.defaultRubyOffset !== void;
+		defaultLineSpacing = dic.defaultLineSpacing if dic.defaultLineSpacing !== void;
+		defaultPitch = dic.defaultPitch if dic.defaultPitch !== void;
+		defaultShadow = dic.defaultShadow if dic.defaultShadow !== void;
+		defaultEdge = dic.defaultEdge if dic.defaultEdge !== void;
+		defaultShadowColor = dic.defaultShadowColor if dic.defaultShadowColor !== void;
+		defaultEdgeColor = dic.defaultEdgeColor if dic.defaultEdgeColor !== void;
+		defaultBold = dic.defaultBold if dic.defaultBold !== void;
+		defaultFace = dic.defaultFace if dic.defaultFace !== void;
+		defaultChColor = dic.defaultChColor if dic.defaultChColor !== void;
+		vertical = dic.vertical if dic.vertical !== void;
+		edgeExtent = dic.edgeExtent if dic.edgeExtent !== void;
+		edgeEmphasis = dic.edgeEmphasis if dic.edgeEmphasis !== void;
+		shadowOffsetX = dic.shadowOffsetX if dic.shadowOffsetX !== void;
+		shadowOffsetY = dic.shadowOffsetY if dic.shadowOffsetY !== void;
+		defaultAutoReturn = dic.defaultAutoReturn if dic.defaultAutoReturn !== void;
+		lineBreakGlyph = dic.lineBreakGlyph if dic.lineBreakGlyph !== void;
+		lineBreakGlyphKey = dic.lineBreakGlyphKey if dic.lineBreakGlyphKey !== void;
+		pageBreakGlyph = dic.pageBreakGlyph if dic.pageBreakGlyph !== void;
+		pageBreakGlyphKey = dic.pageBreakGlyphKey if dic.pageBreakGlyphKey !== void;
+		glyphFixedPosition = dic.glyphFixedPosition if dic.glyphFixedPosition !== void;
+		glyphFixedLeft = dic.glyphFixedLeft if dic.glyphFixedLeft !== void;
+		glyphFixedTop = dic.glyphFixedTop if dic.glyphFixedTop !== void;
+		draggable = dic.draggable if dic.draggable !== void;
+		// [end_restore_vars]
+		super.restore(dic);
+	}
+
+	function atEndOfTransition(src, withchildren, exchange)
+	{
+		// 重写 atEndOfTransition
+		super.atEndOfTransition(...);
+		if(src == null)
+		{
+			//・消息层、前景层无 src 过渡 (children=true)
+			//　无需操作，结束后其子层会自动隐藏。
+		}
+		else
+		{
+			//・消息层、前景层有 src 过渡 (children=true)
+			//　与过渡源交换重要信息；exchange=false 时还将过渡源信息复制到过渡目标。
+			//　但此复制不包含窗口可见/不可见信息。
+			assign(src, false);
+			exchangeInfo();
+			window.swapMessageLayer(id);
+		}
+	}
+
+	function assignTransSrc()
+	{
+		// 复制过渡源
+		assign(comp, true);
+	}
+
+	function exchangeInfo()
+	{
+		// 与 comp 交换信息
+		// 图像内容、树结构已互换，此处交换名称等
+		// 并更新窗口管理信息
+		var src = comp;
+		var tmp = src.name;
+		src.name = name;
+		name = tmp;
+	}
+
+	function setHiddenStateByUser(b)
+	{
+		// 用户右键等临时隐藏消息层时调用
+		if(b)
+		{
+			visibleBeforeUserInvisible = visible;
+			invisibleByUser = true; // 用户临时设为不可见
+			visible = false;
+		}
+		else
+		{
+			invisibleByUser = false; // 可见
+			visible = visibleBeforeUserInvisible;
+		}
+	}
+
+}
+
+
+// TJS 脚本到此结束
+"
+END_OF_TJS_SCRIPT
+# "; /*
+
+# 用于 assign/store/restore 的 perl 脚本，重新生成应复制的变量
+
+open FH, "MessageLayer.tjs" or die;
+undef($/);
+$content = <FH>;
+
+$list_assign = '';
+$list_store = '';
+$list_restore = '';
+while($content =~ /\/\*(\w+)\*\/var\s+(\w+)/gs)
+{
+	$a = $1;
+	$v = $2;
+	if($a =~ /C/)
+	{ $list_assign .= "\t\t$v = src.$v;\n"; }
+	if($a =~ /S/)
+	{
+		$list_store .= "\t\tdic.$v = $v;\n";
+		$list_restore .= "\t\t$v = dic.$v if dic.$v !== void;\n";
+	}
+}
+
+$content =~
+s/\t\t\/\/ \[start_assign_vars\]\n.*?\t\t\/\/ \[end_assign_vars\]/\t\t\/\/ \[start_assign_vars\]\n$list_assign\t\t\/\/ \[end_assign_vars\]/s;
+$content =~
+s/\t\t\/\/ \[start_store_vars\]\n.*?\t\t\/\/ \[end_store_vars\]/\t\t\/\/ \[start_store_vars\]\n$list_store\t\t\/\/ \[end_store_vars\]/s;
+$content =~
+s/\t\t\/\/ \[start_restore_vars\]\n.*?\t\t\/\/ \[end_restore_vars\]/\t\t\/\/ \[start_restore_vars\]\n$list_restore\t\t\/\/ \[end_restore_vars\]/s;
+
+open FH, ">MessageLayer.tjs" or die;
+print FH $content;
+
+
+# */

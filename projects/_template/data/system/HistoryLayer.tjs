@@ -1,0 +1,1058 @@
+// HistoryLayer.tjs - 对话履历层
+// Copyright (C)2001-2009, W.Dee and contributors  可自由修改与再分发
+
+class LButtonLayer extends ButtonLayer
+	// 会将 onClick 事件发送给 parent 的按钮层
+{
+	function LButtonLayer(window, parent)
+	{
+		super.ButtonLayer(window, parent);
+		focusable = false;
+	}
+
+	function finalize()
+	{
+		super.finalize(...);
+	}
+
+	function onClick()
+	{
+		super.onClick(...);
+	}
+
+	function onExecute(x, y, button, shift)
+	{
+		if(enabled && button == mbLeft)
+			parent.onButtonClick(this);
+		super.onExecute(...);
+	}
+
+}
+
+class HistoryLayer extends Layer
+{
+	var prevPageButton = void;
+	var nextPageButton = void;
+	var closeButton = void;
+
+	var antialiased = true; // 是否进行抗锯齿文字绘制
+	var verticalView = false; // 是否为竖排
+	var everypage = false;	// 是否按页显示履历
+	var autoReturn = true; // 是否自动换行
+	var maxLines = 2000; // 最大保留行数
+
+	var data = []; // 行数据（环形缓冲区）
+	var lineStart = []; // 行显示开始位置（环形缓冲区）
+	var actionInfo = []; // 履历点击信息（环形缓冲区）
+	var dataStart = 0; // 数据起始位置
+	var dataLines = 0; // 数据中包含的行数 < maxLines -1
+	var dataPos = 0; // 数据写入位置
+
+		// 按页浏览功能的代码来自 kiyobee 先生。
+		// 在此致以感谢。
+
+	//	“按页”时，data、lineStart、actionInfo 以二维方式使用。
+	var maxPages = 100;	//	最大页数
+	var dataPages = 0;	//	数据中有效页数
+	var dataPage = 0;//	当前正在写入的页
+
+	var marginL = 12;
+	var marginR = 12;
+	var marginT = 12;
+	var marginB = 12;
+	var fontName = "ＭＳ Ｐ明朝";
+	var fontBold = false;
+	var fontHeight = 24;
+	var lineHeight = 26;
+	var relinePos_org = 0; // 换行位置
+	var limitPos_org = 0; // 屏幕边缘位置
+	var relinePos = 0; // 换行位置
+	var limitPos = 0; // 屏幕边缘位置
+	var indentPos = 0; // 缩进位置
+	var repageLine = 0;	//	换页行数
+
+	var historyColor = 0xffffff;	//	履历文字颜色
+
+	var controlHeight = 20;
+
+	var dispStart = 0;
+	var dispLines = 0;
+	var canScroll = false;
+
+	var currentLine = "";
+
+	var currentAction = void;
+	var currentActionExp = void;
+	var currentActionID = 1;
+
+	var lastHighlightedActionID = 0;
+
+	var lastWheelTick; // 最后一次操作滚轮时的 tick
+
+	var storeState = false; // 是否将状态保存到书签
+
+	//	禁则字符
+	var wwFollowing = "%),:;]}｡｣ﾞﾟ。，、．：；゛゜ヽヾゝ"
+                "ゞ々’”）〕］｝〉》」』】°′″℃¢％‰"; // 行首禁则字符
+	var wwFollowingWeak="!.?､･ｧｨｩｪｫｬｭｮｯｰ・？！ーぁぃぅぇぉっゃゅょゎァィ"
+                "ゥェォッャュョヮヵヶ"; // 行首（弱）禁则字符
+	var wwLeading="\\$([{｢‘“（〔［｛〈《「『【￥＄£"; // 行尾禁则字符
+
+	wwFollowing += wwFollowingWeak;
+
+	function HistoryLayer(win, par)
+	{
+		super.Layer(...);
+		(HistoryLayer_config incontextof this)(); // configuration
+		(HistoryLayer_config_override incontextof this)()
+			if typeof global.HistoryLayer_config_override != "undefined";
+
+		name = "对话履历层";
+
+		setImageSize(parent.width, parent.height);
+		setSizeToImageSize();
+		hitType = htMask;
+		hitThreshold = 1;
+
+		font.height = fontHeight;
+		font.bold = fontBold;
+		if(verticalView)
+		{
+			font.angle = 2700;
+			font.face = '@' + fontName;
+		}
+		else
+		{
+			font.angle = 0;
+			font.face = fontName;
+		}
+
+		focusable = true;
+
+		cursor = window.cursorDefault;
+
+		clear();
+	}
+
+	function finalize()
+	{
+		invalidate prevPageButton if prevPageButton !== void;
+		invalidate nextPageButton if nextPageButton !== void;
+		invalidate closeButton if closeButton !== void;
+
+		super.finalize(...);
+	}
+
+	function clear()
+	{
+		// 清除内容
+		lineStart = [];
+		actionInfo = [];
+		dataStart = 0;
+		dataLines = 0;
+		dataPos = 0;
+		dataPages = 0;
+		dataPage = 0;
+
+		if(everypage)
+		{
+			data[dataPage]	= [];
+			lineStart[dataPage]	= [];
+			actionInfo[dataPage] = [];
+		}
+		else
+			dataLines = 1;
+
+
+		currentLine = "";
+
+		currentAction = void;
+		currentActionExp = void;
+		currentActionID = 1;
+
+		lastHighlightedActionID = 0;
+
+		calcRelinePos();
+	}
+
+	function save() {
+		// 履历保存到书签的代码来自 yun 先生。
+		// 在此致以感谢。
+		if(!storeState) return void;
+		var dic = %[];
+		if(everypage)
+		{
+			dic.lineStart = lineStart;
+			dic.actionInfo = actionInfo;
+			dic.data = data;
+		}
+		else
+		{
+			(dic.lineStart = []).assignStruct(lineStart);
+			(dic.actionInfo = []).assignStruct(actionInfo);
+			(dic.data = []).assignStruct(data);
+		}
+		dic.dataStart = dataStart;
+		dic.dataPos = dataPos;
+		dic.dataPages = dataPages;
+		dic.dataPage = dataPage;
+		dic.dataLines = dataLines;
+		dic.currentLine = currentLine;
+		dic.currentAction = currentAction;
+		dic.currentActionExp = currentActionExp;
+		dic.currentActionID = currentActionID;
+		dic.lastHighlightedActionID = lastHighlightedActionID;
+		return dic;
+	}
+
+	function load(dic) {
+		if(!storeState) return;
+		if(dic === void) return;
+		lineStart.assignStruct(dic.lineStart);
+		actionInfo.assignStruct(dic.actionInfo);
+		data.assignStruct(dic.data);
+		dataStart = dic.dataStart;
+		dataPos = dic.dataPos;
+		dataPages = dic.dataPages;
+		dataPage = dic.dataPage;
+		dataLines = dic.dataLines;
+		currentLine = dic.currentLine;
+		currentAction = dic.currentAction;
+		currentActionExp = dic.currentActionExp;
+		currentActionID = dic.currentActionID;
+		lastHighlightedActionID = dic.lastHighlightedActionID;
+		calcRelinePos();
+	}
+
+	function calcRelinePos()
+	{
+		if(verticalView)
+		{
+			relinePos = relinePos_org = height - marginT - marginB - controlHeight;
+			limitPos =  limitPos_org = height - marginT - controlHeight;
+			repageLine	= (width - marginL - marginR) \ lineHeight;
+		}
+		else
+		{
+			relinePos = relinePos_org = width - marginL - marginR;
+			//	计算作为换页基准的行数
+			limitPos = limitPos_org = width - marginL;
+			repageLine	= (height - marginT - marginB - controlHeight) \ lineHeight;
+		}
+	}
+
+	function setOptions(elm)
+	{
+		// 设置选项
+		if(elm.autoreturn !== void)
+			autoReturn = +elm.autoreturn;
+	}
+
+	function makeButtons()
+	{
+		if(prevPageButton !== void) return; // 已经创建过了
+
+		prevPageButton = new LButtonLayer(window, this);
+		nextPageButton = new LButtonLayer(window, this);
+		closeButton = new LButtonLayer(window, this);
+
+		if(verticalView)
+		{
+			nextPageButton.left    = 0;
+			nextPageButton.top     = 0;
+			nextPageButton.width   = (width-controlHeight) \ 2;
+			nextPageButton.height  = controlHeight-2;
+			nextPageButton.caption = "≪ 下一页 ";
+			nextPageButton.color   = 0x808080;
+			nextPageButton.visible = true;
+
+			prevPageButton.left    = nextPageButton.width;
+			prevPageButton.top     = 0;
+			prevPageButton.width   = nextPageButton.width;
+			prevPageButton.height  = controlHeight-2;
+			prevPageButton.caption = " 上一页 ≫";
+			prevPageButton.color   = 0x808080;
+			prevPageButton.visible = true;
+		}
+		else
+		{
+			prevPageButton.left    = 0;
+			prevPageButton.top     = 0;
+			prevPageButton.width   = (width-controlHeight) \ 2;
+			prevPageButton.height  = controlHeight-2;
+			prevPageButton.caption = "≪ 上一页 ";
+			prevPageButton.color   = 0x808080;
+			prevPageButton.visible = true;
+
+			nextPageButton.left    = prevPageButton.width;
+			nextPageButton.top     = 0;
+			nextPageButton.width   = prevPageButton.width;
+			nextPageButton.height  = controlHeight-2;
+			nextPageButton.caption = " 下一页 ≫";
+			nextPageButton.color   = 0x808080;
+			nextPageButton.visible = true;
+		}
+
+		closeButton.left      = width-controlHeight;
+		closeButton.top       = 0;
+		closeButton.width     = controlHeight;
+		closeButton.height    = controlHeight-2;
+		closeButton.caption   = "×";
+		closeButton.captionColor= 0xffffff;
+		closeButton.color     = 0x707090;
+		closeButton.visible   = true;
+		closeButton.hint      = "关闭对话履历";
+
+	}
+
+	property lastLine
+	{
+		getter
+		{
+			if(everypage)
+				return data[dataPage][dataPos];
+			else
+				return data[dataPos];
+		}
+		
+		setter(line)
+		{
+			if(everypage)
+				data[dataPage][dataPos]	= line;
+			else
+				data[dataPos] = line;
+		}
+	}
+
+	property lastAction
+	{
+		getter
+		{
+			if(everypage)
+				return actionInfo[dataPage][dataPos];
+			else
+				return actionInfo[dataPos];
+		}
+		
+		setter(n)
+		{
+			if(everypage)
+				actionInfo[dataPage][dataPos]	= n;
+			else
+				actionInfo[dataPos] = n;
+		}
+	}
+
+	function getLine(n)
+	{
+		// 获取第 n 行
+		n += dataStart;
+		if(n >= maxLines) n -= maxLines;
+		return data[n];
+	}
+
+	function getPage(n)
+	{
+		// 获取第 n 页
+		n += dataStart;
+		if(n >= maxPages) n -= maxPages;
+		return data[n];
+	}
+
+	function getLineStart(n)
+	{
+		// 获取第 n 行的显示起始位置
+		n += dataStart;
+		if(n >= maxLines) n -= maxLines;
+		return lineStart[n];
+	}
+
+	function getLineStart2(n, m)
+	{
+		// 获取第 n 页第 m 行的显示起始位置
+		n += dataStart;
+		if(n >= maxPages) n -= maxPages;
+		return lineStart[n][m];
+	}
+
+	function getActionInfo(n)
+	{
+		// 获取第 n 个动作信息
+		n += dataStart;
+		if(n >= maxLines) n -= maxLines;
+		return actionInfo[n];
+	}
+
+	function getActionInfo2(n, m)
+	{
+		// 获取第 n 页第 m 行的动作信息
+		n += dataStart;
+		if(n >= maxPages) n -= maxPages;
+		return actionInfo[n][m];
+	}
+
+	function endAction()
+	{
+		if(currentAction !== void)
+		{
+			// 当前动作已存在时
+			var ca = currentAction;
+			var last = ca[ca.count - 1];
+			last.end = font.getTextWidth(currentLine);
+		}
+	}
+
+	function setNewAction(action)
+	{
+		// 新建动作
+		if(action == "") action = void;
+		if(action === void) return;
+		endAction();
+		currentActionExp = action;
+		if(currentAction == void) currentAction = [];
+		var last = currentAction[currentAction.count] = %[];
+		last.start = font.getTextWidth(currentLine);
+		last.action = action;
+		last.id = ++currentActionID;
+	}
+
+	function continueAction()
+	{
+		if(currentActionExp === void) return;
+		if(currentAction == void) currentAction = [];
+		var last = currentAction[currentAction.count] = %[];
+		last.start = font.getTextWidth(currentLine);
+		last.action = currentActionExp;
+		last.id = currentActionID;
+	}
+
+	function clearAction()
+	{
+		endAction();
+		currentActionExp = void;
+	}
+
+	function store(ch)
+	{
+		if(!autoReturn)
+		{
+			// 不自动换行时
+			currentLine += ch;
+		}
+		else
+		{
+			// 自动换行时
+			var len;
+			if((len = font.getTextWidth(currentLine += ch)) >= relinePos)
+			{
+				var curlen = currentLine.length;
+				var lastch = curlen >= 2 ? currentLine[curlen - 2] : '';
+
+				if(((lastch=='' || wwLeading.indexOf(lastch)==-1) &&
+					wwFollowing.indexOf(ch)==-1) ||
+					(lastch!='' && wwFollowingWeak.indexOf(lastch)!=-1 &&
+						wwFollowingWeak.indexOf(ch)!=-1) || len > limitPos)
+				{
+					// 最后绘制的不是行尾禁则字符，
+					// 且即将绘制的也不是行首禁则字符，
+					// 或弱禁则字符未连续出现，
+					// 又或者即将绘制的不是强禁则字符且
+					// 确实会超出右端
+					// （此情况不考虑边距）
+					currentLine=
+						currentLine.substring(0, currentLine.length - ch.length);	//	移除刚追加的字符
+					reline();
+					currentLine = ch;
+				}
+			}
+		}
+	}
+
+	function repage()
+	{
+		//	换页
+		if(!everypage) return;
+
+		if(dataPos == 0 && currentLine == "") return; // 无任何数据时不作处理
+
+		endAction();
+		lastLine	= currentLine;
+		lastAction = currentAction;
+
+		dataPage++;
+		if(dataPage >= maxPages)	dataPage = 0;
+		dataPos	= 0;
+		data[dataPage]	= [];
+		lineStart[dataPage]	= [];
+		lineStart[dataPage][dataPos]	= indentPos;
+		actionInfo[dataPage] = [];
+		actionInfo[dataPage][dataPos] = currentAction;
+		if(dataPage == dataStart)	dataStart++;
+		if(dataStart >= maxPages)	dataStart = 0;
+		if(dataPages < maxPages-1)	dataPages++;
+
+		currentAction = void;
+		currentLine	= '';
+		continueAction();
+	}
+
+	function reline()
+	{
+		// 改行
+
+		if(everypage)
+		{
+			if(dataPos + 1 >= repageLine)
+			{
+				//	达到应换页的行数时
+				repage();
+			}
+			else
+			{
+				endAction();
+				lastLine = currentLine;
+				lastAction = currentAction;
+
+				dataPos++;
+				lineStart[dataPage][dataPos] = indentPos;
+				limitPos = limitPos_org - indentPos;
+				relinePos = relinePos_org - indentPos;
+
+				currentAction = void;
+				currentLine = '';
+				continueAction();
+			}
+		}
+		else
+		{
+			endAction();
+			lastLine = currentLine;
+			lastAction = currentAction;
+
+			dataPos++;
+			if(dataPos >= maxLines) dataPos=0;
+			data[dataPos] = void;
+			lineStart[dataPos] = indentPos;
+			limitPos = limitPos_org - indentPos;
+			relinePos = relinePos_org - indentPos;
+			if(dataPos == dataStart) dataStart++;
+			if(dataStart >= maxLines) dataStart = 0;
+			if(dataLines < maxLines) dataLines++;
+
+			currentAction = void;
+			currentLine = '';
+			continueAction();
+		}
+
+	}
+
+	function beginIndent()
+	{
+		// 将缩进设于当前位置
+		indentPos = font.getTextWidth(currentLine);
+	}
+
+	function endIndent()
+	{
+		// 解除缩进
+		indentPos = 0;
+	}
+
+	function clearBack(n)
+	{
+		// 填充背景
+		if(n === void)
+		{
+			face = dfAlpha;
+			fillRect(0, 0, width, height, 0xc8000000);
+		}
+		else
+		{
+			face = dfAlpha;
+			if(verticalView)
+				fillRect(width - marginR - (n+1)*lineHeight, controlHeight, lineHeight,
+					height - controlHeight, 0xc8000000);
+			else
+				fillRect(0, n*lineHeight + controlHeight + marginT, width, lineHeight, 0xc8000000);
+		}
+	}
+
+	function dispInit()
+	{
+		// 全部重绘与初始设置
+		makeButtons(); // 创建按钮
+
+		lastLine = currentLine;
+		endAction();
+		lastAction = currentAction;
+
+		antialiased = window.chDefaultAntialiased;
+		clearBack();
+
+		if(everypage)
+		{
+			if(dataPages>0)
+			{
+				canScroll	= true;
+				dispStart	= dataPages - 1;
+			}
+			else
+			{
+				canScroll	= false;
+				dispStart	= 0;
+			}
+			drawPage();
+		}
+		else
+		{
+			if(verticalView)
+				dispLines = (width - marginR - marginL) \ lineHeight;
+			else
+				dispLines = (height - marginT - marginB - controlHeight) \ lineHeight;
+
+			if(dataLines <= dispLines)
+			{
+				// 在可显示范围内
+				canScroll = false;
+				dispStart = 0;
+				var i;
+				for(i= 0; i < dataLines; i++)
+					drawLine(i);
+			}
+			else
+			{
+				// 超出可显示范围
+				canScroll = true;
+				dispStart = dataLines - dispLines;
+				var i;
+				for(i = 0; i < dispLines; i++)
+					drawLine(i);
+			}
+		}
+
+		updateButtonState();
+		visible = true;
+		setMode();
+		focus();
+		lastWheelTick = 0;
+
+		cursor = window.cursorDefault;
+	}
+
+	function dispUninit()
+	{
+		// 由 window 调用
+		removeMode();
+		visible = false;
+	}
+
+	function drawLine(n)
+	{
+		// 绘制显示行 n
+		var line = everypage?getPage(dispStart)[n]:getLine(n + dispStart);
+		if(everypage && line=="") return;
+		var linestart = everypage?getLineStart2(dispStart, n):getLineStart(n + dispStart);
+		if(verticalView)
+		{
+			var x = width - marginR - n*lineHeight;
+			drawText(x, marginT + controlHeight + linestart, line, historyColor, 255, antialiased);
+		}
+		else
+		{
+			var y = n*lineHeight + controlHeight + marginT;
+			drawText(marginL + linestart, y, line, historyColor, 255, antialiased);
+		}
+	}
+
+	function drawPage()
+	{
+		var page	= getPage(dispStart);
+		var i;
+		if(verticalView)
+		{
+			var x = width - marginR;
+			for(i = 0; i < repageLine; i++)
+			{
+				if(page[i]!="")
+					drawText(x, marginT + controlHeight + getLineStart2(dispStart, i),
+						page[i], historyColor, 255, antialiased);
+				x -= lineHeight;
+			}
+		}
+		else
+		{
+			var y = controlHeight + marginT;
+			for(i = 0; i < repageLine; i++)
+			{
+				if(page[i]!="")
+					drawText(marginL + getLineStart2(dispStart, i), y, page[i],
+						historyColor, 255, antialiased);
+				y += lineHeight;
+			}
+		}
+	}
+
+	function getActionInfoFromPos(x, y)
+	{
+		// 获取 (x,y) 位置的动作 ID
+		var line;
+		if(verticalView)
+			line = -(x - width + marginR) \ lineHeight;
+		else
+			line = (y - controlHeight - marginT) \ lineHeight;
+		if(line < 0) return void;
+		if(!everypage && dataLines <= dispLines && line >= dataLines) return void; // 超出范围
+		var ai;
+		if(everypage)
+		{
+			ai = getActionInfo2(dispStart, line);
+		}
+		else
+		{
+			line += dispStart;
+			ai = getActionInfo(line);
+		}
+		if(ai === void) return void; // 无信息
+		var p = verticalView ? (y - marginT - controlHeight) : (x - marginL);
+		p -= everypage ? getLineStart2(dispStart, line) : getLineStart(line);
+		for(var i = ai.count - 1; i >= 0; i--)
+		{
+			var info = ai[i];
+			if(info.end !== void && info.start < p && p <= info.end) return info;
+		}
+		return void;
+	}
+
+	function highlightAction(id)
+	{
+		// 高亮画面上该 ID 的全部显示
+		lastHighlightedActionID = id;
+		if(id == 0) return;
+		var max = everypage ? repageLine : ((dataLines <= dispLines) ? dataLines : dispLines);
+		for(var i = 0; i < max; i++)
+		{
+			var ai = everypage?getActionInfo2(dispStart, i):getActionInfo(i + dispStart);
+			if(ai === void) continue;
+			for(var ii = ai.count - 1; ii >= 0; ii--)
+			{
+				var info = ai[ii];
+				if(info.end !== void && info.id == id)
+				{
+					var linestart = everypage?getLineStart2(dispStart, i):getLineStart(i + dispStart);
+					if(verticalView)
+					{
+						var x = width - marginR - (i-1)*lineHeight - 1;
+						fillRect(x - lineHeight, info.start + marginT + controlHeight + linestart,
+							1,	info.end - info.start, 0xff000000 | historyColor);
+					}
+					else
+					{
+						var y = i*lineHeight + controlHeight + marginT;
+						fillRect(marginL + linestart + info.start, y + lineHeight - 1,
+							info.end - info.start, 1, 0xff000000 | historyColor);
+					}
+				}
+			}
+		}
+	}
+
+	function clearActionHighlights()
+	{
+		// 清除画面上 lastHighlightedActionID 对应的
+		// 全部高亮显示
+		if(lastHighlightedActionID == 0) return;
+		var max = everypage ? repageLine : ((dataLines <= dispLines) ? dataLines : dispLines);
+		for(var i = 0; i < max; i++)
+		{
+			var ai = everypage?getActionInfo2(dispStart, i):getActionInfo(i + dispStart);
+			if(ai === void) continue;
+			for(var ii = ai.count - 1; ii >= 0; ii--)
+			{
+				var info = ai[ii];
+				if(info.end !== void && info.id == lastHighlightedActionID)
+				{
+					clearBack(i);
+					drawLine(i); // 重新绘制该行
+				}
+			}
+		}
+		lastHighlightedActionID = 0;
+		cursor = window.cursorDefault;
+	}
+
+	function updateButtonState()
+	{
+		if(!canScroll)
+		{
+			prevPageButton.enabled = canScroll;
+			prevPageButton.captionColor = canScroll?0xff8080:0x808080;
+			nextPageButton.enabled = canScroll;
+			nextPageButton.captionColor = canScroll?0xff8080:0x808080;
+			return;
+		}
+		if(dispStart==0)
+		{
+			prevPageButton.enabled = false;
+			prevPageButton.captionColor = 0x808080;
+		}
+		else
+		{
+			prevPageButton.enabled = true;
+			prevPageButton.captionColor = 0xff8080;
+		}
+		if(  (everypage && dispStart >= dataPages-1) ||
+			(!everypage && dispStart >= dataLines-dispLines))
+		{
+			nextPageButton.enabled = false;
+			nextPageButton.captionColor = 0x808080;
+		}
+		else
+		{
+			nextPageButton.enabled = true;
+			nextPageButton.captionColor = 0xff8080;
+		}
+	}
+
+	function prevPage()
+	{
+		// 移动到上一页
+		if(!canScroll) return;
+		clearActionHighlights();
+		if(everypage)
+		{
+			if(dispStart<1)	return;
+			dispStart--;
+			clearBack();
+			drawPage();
+		}
+		else
+		{
+			clearBack();
+			if(dispStart >= dispLines)
+				dispStart -= dispLines;
+			else
+				dispStart = 0;
+			var i;
+			for(i = 0 ; i < dispLines; i++)
+				drawLine(i);
+		}
+		updateButtonState();
+	}
+	
+	function nextPage()
+	{
+		// 移动到下一页
+		if(!canScroll) return;
+		clearActionHighlights();
+		if(everypage)
+		{
+			if(dispStart>=dataPages-1)	return;
+			dispStart++;
+			clearBack();
+			drawPage();
+		}
+		else
+		{
+			clearBack();
+			if(dispStart < dataLines - dispLines)
+				dispStart += dispLines;
+			if(dispStart > dataLines - dispLines)
+				dispStart = dataLines - dispLines;
+			var i;
+			for(i = 0 ; i < dispLines; i++)
+				drawLine(i);
+		}
+		updateButtonState();
+	}
+
+	function scrollUp()
+	{
+		if(dispStart < dataLines - dispLines)
+		{
+			clearActionHighlights();
+			if(verticalView)
+				copyRect(width - marginR - lineHeight *(dispLines - 1), controlHeight, this,
+					width - marginR - lineHeight *(dispLines), controlHeight,
+						lineHeight * (dispLines-1), height - controlHeight);
+			else
+				copyRect(0, controlHeight + marginT, this,
+					0, controlHeight + lineHeight + marginT, width, lineHeight*(dispLines-1));
+			clearBack(dispLines - 1);
+			dispStart++;
+			drawLine(dispLines - 1);
+			updateButtonState();
+		}
+	}
+	
+	function scrollDown()
+	{
+		if(dispStart!=0)
+		{
+			clearActionHighlights();
+			if(verticalView)
+				copyRect(width - marginR - lineHeight *(dispLines), controlHeight, this,
+					width - marginR - lineHeight *(dispLines-1),
+					controlHeight, lineHeight * (dispLines-1), height - controlHeight);
+			else
+				copyRect(0, controlHeight + lineHeight + marginT, this,
+					0, controlHeight + marginT, width, lineHeight*(dispLines-1));
+			clearBack(0);
+			dispStart--;
+			drawLine(0);
+			updateButtonState();
+		}
+	}
+
+	function hide()
+	{
+		window.hideHistory();
+	}
+
+	function onButtonClick(sender)
+	{
+		if(sender == prevPageButton)
+			prevPage();
+		else if(sender == nextPageButton)
+			nextPage();
+		else if(sender == closeButton)
+			hide();
+	}
+
+	function onMouseDown(x, y, button)
+	{
+		if(button == mbRight) hide();
+		else if(button == mbLeft)
+		{
+			var n = getActionInfoFromPos(x,y);
+			if(n !== void)
+			{
+				Scripts.eval(n.action);
+			}
+		}
+		super.onMouseDown(...);
+	}
+
+	function onMouseMove(x, y, shift)
+	{
+		var n = getActionInfoFromPos(x,y);
+		n = (n === void) ? 0 : n.id;
+		if(lastHighlightedActionID != n)
+		{
+			clearActionHighlights();
+			highlightAction(n);
+			lastHighlightedActionID = n;
+			if(n) cursor = window.cursorPointed;
+		}
+		super.onMouseMove(...);
+	}
+
+	function onMouseLeave()
+	{
+		clearActionHighlights();
+		super.onMouseLeave(...);
+	}
+
+	function onKeyPress(key)
+	{
+		super.onKeyPress(...);
+	}
+
+	function onKeyDown(key)
+	{
+		window.hideMouseCursor();
+		if(canScroll)
+		{
+			if(verticalView)
+			{
+				if(key == VK_DOWN)
+					nextPage();
+				else if(key == VK_UP)
+					prevPage();
+				else if(key == VK_LEFT || key == VK_PRIOR)
+				{
+					if(everypage)
+						nextPage();
+					else
+						scrollUp();
+				}
+				else if(key == VK_RIGHT || key == VK_NEXT)
+				{
+					if(everypage)
+						prevPage();
+					else
+						scrollDown();
+				}
+			}
+			else
+			{
+				if(key == VK_DOWN)
+				{
+					if(everypage)
+						nextPage();
+					else
+						scrollUp();
+				}
+				else if(key == VK_UP)
+				{
+					if(everypage)
+						prevPage();
+					else
+						scrollDown();
+				}
+				else if(key == VK_LEFT || key == VK_PRIOR)
+					prevPage();
+				else if(key == VK_RIGHT || key == VK_NEXT)
+					nextPage();
+			}
+		}
+		if(key == VK_ESCAPE || key == VK_RETURN || key == VK_SPACE)
+		{
+			hide();
+		}
+	}
+
+	function windowMouseWheel(shift, delta, x, y)
+	{
+		// 窗口的滚轮操作消息会流到这里
+		var currenttick = System.getTickCount();
+		delta = delta \ 120;
+		if(delta > 0 )
+		{
+			// 向里
+			while(delta--)
+			{
+				if(everypage)
+					prevPage();
+				else
+					scrollDown();
+			}
+		}
+		else if(delta < 0 )
+		{
+			// 向前
+			if(currenttick - lastWheelTick > 150 &&
+				((everypage && dispStart >= dataPages-1) ||
+				(!everypage && dispStart >= dataLines - dispLines)))
+			{
+				/* 防止快速滚动时履历突然关闭的机制 */
+				// 已经显示到最后部分
+				hide();
+			}
+			else
+			{
+				delta = -delta;
+				while(delta--)
+				{
+					if(everypage)
+						nextPage();
+					else
+						scrollUp();
+				}
+			}
+		}
+		lastWheelTick = currenttick;
+	}
+}
+
+
+

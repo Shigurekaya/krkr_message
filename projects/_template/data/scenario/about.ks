@@ -1,0 +1,12 @@
+*about|关于
+[position layer=message0 left=8 top=8 width=304 height=184 visible=true opacity=220 color=0x000000]
+[deffont size=17 color=0xffffff face="Microsoft YaHei, SimHei, 微软雅黑"]
+[cm]
+【[emb exp="System.title"]】[r]
+[r]
+基于 吉里吉里 Z (krkrz) + KAG3[r]
+GAL 框架模板项目[r]
+[r]
+KAG [emb exp="kagVersion"][r]
+引擎 [emb exp="System.versionString"][r]
+[s]

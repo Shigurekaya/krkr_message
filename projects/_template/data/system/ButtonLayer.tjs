@@ -1,0 +1,376 @@
+// ButtonLayer.tjs - 按钮层
+// Copyright (C)2001-2009, W.Dee and contributors  可自由修改与再分发
+
+/*
+作为按钮使用的层。
+可分别设置按下时的图像、鼠标在层内时的图像、通常图像。
+
+格式  new ButtonLayer(<window>, <parent>)
+
+<window> : 创建此层的窗口
+<parent> : 父层
+
+*/
+
+
+class ButtonLayer extends KAGLayer
+{
+	var Butt_imageLoaded = false; // 是否已读取图像
+	var Butt_mouseOn = false; // 鼠标是否在层内
+	var Butt_mouseDown = false; // 鼠标按钮是否被按下
+	var Butt_color = clNone;
+	var Butt_caption = ''; // 按钮标题
+	var Butt_captionColor = 0x000000; // 标题颜色
+	var Butt_keyPressed = false;
+	var Butt_showFocusImage = false;
+
+	function ButtonLayer(win, par)
+	{
+		super.KAGLayer(win, par);
+
+		if(typeof win.cursorPointed !== "undefined")
+			cursor = win.cursorPointed;
+
+		hitType = htMask;
+		hitThreshold = 0;
+		focusable = true; // 可获得焦点
+	}
+
+	function finalize()
+	{
+		super.finalize(...);
+	}
+
+	function assign(src)
+	{
+		// 将 src 的信息复制到此按钮层
+		assignImages(src, true);
+		Butt_imageLoaded = src.Butt_imageLoaded;
+		Butt_color = src.Butt_color;
+		Butt_caption = src.Butt_caption;
+		Butt_captionColor = src.Butt_captionColor;
+		hitThreshold = src.hitThreshold;
+		update();
+	}
+
+	function drawState(s)
+	{
+		// 绘制与状态 s 对应的图像
+		// s :  0 : 普通状态
+		//      1 : 按钮被按下的状态
+		//      2 : 鼠标光标在按钮上的状态
+		//     (3): 有焦点时
+		if(!enabled)
+		{
+			s = 0; // 无效状态
+		}
+
+		if(Butt_imageLoaded)
+		{
+			// 已读取按钮图像
+			// TODO: keyboard focus
+			imageLeft = -s * width;
+		}
+		else
+		{
+			if(Butt_keyPressed) s = 1; // 被按下
+
+			// 绘制边框和标题
+			// 清空
+			face = dfAlpha;
+			colorRect(0, 0, width, height, 0, -255);
+			// 填充底色
+			if(Butt_color != clNone)
+				colorRect(0, 0, width, height, Butt_color, 128);
+			// 获取文字尺寸
+			var tw, th;
+			tw = font.getTextWidth(Butt_caption);
+			th = font.getTextHeight(Butt_caption);
+			if(s == 0 || s == 2)
+			{
+				// 普通或鼠标悬停
+				colorRect(0, 0, width, 1, 0xffffff, 128);
+				colorRect(0, 1, 1, height-2, 0xffffff, 128);
+				colorRect(width-1, 1, 1, height-1, 0x000000, 128);
+				colorRect(1, height-1, width-2, 1, 0x000000, 128);
+				drawText((width-tw)>>1, (height-th)>>1, 
+					Butt_caption, Butt_captionColor, nodeEnabled?255:128);
+			}
+			else
+			{
+				// 被按下
+				colorRect(0, 0, width, 1, 0x000000, 128);
+				colorRect(0, 1, 1, height-2, 0x000000, 128);
+				colorRect(width-1, 1, 1, height-1, 0xffffff, 128);
+				colorRect(1, height-1, width-2, 1, 0xffffff, 128);
+				drawText(((width-tw)>>1) +1, ((height-th)>>1) +1, 
+					Butt_caption, Butt_captionColor, nodeEnabled?255:128);
+			}
+
+			if(s != 0)
+				colorRect(2, 2, width-4, height-4, clHighlight, 64); // 高亮
+
+			if(focused)
+			{
+				// 因为有焦点所以高亮
+				colorRect(2, 2, width-4, 1, clHighlight, 128);
+				colorRect(2, 3, 1, height-5, clHighlight, 128);
+				colorRect(3, height-3, width-5, 1, clHighlight, 128);
+				colorRect(width-3, 3, 1, height-6, clHighlight, 128);
+			}
+		}
+	}
+
+	function loadImages(storage, key)
+	{
+		// 读取图像
+		super.loadImages(storage, key);
+		super.width = imageWidth \ (Butt_showFocusImage ? 4 : 3);
+		super.height = imageHeight;
+		callOnPaint = true;
+		Butt_imageLoaded = true;
+	}
+
+	function discardImage()
+	{
+		// 释放图像，使其作为文字按钮层运行
+		Butt_imageLoaded = false;
+		imageLeft = imageTop = 0;
+		update();
+	}
+
+	function onExecute(x, y, button, shift)
+	{
+		// 在鼠标按钮按下并释放时调用
+		// 如果想在按钮被按下时实现命令等
+		// 比起重写 onMouseUp 或 onClick
+		// 更推荐重写此方法
+	}
+
+	function onMouseDown()
+	{
+		// onMouseDown 事件处理器
+		Butt_mouseDown = true;
+		focus();
+		update();
+		super.onMouseDown(...);
+	}
+
+	function onMouseUp()
+	{
+		// onMouseUp 事件处理器
+		if(Butt_mouseDown) onExecute(...);
+		Butt_mouseDown = false;
+		update();
+		super.onMouseUp(...);
+	}
+
+	function onClick()
+	{
+		// onClick 事件处理器
+		super.onClick(...);
+	}
+
+	function draw()
+	{
+		// 根据当前状态进行绘制
+		if(Butt_mouseDown) drawState(1);
+		else if(Butt_mouseOn) drawState(2);
+		else if(Butt_showFocusImage && focused) drawState(3);
+		else drawState(0);
+	}
+
+	function onPaint()
+	{
+		// 在绘制前调用
+		super.onPaint(...);
+		draw();
+	}
+
+	function onMouseEnter()
+	{
+		// 鼠标进入层区域
+		update();
+		Butt_mouseOn = true;
+		super.onMouseEnter(...);
+	}
+
+	function onMouseLeave()
+	{
+		// 鼠标离开层区域
+		update();
+		Butt_mouseOn = false;
+		Butt_mouseDown = false;
+		super.onMouseLeave(...);
+	}
+
+	function onNodeDisabled()
+	{
+		// 层节点变为不可用
+		super.onNodeDisabled(...);
+		Butt_mouseDown = false;
+		update();
+	}
+
+	function onNodeEnabled()
+	{
+		// 层节点变为有效
+		super.onNodeEnabled(...);
+		update();
+	}
+
+	function onFocus()
+	{
+		// 获得焦点
+		super.onFocus(...);
+		update();
+	}
+
+	function onBlur()
+	{
+		// 失去焦点
+		super.onBlur(...);
+		Butt_mouseDown = false;
+		update();
+	}
+
+	function onKeyDown(key, shift, process)
+	{
+		// 键被按下
+		if(process)
+		{
+			if(key == VK_RETURN || key == VK_SPACE)
+			{
+				// 空格键或回车键
+				Butt_keyPressed = true;
+				update();
+				super.onKeyDown(key, shift, false); // 已经处理，所以向 process 传入 false
+			}
+			else
+			{
+				super.onKeyDown(...);
+			}
+		}
+		else
+		{
+			// 当 process 为 false 时不进行处理
+			super.onKeyDown(...);
+		}
+	}
+
+	function onKeyUp(key, shift, process)
+	{
+		// 键被释放
+		if(process)
+		{
+			if(key == VK_RETURN || key == VK_SPACE)
+			{
+				// 空格键或回车键
+				var flag = Butt_keyPressed;
+				Butt_keyPressed = false;
+				update();
+				super.onKeyUp(key, shift, false);
+				if(flag) onClick(width \ 2, height \ 2); // 点击动作
+			}
+			else
+			{
+				super.onKeyUp(...);
+			}
+		}
+		else
+		{
+			super.onKeyUp(...);
+		}
+	}
+
+	function onKeyPress(key, shift)
+	{
+		super.onKeyPress(...);
+	}
+
+
+	property width
+	{
+		setter(x)
+		{
+			super.width = x;
+			imageWidth = x;
+			Butt_imageLoaded = false;
+			update();
+		}
+		getter
+		{
+			return super.width;
+		}
+	}
+
+	property height
+	{
+		setter(x)
+		{
+			super.height = x;
+			imageHeight = x;
+			Butt_imageLoaded = false;
+			update();
+		}
+		getter
+		{
+			return super.height;
+		}
+	}
+
+	function setSize(w, h)
+	{
+		super.setSize(w, h);
+		setImageSize(w, h);
+		Butt_imageLoaded = false;
+		update();
+	}
+
+	property caption
+	{
+		setter(x)
+		{
+			Butt_caption = x;
+			update();
+		}
+		getter
+		{
+			return Butt_caption;
+		}
+	}
+
+	property color
+	{
+		setter(x)
+		{
+			Butt_color = int x;
+			update();
+		}
+		getter
+		{
+			return Butt_color;
+		}
+	}
+
+	property captionColor
+	{
+		setter(x)
+		{
+			Butt_captionColor = int x;
+			update();
+		}
+		getter
+		{
+			return Butt_captionColor;
+		}
+	}
+
+	property showFocusImage
+	{
+		setter(x) { Butt_showFocusImage = x; }
+		getter { return Butt_showFocusImage; }
+	}
+}
+
+

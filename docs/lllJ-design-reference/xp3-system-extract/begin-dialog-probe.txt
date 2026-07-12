@@ -1,0 +1,8 @@
+﻿.\.venv\Scripts\python.exe : C:\Users\22050\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\python.exe: can'
+t open file 'D:\\gamedev\\GAL框架\\tools\\lllj-extract\\probe_begin_dialog.py': [Errno 2] No such file or directory
+所在位置 C:\Users\22050\AppData\Local\Temp\ps-script-c6f89ec8-5a6d-4179-b618-10ec97a9116a.ps1:90 字符: 53
++ ... j-extract"; .\.venv\Scripts\python.exe probe_begin_dialog.py 2>&1 | O ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (C:\Users\22050\...le or directory:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

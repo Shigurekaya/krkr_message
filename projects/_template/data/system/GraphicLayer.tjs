@@ -1,0 +1,610 @@
+// GraphicLayer.tjs - 图形系层（背景、角色）
+// Copyright (C)2001-2009, W.Dee and contributors  可自由修改与再分发
+
+class ProvinceContext
+{
+	// 区域动作用上下文
+	var target;
+	var storage;
+	var onenter;
+	var onleave;
+	var hint;
+	var exp;
+	var cursor;
+	var countpage;
+	var autodisable;
+
+	function ProvinceContext() {};
+	function finalize() {};
+}
+
+class GraphicLayer extends AnimationLayer
+{
+	// 背景/前景层的基类
+
+	var comp; // 配对层
+	var id; // ID
+	var provinceActions = void; // 可点击地图各区域的动作定义
+	var pointingProvince = 0; // 当前指向的区域编号
+	var loadedProvinceImage = ""; // loadImages 后加载的区域图像
+	var loadedProvinceActions = ""; // loadImages 后加载的区域动作
+	var defaultCursor = crDefault; // 默认光标
+	var lastMouseDownX; // 最后一次鼠标点击的 X 坐标
+	var lastMouseDownY; // 最后一次鼠标点击的 Y 坐标
+
+	function GraphicLayer(win, par, name, id)
+	{
+		// GraphicLayer 构造函数
+		// win    : 窗口对象
+		// par    : 父层
+		// name   : 层名称
+		super.AnimationLayer(win, par);
+
+		this.name = name;
+		this.id = id;
+		/* 配对层须在创建本对象后通过 setCompLayer 设置 */
+	}
+
+	function finalize()
+	{
+		clearProvinceActions();
+		super.finalize(...);
+	}
+
+	function setCompLayer(lay) { comp = lay; }
+
+	function setDefaultCursor(c)
+	{
+		cursor = defaultCursor = c;
+	}
+
+	function loadImages(elm)
+	{
+		// 按 elm 中的内容向本层加载图像
+		clearProvinceActions();
+		loadedProvinceImage = "";
+		super.loadImages(elm);
+		if(elm !== void)
+		{
+			if(elm.mapimage !== void) super.loadProvinceImage(elm.mapimage); // 读取区域图像
+			if(elm.mapaction !== void)
+			{
+				internalLoadProvinceActions(elm.mapaction); // 读取区域动作
+			}
+			else
+			{
+				var name;
+				var storage = Storages.getPlacedPath(
+					name = (Storages.chopStorageExt(elm.storage) + ".ma")); // 扩展名为 .ma 的文件
+				if(storage != '')
+					loadProvinceActions(name);
+			}
+		}
+	}
+
+	function loadProvinceImage(fn)
+	{
+		// 加载区域图像 fn
+		super.loadProvinceImage(fn);
+		loadedProvinceImage = fn;
+	}
+
+	function assignComp()
+	{
+		// 复制配对层的内容
+		assign(comp);
+	}
+
+	function assign(src)
+	{
+		super.assign(...);
+
+		if(provinceActions !== void)
+		{
+			invalidate provinceActions;
+			window.disableMouseKey();
+		}
+		if(src.provinceActions !== void)
+		{
+			(provinceActions = []).assign(src.provinceActions);
+			window.enableMouseKey();
+		}
+		else
+		{
+			provinceActions = void;
+		}
+		loadedProvinceImage = src.loadedProvinceImage;
+		loadedProvinceActions = src.loadedProvinceActions;
+	}
+
+	function beginTransition(elm)
+	{
+		// 按 elm 执行过渡
+		comp.stopTransition(); // 同时停止 comp 上正在进行的过渡
+		super.beginTransition(elm, comp);
+	}
+
+	function exchangeInfo()
+	{
+		// 与 comp 交换信息
+		// 图像内容与树结构已互换，
+		// 此处交换名称等
+		// 并更新窗口的管理信息
+		var src = comp;
+		var tmp = src.name;
+		src.name = name;
+		name = tmp;
+		tmp = src.cursor;
+		src.cursor = cursor;
+		cursor = tmp;
+	}
+
+	function clearImage(process = true)
+	{
+		// AnimationLayer.clearImage 重写
+		super.clearImage(process);
+		loadedProvinceImage = "";
+		clearProvinceActions();
+	}
+
+	function clearProvinceActions()
+	{
+		if(provinceActions !== void)
+		{
+			invalidate provinceActions;
+			provinceActions = void;
+			pointingProvince = 0;
+			cursor = defaultCursor;
+			hint = "";
+			showParentHint = true;
+			window.disableMouseKey();
+		}
+		loadedProvinceActions = "";
+	}
+
+	function internalLoadProvinceActions(fn)
+	{
+		// 将文件名 fn 作为区域动作定义文件加载
+		clearProvinceActions();
+
+		var file = [];
+		file.load(fn);
+		var filelines = file.count;
+
+		// 按文件内容动态生成脚本
+		var body = "function { var a = provinceActions; \n";
+		for(var i = 0; i<filelines; i++)
+		{
+			var line = file[i];
+			if(line == "" || line[0] == ';') continue;
+			var colon = line.indexOf(':');
+			if(colon == -1) continue;
+			body += "a[" + line.substring(0, colon) + "] = function { " +
+				line.substring(colon + 1) + " ;};\n";
+		}
+		body += "}\n";
+
+		provinceActions = [];
+		(Scripts.eval(body) incontextof this) (); // 编译 body 并在本上下文中执行
+
+		window.enableMouseKey();
+	}
+
+
+	function loadProvinceActions(fn)
+	{
+		internalLoadProvinceActions(fn);
+		loadedProvinceActions = fn;
+	}
+
+	function queryProvinceAction(n, checkzero = true)
+	{
+		// 返回区域编号 n 对应的动作
+		// 未定义任何动作时返回 void
+//		dm(n, provinceActions, provinceActions[n]);
+		if(provinceActions === void) return void;
+		if(checkzero) { if(n == 0) return void; }
+		var action = provinceActions[n];
+		if(action === void) return void;
+		var ar = new ProvinceContext();
+		(action incontextof ar) (); // 在 ar 的上下文中执行动作
+		if(ar.target === void && ar.storage === void && ar.onenter === void &&
+			ar.onleave === void && ar.hint === void && ar.exp === void &&
+			ar.cursor === void && ar.countpage === void && ar.autodisable === void)
+				return void;
+		return ar;
+	}
+
+	function onMouseMove(x, y)
+	{
+		// onMouseMove 事件处理器
+		super.onMouseMove(...);
+		if(provinceActions !== void)
+		{
+			var n = window.messageLayerHiding ? 0 : getProvincePixel(x - imageLeft, y - imageTop);
+			if(n != pointingProvince)
+			{
+				// 移动到不同区域上时
+				if(pointingProvince != 0) onProvinceLeave(pointingProvince);
+				if(n != 0) onProvinceEnter(n);
+				pointingProvince = n;
+			}
+			if(n == 0)
+			{
+				hint = "";
+				showParentHint = true;
+				cursor = defaultCursor;
+			}
+		}
+	}
+
+	function onMouseLeave()
+	{
+		// onMouseLeave 事件处理器
+		super.onMouseLeave(...);
+		if(pointingProvince != 0)
+		{
+			onProvinceLeave(pointingProvince);
+			pointingProvince = 0;
+		}
+	}
+
+	function onProvinceEnter(n)
+	{
+		// 鼠标移入区域编号 n
+		var action = queryProvinceAction(n);
+		if(action !== void)
+		{
+			if(action.onenter !== void) Scripts.eval(action.onenter);
+			if(action.hint !== void) hint = action.hint;
+			if(action.cursor !== void)
+				cursor = action.cursor; // 注意光标指定方式（勿加 &）
+			else
+				cursor = window.cursorPointed;
+		}
+		else
+		{
+			hint = "";
+			showParentHint = true;
+			cursor = defaultCursor;
+		}
+	}
+
+	function onProvinceLeave(n)
+	{
+		// 鼠标离开区域编号 n
+		var action = queryProvinceAction(n);
+		if(action !== void && action.onleave !== void) Scripts.eval(action.onleave);
+		hint = "";
+		showParentHint = true;
+	}
+
+	function processProvince(x, y)
+	{
+		// 跳转到 (x,y) 位置区域所指定的剧本
+		// 已处理返回 true，未处理返回 false
+		var n = window.messageLayerHiding ? 0 : getProvincePixel(x - imageLeft, y - imageTop);
+		var action = queryProvinceAction(n);
+		if(action === void) return false;
+		if(action.exp !== void) Scripts.eval(action.exp);
+		if(action.storage != '' || action.target != '')
+		{
+			var q = queryProvinceAction(0, false);
+			if(q === void || q.autodisable === void || +q.autodisable) clearProvinceActions();
+			window.process(action.storage, action.target, +action.countpage);
+		}
+		return true;
+	}
+
+	function onMouseDown(x, y, button)
+	{
+		lastMouseDownX = x;
+		lastMouseDownY = y;
+		super.onMouseDown(...);
+	}
+
+	function store()
+	{
+		// 将信息记录到字典数组
+		var dic = super.store();
+		dic.loadedProvinceImage = loadedProvinceImage;
+		dic.loadedProvinceActions = loadedProvinceActions;
+		return dic;
+	}
+
+	function restore(dic)
+	{
+		// 从 dic 读取信息
+		super.restore(dic);
+		if(dic.loadedProvinceImage !== void && dic.loadedProvinceImage !== '')
+			loadProvinceImage(dic.loadedProvinceImage);
+		else
+			loadedProvinceImage = "";
+		if(dic.loadedProvinceActions !== void && dic.loadedProvinceActions !== '')
+			loadProvinceActions(dic.loadedProvinceActions);
+		else
+			clearProvinceActions();
+	}
+}
+
+class BaseLayer extends GraphicLayer
+{
+	// 背景层
+
+	function BaseLayer(win, par, name, id)
+	{
+		super.GraphicLayer(win, par, name, id);
+		type = ltCoverRect;
+		hitType = htMask;
+		hitThreshold = 0;
+	}
+
+	function finalize()
+	{
+		super.finalize(...);
+	}
+
+	function assign(src)
+	{
+		// assign 重写
+		super.assign(src);
+		// 父类 assign 不复制可见/不可见等，
+		// 对背景层而言如此即可
+	}
+
+	function loadImages(elm)
+	{
+		// loadImages 重写
+		if(elm !== void)
+		{
+			elm.mode = "opaque"; // 层模式不可被改变
+			delete elm.index; // 索引不可被改变
+
+			if(elm.visible !== void)
+			{
+				// visible 状态不可被改变
+				if(isPrimary) elm.visible = true; else elm.visible = false;
+			}
+		}
+		super.loadImages(elm);
+	}
+
+	function restore(dic)
+	{
+		// restore 重写
+		if(isPrimary) dic.visible = true; else dic.visible = false;
+		dic.absolute = 0;
+		super.restore(dic);
+	}
+
+	function setOptions(elm)
+	{
+		// setOptions 重写
+		if(elm.visible !== void)
+		{
+			if(isPrimary) elm.visible = true; else elm.visible = false;
+		}
+		super.setOptions(elm);
+	}
+
+	function internalOnMouseDown(x, y, button, processprovince = true)
+	{
+		// 内部函数
+		var provinceprocessed = false;
+		if(button == mbLeft && processprovince && !window.messageLayerHiding)
+			provinceprocessed = processProvince(x, y);
+		if(button == mbLeft && !provinceprocessed)
+		{
+			// 若自身为主层，则调用窗口的 onPrimaryClick
+			if(isPrimary) window.onPrimaryClick();
+		}
+		else if(button == mbRight)
+		{
+			// 若自身为主层，则调用窗口的 onPrimaryRightClick
+			if(isPrimary) window.onPrimaryRightClick();
+		}
+	}
+
+	function onMouseDown(x, y, button)
+	{
+		// 鼠标按下
+		super.onMouseDown(...);
+		internalOnMouseDown(x, y, button);
+	}
+
+	function clearImage()
+	{
+		// GraphicLayer.clearImage 重写
+		super.clearImage(false);
+		setImageSize(window.scWidth, window.scHeight);
+		setSizeToImageSize();
+		face = dfAlpha;
+		fillRect(0, 0, imageWidth, imageHeight, 0xff000000);
+	}
+
+	function atEndOfTransition(src, withchildren, exchange)
+	{
+		// atEndOfTransition 重写
+		super.atEndOfTransition(...);
+		if(src == null)
+		{
+			//·背景层，无 src 过渡（children=true）
+			//　无需操作，但结束时子层会隐藏。
+			//·背景层，无 src 过渡（children=false）
+			//　确实什么也不做。
+		}
+		else
+		{
+			if(withchildren)
+			{
+				//·背景层，有 src 过渡（children=true）
+				//　与过渡源交换重要信息，并对子层也发出
+				//　「与对象交换重要信息」指示。exchange=false 时还需
+				//　将过渡源信息复制到过渡目标，子层亦同。
+				if(!exchange)
+				{
+					assign(src);
+					window.callAssignTransSrc();
+				}
+				super.exchangeInfo();
+				window.exchangeForeBack();
+				window.callExchangeInfo();
+			}
+			else
+			{
+				//·背景层，有 src 过渡（children=false）
+				//　与过渡源交换重要信息；对子层不发出
+				//　「与对象交换重要信息」指示。exchange=false 时
+				//　还将过渡源信息复制到过渡目标，子层亦不发指示。
+				if(!exchange)
+				{
+					assign(src);
+				}
+				exchangeInfo();
+			}
+		}
+	}
+
+	function exchangeInfo()
+	{
+		// exchangeInfo 重写
+		super.exchangeInfo();
+		window.swapBaseLayer();
+	}
+
+    property isPrimary {
+        getter() {
+            return this === window.fore.base;
+        }
+    }
+}
+
+class CharacterLayer extends GraphicLayer
+{
+	// 前景层
+	var autoHide = false; // 是否可随消息层一起隐藏
+	var invisibleByUser = false; // 是否被用户临时隐藏
+	var visibleBeforeUserInvisible  = false;
+
+	function CharacterLayer(win, par, name, id)
+	{
+		super.GraphicLayer(win, par, name, id);
+		freeImage();
+		type = ltCoverRect;
+		hitType = htMask;
+		hitThreshold = 64;
+	}
+
+	function finalize()
+	{
+		super.finalize(...);
+	}
+
+	function onHitTest(x, y, hit)
+	{
+		// onHitTest 重写
+		if(!hit || provinceActions === void)
+		{
+			// hit==false 或未定义区域动作时
+			super.onHitTest(x, y, false);
+		}
+		else
+		{
+			// hit==true 且已定义区域动作时
+			super.onHitTest(x, y, !window.messageLayerHiding);
+		}
+		return;
+	}
+
+	function assign(src)
+	{
+		// assign 重写
+		super.assign(src);
+		assignVisibleState(src);
+		// 父类 assign 不复制可见/不可见等信息，
+		// 因此此处须调用 assignVisibleState
+		autoHide = src.autoHide;
+	}
+
+	function setOptions(elm)
+	{
+		// setOptions 重写
+		super.setOptions(elm);
+		autoHide = +elm.autohide if elm.autohide !== void;
+	}
+
+	function atEndOfTransition(src, withchildren, exchange)
+	{
+		// atEndOfTransition 重写
+		super.atEndOfTransition(...);
+		if(src == null)
+		{
+			//·消息层、前景层，无 src 过渡（children=true）
+			//　无需操作，但结束后其子层会自动隐藏。
+		}
+		else
+		{
+			//·消息层、前景层，有 src 过渡（children=true）
+			//　与过渡源交换重要信息；exchange=false 时还将
+			//　过渡源信息复制到过渡目标。但复制时不复制
+			//　窗口可见/不可见信息。
+			super.assign(src);
+			exchangeInfo();
+			window.swapCharacterLayer(id);
+		}
+	}
+
+	function assignTransSrc()
+	{
+		// 复制过渡源（comp）
+		assign(comp);
+	}
+
+	function setHiddenStateByUser(b)
+	{
+		// 用户通过右键等临时隐藏消息层时被调用
+		if(autoHide)
+		{
+			if(b)
+			{
+				visibleBeforeUserInvisible = visible;
+				invisibleByUser = true; // 被用户临时隐藏
+				visible = false;
+			}
+			else
+			{
+				invisibleByUser = false; // 可见
+				visible = visibleBeforeUserInvisible;
+			}
+		}
+	}
+
+	function onMouseDown(x, y, button)
+	{
+		// 鼠标按下
+		super.onMouseDown(...);
+		if(button == mbLeft)
+			processProvince(x, y);
+		else if(button == mbRight)
+			window.onPrimaryRightClick();
+			// 右键调用 window.onPrimaryRightClick()
+	}
+
+	function store()
+	{
+		// store 重写
+		var dic = super.store();
+		dic.autoHide = autoHide;
+		return dic;
+	}
+
+	function restore(dic)
+	{
+		// restore 重写
+		autoHide = +dic.autoHide if dic.autoHide !== void;
+		super.restore(dic);
+	}
+
+}
+
+

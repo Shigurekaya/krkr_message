@@ -1,0 +1,4 @@
+﻿=== 24 "[X'moe] KrkrzExtract(Version : 1.0.0.0, Built on : Apr 18 2018 03:05:35)"
+err 'DialogWrapper' object has no attribute 'print_control_identifiers'
+=== 34 '[扩展开发宿主] KrkrzExtract.dll - gamedev - Cursor'
+err 'DialogWrapper' object has no attribute 'print_control_identifiers'

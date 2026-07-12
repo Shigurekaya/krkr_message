@@ -1,0 +1,531 @@
+// Conductor.tjs - KAG 剧情进度处理
+// Copyright (C)2001-2009, W.Dee and contributors  可自由修改与再分发
+
+
+class ConductorException extends Exception
+{
+	// ConductorException - 指挥器在处理标签处理器时发生异常时
+	// 用来抛出的异常类
+	function ConductorException() { super.Exception(...); }
+	function finalize() { super.finalize(...); }
+};
+
+class BaseConductor extends KAGParser
+{
+	// BaseConductor - 剧情进度处理的基础类
+	var timer;
+	var oneshot;
+	var _interrupted = false; // 是否处于中断中
+	var timerEnabled = false; // 定时器是否已启动
+	var pendings; // 延后的标签
+	var inProcessing = false; // 是否正在处理 timerCallback
+	var reentered = false; // timerCallback 中是否重入
+	var nextTimerTick = 0; // 下次定时器应触发的 tick
+
+	function BaseConductor()
+	{
+		// 构造函数
+		super.KAGParser(...);
+
+		timer = new Timer(timerCallback, '');
+			// Timer 第二参数指定空字符串时，
+			// 将直接调用第一参数指定的函数
+		oneshot = new AsyncTrigger(timerCallback, '');
+			// 同上
+		oneshot.cached = true; // 启用事件缓存
+
+		pendings = [];
+	}
+
+	function finalize()
+	{
+		// finalize()
+		invalidate timer;
+		invalidate oneshot;
+		super.finalize(...);
+	}
+
+	function clear()
+	{
+		// clear 重写
+		pendings.clear();
+		super.clear();
+	}
+
+	function timerCallback()
+	{
+		// 获取下一个元素
+		nextTimerTick = timer.interval + System.getTickCount();
+		var obj;
+		try
+		{
+			if(inProcessing)
+			{
+				// 重入
+				reentered = true;
+				timer.interval = 0;
+				return;
+			}
+			inProcessing = true;
+			for(;;)
+			{
+				if(pendings.count > 0)
+				{
+					// 存在延后的标签
+					obj = pendings[0];
+					pendings.erase(0);
+				}
+				else
+				{
+					// 无延后标签，获取下一个标签
+					obj = getNextTag(); // 获取下一个标签
+
+					// getNextTag() 内若向 pendings 添加了内容（如 iscript 等）
+					if(pendings.count > 0)
+					{
+						pendings.add(obj);
+						continue;
+					}
+				}
+
+				if(obj === void)
+				{
+					// 剧本结束
+					timer.enabled = false;
+					timerEnabled =false;
+					onStop();
+					inProcessing = false;
+					reentered = false;
+					return;
+				}
+				else
+				{
+					// 调用 onTag
+					var step = onTag(obj);
+					if(step === void)
+						throw new Exception("onTag 返回了 void（" + obj.tagname + "）"
+							"（可能是标签处理函数忘记返回步进值）");
+					step = int step; // 将 step 转为数值
+					if(step == 0)
+					{
+						// 不等待，继续下一个
+						timer.interval = 0;
+						continue;
+					}
+					else if(step < 0)
+					{
+						switch(step)
+						{
+						case -5: // 先处理事件（当前标签延后）
+							pendings.insert(0, obj);
+							oneshot.mode = atmAtIdle;
+							oneshot.trigger(); // 触发
+							timer.interval = 0; // 停止定时器
+							inProcessing = false;
+							reentered = false;
+							return;
+						case -4: // 先处理事件
+							oneshot.mode = atmAtIdle;
+							oneshot.trigger(); // 触发
+							timer.interval = 0; // 停止定时器
+							inProcessing = false;
+							reentered = false;
+							return;
+						case -3: // 延后并中断
+							pendings.insert(0, obj);
+							timer.interval = 0; // 停止定时器
+							inProcessing = false;
+							reentered = false;
+							return;
+						case -2: // 中断
+							timer.interval = 0; // 停止定时器
+							inProcessing = false;
+							reentered = false;
+							return;
+						case -1: // 剧本结束
+							timer.interval = 0; 
+							timer.enabled = false;
+							timerEnabled = false;
+							onStop();
+							inProcessing = false;
+							reentered = false;
+							return;
+						}
+					}
+					else
+					{
+						// 继续下一个
+						if(timer.interval != step)
+						{
+							timer.interval = step;
+							nextTimerTick = step + System.getTickCount();
+						}
+						inProcessing = false;
+						reentered = false;
+						return;
+					}
+				}
+			}
+			inProcessing = false;
+			reentered = false;
+		}
+		catch(e)
+		{
+//			Debug.logAsError();
+			timer.enabled = false;
+			timerEnabled =false;
+			onStop();
+			inProcessing = false;
+			var msg = "发生错误\n"
+				"文件 : " + curStorage + "   行 : " + (curLine+1) + "\n"
+				"标签 : " + (obj === void ? "未知" : obj.tagname)
+				+ " （← 也可能指示错误发生前后的标签）\n"
+				+ e.message;
+			if((typeof e.trace) != "undefined") dm("trace : " + e.trace);
+			dm(msg);
+			throw new ConductorException(msg);
+//			System.inform(msg, "错误");
+		}
+	}
+
+	function onTag()
+	{
+		// 需重写
+		return -1;
+	}
+
+	function onStop()
+	{
+		// （剧本）停止时被调用。
+		// 并非从 stop() 调用。
+		// 需重写。
+	}
+
+	function startProcess(immediate = false)
+	{
+		// 开始剧本推进
+		// immediate = false 时异步开始执行，
+		// 本方法内不会调用标签处理器
+		// 首个标签处理器在下次事件派发时调用。
+		// immediate = true 时，本方法内处理首个标签处理器，
+		// 调用方应在本方法结束后立即将控制权交还吉里吉里
+		// （从所有函数返回）。
+		resetInterrupt();
+		timer.interval = 0; // 初始间隔
+		timerEnabled = true;
+		if(!_interrupted)
+		{
+			timer.enabled = true; // 启动定时器
+			if(immediate)
+			{
+				timerCallback();
+			}
+			else
+			{
+				oneshot.mode = atmExclusive;
+					// 在事件派发前阻塞其他异步事件
+				oneshot.trigger(); // 触发
+			}
+		}
+	}
+
+	function start()
+	{
+		// 启动定时器
+		timerEnabled = true;
+		timer.enabled = true;
+	}
+
+	function stop()
+	{
+		// 停止定时器
+		timer.enabled = false;
+		timerEnabled = false;
+	}
+
+	property interrupted
+	{
+		getter() { return _interrupted; }
+		setter(x)
+		{
+			if(!x)
+			{
+				// enable
+				if(timerEnabled)
+				{
+					timer.interval = 0;
+					timer.enabled = true;
+					oneshot.mode = atmExclusive;
+						// 在事件派发前阻塞其他异步事件
+					oneshot.trigger(); // 触发
+				}
+			}
+			else
+			{
+				// disable
+				oneshot.cancel();
+				timer.enabled = false;
+			}
+			_interrupted = x;
+		}
+	}
+
+	function assign(src)
+	{
+		// 将 src 的状态复制到此对象
+		var t = timer;
+		var st = src.timer;
+		t.enabled = false;
+		t.interval = st.interval;
+		nextTimerTick = src.nextTimerTick;
+		if(st.enabled && st.interval != 0)
+		{
+			// 调整定时器 interval
+			var delta = nextTimerTick - System.getTickCount();
+			if(delta > 0) t.interval = delta; else t.interval = 1;
+		}
+		t.enabled = st.enabled;
+		timerEnabled = src.timerEnabled;
+		_interrupted = src._interrupted;
+		if(src.pendings.count > 0)
+			pendings.assignStruct(src.pendings);
+		else
+			pendings.clear();
+		super.assign(src);
+	}
+
+	function store()
+	{
+		// store 重写
+		return super.store(...);
+	}
+
+	function restore(dic)
+	{
+		// restore 重写
+		super.restore(...);
+		pendings.clear();
+	}
+
+	function loadScenario()
+	{
+		// loadScenario 重写
+		pendings.clear();
+		super.loadScenario(...);
+	}
+
+	function goToLabel()
+	{
+		// goToLabel 重写
+		pendings.clear();
+		super.goToLabel(...);
+	}
+
+	function enqueueTag(tag)
+	{
+		pendings.add(tag);
+	}
+}
+
+
+class Conductor extends BaseConductor
+{
+	// Conductor - 剧本推进处理
+	/*const*/ var mStop = 0; // 停止
+	/*const*/ var mRun = 1; // 运行中
+	/*const*/ var mWait = 2; // 等待
+
+	var owner;
+	var handlers;
+	var status = mStop;
+	var timeOutTimer;
+	var waitUntil = %[];
+	var lastTagName = ''; // 上一个标签名
+
+	function Conductor(owner, handlers)
+	{
+		// 构造函数
+		super.BaseConductor();
+		ignoreCR = global.ignoreCR;
+		debugLevel = tkdlVerbose;
+		this.owner = owner;
+		this.handlers = handlers;
+		timeOutTimer = new Timer(onTimeOut, '');
+	}
+
+	function finalize()
+	{
+		// finalize()
+		invalidate timeOutTimer;
+		super.finalize(...);
+	}
+
+	function run(immediate = false)
+	{
+		// 开始执行
+		// immediate=true 时，
+		// 执行本方法后应立即将控制权交还吉里吉里
+		// （从所有函数返回）
+		status = mRun;
+		startProcess(immediate);
+	}
+
+	function sleep()
+	{
+		// 停止执行
+		status = mStop;
+		stop();
+	}
+
+	function wait(until)
+	{
+		// 等待
+		// until = trigger 使用的信号名与回调函数的
+		// 字典数组
+		status = mWait;
+		stop();
+		(Dictionary.assign incontextof waitUntil)(until);
+	}
+
+	function waitWithTimeOut(until, timeout)
+	{
+		// 等待，但带超时
+		// 超时时将触发 'timeout'，
+		// 需定义对应处理器。
+		if(timeout == 0) timeout = 1; // timeout 为 0 时设为 1
+		status = mWait;
+		stop();
+		(Dictionary.assign incontextof waitUntil)(until);
+		timeOutTimer.interval = timeout;
+		timeOutTimer.enabled = true;
+	}
+
+	function onTimeOut()
+	{
+		// timeOutTimer 已超时
+		timeOutTimer.enabled = false;
+		trigger('timeout'); // 自行触发 timeout
+	}
+
+	function trigger(name)
+	{
+		// 若 waitUntil 中存在信号名 name，则恢复执行，
+		// 同时调用 waitUntil 中注册的方法（重启处理器）
+		// 若 waitUntil 中存在带 _arg 后缀的信号名，
+		// 则将其作为参数传给处理器
+		// waitUntil 将被清空
+		if(status != mWait) return false;
+		var func = waitUntil[name];
+		if(func !== void)
+		{
+			var arg = waitUntil[name + '_arg'];
+			if(arg !== void) func(arg); else func();
+			(Dictionary.clear incontextof waitUntil)();
+			run();
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	function onTag(elm)
+	{
+		// 标签处理
+		var tagname = elm.tagname;
+		var handler = handlers[tagname];
+		if(handler !== void)
+		{
+			var ret = handler(elm);
+			lastTagName = tagname;
+			return ret;
+		}
+		return onUnknownTag(tagname, elm);
+	}
+
+	function onStop()
+	{
+		// BaseConductor.onStop 重写
+		// 停止时被调用，将状态设为 mStop
+		status = mStop;
+		if(owner.conductor == this) handlers.s(); // 调用处理器的 s（停止）
+	}
+
+	function onScript(script, scriptname, lineofs)
+	{
+		// 执行 script
+		try
+		{
+			Scripts.exec(script, scriptname, lineofs);
+		}
+		catch(e)
+		{
+			throw new Exception(scriptname + " 第 " + lineofs + " 行开始的"
+				" iscript 块发生错误。"
+				"\n（详情请查看控制台）\n" + e.message);
+		}
+		return true;
+	}
+
+	function store()
+	{
+		// store 重写
+		return super.store(...);
+	}
+
+	function restore(dic)
+	{
+		// restore 重写
+		super.restore(...);
+		lastTagName = '';
+	}
+
+	function onScenarioLoad()
+	{
+		return owner.onConductorScenarioLoad(...);
+	}
+
+	function onScenarioLoaded()
+	{
+		return owner.onConductorScenarioLoaded(...);
+	}
+
+	function onLabel()
+	{
+		return owner.onConductorLabel(...);
+	}
+
+	function onJump()
+	{
+		return owner.onConductorJump(...);
+	}
+
+	function onCall()
+	{
+		return owner.onConductorCall(...);
+	}
+
+	function onReturn()
+	{
+		return owner.onConductorReturn(...);
+	}
+
+	function onAfterReturn()
+	{
+		return owner.onConductorAfterReturn(...);
+	}
+
+	function onScript()
+	{
+		return owner.onConductorScript(...);
+	}
+
+	function onUnknownTag()
+	{
+		return owner.onConductorUnknownTag(...);
+	}
+
+}
+
+
