@@ -2,6 +2,10 @@
 
 > 本目录为 **中文开发者文档** 入口。  
 > 引擎子模块 `engine/script/` 内日文 README 的说明已翻译并整理于此；**请勿直接修改子模块** 来做汉化或项目定制。
+>
+> **最新维护版**在 **[krkr_message](https://github.com/Shigurekaya/krkr_message)** 仓库的 `kag/` 目录。  
+> gal- 内本目录可能与 krkr_message 不同步；以 krkr_message 为准。  
+> 三库说明见 [docs/GITHUB-AI-GUIDE.md](../docs/GITHUB-AI-GUIDE.md)。
 
 ---
 
@@ -16,7 +20,7 @@
 | [引擎选项说明.md](引擎选项说明.md) | krkrz `--userconf` 与 `option_desc_ja.json` |
 | [编译说明.md](编译说明.md) | 从源码编译 krkrz（扩展索引；原位文档见 `engine/HowToBulid.md`） |
 | [发行与XP3.md](发行与XP3.md) | Releaser、XP3 封包与 GPL 发行（原位见 `engine/document/misc_markdown/tools/releaser.md`） |
-| [docs/汉化范围.md](../docs/汉化范围.md) | krkrz 汉化清单（已译 / 保留 / 可选） |
+| [docs/汉化范围.md](../docs/汉化范围.md) | 指针 → [krkr_message 权威版](https://github.com/Shigurekaya/krkr_message/blob/main/docs/汉化范围.md) |
 
 ---
 
