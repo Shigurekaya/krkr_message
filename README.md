@@ -62,4 +62,4 @@ python extract_system_design.py
 ## 注意
 
 - `engine/` 子模块在 **gal-** 仓库，不在此库
-- 游戏本体 `E:\GAL\lllJ\` 永不上传
+- 本体 `E:\GAL\lllJ\` 永不上传
